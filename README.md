@@ -36,8 +36,8 @@ The platform follows a decoupled **Monorepo** architecture:
 ## 3. Current Implementation Status
 
 > **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Milestone:** M7 — Docker & Reproducibility (Implementation completed, pending review)<br>
-> **Next Authorized Milestone:** M8 — Phase 1 Acceptance / Freeze (Do NOT begin yet)
+> **Current Milestone:** M8 — Phase 1 Acceptance / Freeze (Freeze Candidate)<br>
+> **Next Authorized Phase:** Phase 2 — Authentication and Account Management (Do NOT begin yet)
 
 ### Phase 1 Milestone Progress:
 - **M1 — Specification & Governance:** ACCEPTED (commit `d08048f`)
@@ -46,8 +46,8 @@ The platform follows a decoupled **Monorepo** architecture:
 - **M4 — Frontend Foundation:** ACCEPTED (commit `21087e2`)
 - **M5 — Full-stack Integration:** ACCEPTED (commit `5adc47b`)
 - **M6 — Testing & CI:** ACCEPTED (commit `5ab62a0`)
-- **M7 — Docker & Reproducibility:** CURRENT (Implementation completed, pending review)
-- **M8 — Phase 1 Acceptance / Freeze:** PENDING
+- **M7 — Docker & Reproducibility:** ACCEPTED (commit `ae11acd`)
+- **M8 — Phase 1 Acceptance / Freeze:** CURRENT (Freeze Candidate)
 
 ### Implemented Capabilities:
 - Governance, specification foundation, rubric alignment, security rules, and testing guidelines
@@ -81,7 +81,7 @@ The platform follows a decoupled **Monorepo** architecture:
 | Phase | Description | Status |
 | :--- | :--- | :--- |
 | **Phase 0** | Specification Freeze & Project Decisions | **COMPLETED** |
-| **Phase 1** | Repository & Runtime Foundation | **IN PROGRESS** (M5 Active; M6 Next) |
+| **Phase 1** | Repository & Runtime Foundation | **FREEZE CANDIDATE** (M8 Active; Phase 2 Next) |
 | **Phase 2** | Authentication & Account Management | PLANNED |
 | **Phase 3** | Core Note CRUD, Views & Autosave | PLANNED |
 | **Phase 4** | Labels, Attachments, Search & Pinning | PLANNED |
@@ -201,3 +201,4 @@ All contributors and AI agents must consult the following authoritative document
 8. [docs/TESTING_GUIDELINES.md](docs/TESTING_GUIDELINES.md) — Testing tiers, isolation rules, and validation policies
 9. [docs/GIT_CONTRIBUTION_RULES.md](docs/GIT_CONTRIBUTION_RULES.md) — Course contribution compliance (commit counts, cadences)
 10. [docs/PROJECT_EXECUTION_PLAN.md](docs/PROJECT_EXECUTION_PLAN.md) — Comprehensive 11-phase delivery roadmap
+11. [docs/PHASE_1_ACCEPTANCE.md](docs/PHASE_1_ACCEPTANCE.md) — Formal Phase 1 foundation acceptance audit and baseline freeze record
