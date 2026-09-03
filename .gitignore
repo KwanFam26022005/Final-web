@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 !.env.testing.example
+!.env.docker.example
 *.pem
 *.key
 

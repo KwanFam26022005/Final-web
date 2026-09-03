@@ -3,8 +3,8 @@
 This document establishes the multi-phase engineering delivery plan for the Collaborative Intelligent Note Management Web Application. Each phase defines discrete objectives, assigned requirement IDs, technical deliverables, and strict exit criteria.
 
 > **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Milestone:** M6 — Testing & CI (Implementation completed, pending review)<br>
-> **Next Authorized Milestone:** M7 — Docker & Reproducibility (Do NOT begin yet)<br>
+> **Current Milestone:** M7 — Docker & Reproducibility (Implementation completed, pending review)<br>
+> **Next Authorized Milestone:** M8 — Phase 1 Acceptance / Freeze (Do NOT begin yet)<br>
 > **Rule:** No feature may be promoted or implemented ahead of its designated phase without explicit authorization.
 
 ---
@@ -46,8 +46,8 @@ flowchart LR
   - **M3 — Database Foundation:** MySQL 8.4.3 connection, database isolation (`final_web` / `final_web_test`), hardened DatabaseTestCase pre-trait lifecycle safety guards. (*Status: ACCEPTED in commit 9841823*)
   - **M4 — Frontend Foundation:** Standalone React 19 SPA scaffold with TypeScript, Vite, Tailwind CSS v4, and starter artifact cleanup. (*Status: ACCEPTED in commit 21087e2*)
   - **M5 — Full-stack Integration:** Foundation communication chain (React SPA → Laravel REST API → MySQL), read-only DB health endpoint (`GET /api/health/database`), restricted development CORS, centralized API client abstraction, and live full-stack connectivity verification. (*Status: ACCEPTED in commit 5adc47b*)
-  - **M6 — Testing & CI:** Backend PHPUnit and frontend Vitest testing pipelines, Playwright Chromium E2E smoke tests, and GitHub Actions CI workflow. (*Status: CURRENT / implementation completed pending review*)
-  - **M7 — Docker & Reproducibility:** Reproducible `docker-compose.yml` baseline for frontend, backend, and MySQL services, validating clean-clone reproducibility. (*Status: PENDING AUTHORIZATION*)
+  - **M6 — Testing & CI:** Backend PHPUnit and frontend Vitest testing pipelines, Playwright Chromium E2E smoke tests, and GitHub Actions CI workflow. (*Status: ACCEPTED in commit 5ab62a0*)
+  - **M7 — Docker & Reproducibility:** Reproducible `compose.yaml` baseline for frontend, backend, and MySQL services, validating clean-clone reproducibility. (*Status: CURRENT / implementation completed pending review*)
   - **M8 — Phase 1 Acceptance / Freeze:** Formal Phase 1 milestone verification and baseline freeze before proceeding to Phase 2. (*Status: PENDING AUTHORIZATION*)
 
 - **Historical Step Execution Detail (Audit Trail):**

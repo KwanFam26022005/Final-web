@@ -36,8 +36,8 @@ The platform follows a decoupled **Monorepo** architecture:
 ## 3. Current Implementation Status
 
 > **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Milestone:** M6 — Testing & CI (Implementation completed, pending review)<br>
-> **Next Authorized Milestone:** M7 — Docker & Reproducibility (Do NOT begin yet)
+> **Current Milestone:** M7 — Docker & Reproducibility (Implementation completed, pending review)<br>
+> **Next Authorized Milestone:** M8 — Phase 1 Acceptance / Freeze (Do NOT begin yet)
 
 ### Phase 1 Milestone Progress:
 - **M1 — Specification & Governance:** ACCEPTED (commit `d08048f`)
@@ -45,8 +45,8 @@ The platform follows a decoupled **Monorepo** architecture:
 - **M3 — Database Foundation:** ACCEPTED (commit `9841823`)
 - **M4 — Frontend Foundation:** ACCEPTED (commit `21087e2`)
 - **M5 — Full-stack Integration:** ACCEPTED (commit `5adc47b`)
-- **M6 — Testing & CI:** CURRENT (Implementation completed, pending review)
-- **M7 — Docker & Reproducibility:** PENDING
+- **M6 — Testing & CI:** ACCEPTED (commit `5ab62a0`)
+- **M7 — Docker & Reproducibility:** CURRENT (Implementation completed, pending review)
 - **M8 — Phase 1 Acceptance / Freeze:** PENDING
 
 ### Implemented Capabilities:
@@ -63,9 +63,9 @@ The platform follows a decoupled **Monorepo** architecture:
 - Frontend Vitest + React Testing Library + jsdom unit and component test suite
 - Playwright Chromium E2E smoke tests with automatic lifecycle server management
 - Multi-job GitHub Actions CI workflow (`.github/workflows/ci.yml`) for backend, frontend, and E2E
+- Docker Compose (`compose.yaml`) runtime for frontend → backend → MySQL with health-ordered startup, multi-stage frontend build, and named volume persistence
 
 ### Not Yet Implemented:
-- Docker Compose development and deployment baseline (M7)
 - Application-domain database schema and migrations (Phase 2+)
 - Authentication and account management (Phase 2)
 - Core and advanced note features (CRUD, labels, attachments, search, pinning) (Phase 3-4)
@@ -102,23 +102,30 @@ The platform follows a decoupled **Monorepo** architecture:
 ├── .editorconfig
 ├── .gitattributes
 ├── .gitignore
+├── .env.docker.example        # Docker Compose environment template (commit-safe)
 ├── AGENTS.md
 ├── CONTRIBUTING.md
 ├── README.md
-├── backend/                  # Decoupled Laravel 13 REST API
+├── compose.yaml               # Docker Compose stack (mysql + backend + frontend)
+├── backend/                   # Decoupled Laravel 13 REST API
+│   ├── Dockerfile
+│   ├── .dockerignore
 │   ├── app/
 │   ├── bootstrap/
 │   ├── config/
 │   ├── database/
 │   ├── routes/
 │   └── tests/
-├── frontend/                 # Decoupled React 19 + Vite SPA
+├── frontend/                  # Decoupled React 19 + Vite SPA
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   ├── nginx.conf
 │   ├── src/
 │   ├── public/
 │   ├── index.html
 │   ├── package.json
 │   └── vite.config.ts
-└── docs/                     # Authoritative project specifications
+└── docs/                      # Authoritative project specifications
 ```
 
 ### Independent Development Commands:
@@ -136,6 +143,28 @@ The platform follows a decoupled **Monorepo** architecture:
 - **Run unit & component tests:** `npm run test:run`
 - **Run Playwright E2E smoke tests:** `npm run test:e2e`
 - **Preview production build:** `npm run preview`
+
+#### Docker Compose (from repository root)
+> **Prerequisites:** Docker Desktop running. Copy `.env.docker.example` to `.env.docker` and fill in your local values.
+
+```sh
+# Verify configuration
+docker-compose --env-file .env.docker config
+
+# Clean build all images
+docker-compose --env-file .env.docker build --no-cache
+
+# Start the full stack
+docker-compose --env-file .env.docker up -d
+
+# View logs
+docker-compose --env-file .env.docker logs -f
+
+# Stop and clean volumes
+docker-compose --env-file .env.docker down -v
+```
+
+> **Note for environments using Docker Desktop or newer CLI:** Both `docker compose` and `docker-compose` are supported. The local Windows validation uses the standalone `docker-compose` v2.39.4.
 
 ---
 
