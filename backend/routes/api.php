@@ -34,10 +34,10 @@ Route::get('/health/database', function () {
 });
 
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:30,1');
-    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:30,1');
-    Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])->middleware('throttle:30,1');
-    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:30,1');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:registration');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+    Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])->middleware('throttle:forgot-password');
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:reset-password');
 
     Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
         ->middleware(['signed', 'throttle:30,1'])
@@ -46,7 +46,7 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
-        Route::post('/email/resend', [VerificationController::class, 'resend'])->middleware('throttle:30,1');
+        Route::post('/email/resend', [VerificationController::class, 'resend'])->middleware('throttle:verification-resend');
     });
 });
 

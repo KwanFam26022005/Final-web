@@ -51,4 +51,16 @@ This document establishes the binding security standards and vulnerability defen
 
 - **Explicit CORS Configuration:** `config/cors.php` must strictly restrict `allowed_origins` to known frontend application hosts (e.g., `http://localhost:5173`). Wildcard `*` origins with credentials enabled are forbidden.
 - **CSRF Token Verification:** All state-mutating requests (`POST`, `PUT`, `PATCH`, `DELETE`) routed through Sanctum session cookies must validate the `X-XSRF-TOKEN` header.
-- **Rate Limiting:** Authentication endpoints (login, registration, password reset, note unlock attempts) must be throttled via Laravel rate limiters to defend against credential stuffing and brute-force attacks.
+- **Dedicated Named Rate Limiters:** Authentication and account-recovery endpoints enforce strict named throttling via Laravel rate limiters configured in `AppServiceProvider`:
+  - `throttle:login`: 5 attempts per minute per normalized identity/IP (`email|ip`), returning HTTP 429 on exhaustion.
+  - `throttle:registration`: 5 attempts per minute per IP address.
+  - `throttle:forgot-password`: 5 attempts per minute per normalized identity/IP.
+  - `throttle:reset-password`: 5 attempts per minute per IP address.
+  - `throttle:verification-resend`: 5 attempts per minute per authenticated user ID / IP.
+- **Session Semantics & Fixation Defense:**
+  - Password change: Updates password hash and regenerates the current session ID via `$request->session()->regenerate()`, preventing session fixation attacks. For the file-based session driver, this cleanly rotates the active session without claiming multi-device session destruction.
+  - Password reset: Rotates `remember_token`, invalidates the current request session, and logs out the web guard, enforcing explicit manual re-login with the updated credentials.
+- **Mass-Assignment Guardrails:**
+  - `User` model strictly restricts `$fillable` to `['display_name', 'email', 'password']`.
+  - Sensitive and internal columns—including `avatar_path`, `email_verified_at`, and `remember_token`—are explicitly omitted from mass assignment and are only mutated through dedicated controller methods (`AvatarController`, `VerificationController`).
+  - Passwords and tokens remain hidden in JSON serialization via `$hidden`. No personal access tokens table or API bearer tokens exist in the first-party SPA session architecture.
