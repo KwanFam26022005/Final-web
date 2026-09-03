@@ -3,17 +3,15 @@
 namespace Tests\Feature;
 
 use Illuminate\Support\Facades\DB;
-use Tests\TestCase;
+use Tests\DatabaseTestCase;
 
-class MySqlFoundationTest extends TestCase
+class MySqlFoundationTest extends DatabaseTestCase
 {
     /**
      * Verify MySQL 8.x foundation, database isolation, utf8mb4 charset, and collation.
      */
     public function test_mysql_foundation_connection_and_metadata(): void
     {
-        $this->assertDatabaseSafety();
-
         // 1. Connection driver is mysql
         $connection = DB::connection();
         $this->assertSame('mysql', $connection->getDriverName());

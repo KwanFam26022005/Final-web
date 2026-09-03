@@ -42,7 +42,8 @@ For every protected endpoint or resource:
 - Test access as an **authorized user / owner** (must return 200/201/204).
 
 ### 3. Database Isolation
-- Backend tests interacting with the database must run against an isolated test environment using SQLite in-memory or a dedicated `testing` MySQL database.
+- Backend tests interacting with the database must run against the dedicated testing MySQL database (`final_web_test`).
+- Database-backed Laravel Feature/Integration tests must extend `DatabaseTestCase` and must never point to `final_web`.
 - Use Laravel's `RefreshDatabase` trait to ensure each test executes in a clean state.
 - Seeders or factories must be used to generate clean fixtures.
 
