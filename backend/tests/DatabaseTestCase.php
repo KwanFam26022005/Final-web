@@ -21,7 +21,7 @@ abstract class DatabaseTestCase extends TestCase
     /**
      * Reject execution if APP_ENV != testing, connection != mysql, or database != final_web_test.
      */
-    public function enforceDatabaseSafety(): void
+    protected function enforceDatabaseSafety(): void
     {
         $appEnv = config('app.env');
         if ($appEnv !== 'testing') {
