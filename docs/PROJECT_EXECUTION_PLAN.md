@@ -3,8 +3,8 @@
 This document establishes the multi-phase engineering delivery plan for the Collaborative Intelligent Note Management Web Application. Each phase defines discrete objectives, assigned requirement IDs, technical deliverables, and strict exit criteria.
 
 > **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Milestone:** M5 — Full-stack Integration (Implementation completed, pending review)<br>
-> **Next Authorized Milestone:** M6 — Testing & CI (Do NOT begin yet)<br>
+> **Current Milestone:** M6 — Testing & CI (Implementation completed, pending review)<br>
+> **Next Authorized Milestone:** M7 — Docker & Reproducibility (Do NOT begin yet)<br>
 > **Rule:** No feature may be promoted or implemented ahead of its designated phase without explicit authorization.
 
 ---
@@ -45,8 +45,8 @@ flowchart LR
   - **M2 — Backend Foundation:** Decoupled Laravel 13 REST API backend skeleton, API-only boundary, GET /api/health endpoint. (*Status: ACCEPTED in commit 66d7ef5*)
   - **M3 — Database Foundation:** MySQL 8.4.3 connection, database isolation (`final_web` / `final_web_test`), hardened DatabaseTestCase pre-trait lifecycle safety guards. (*Status: ACCEPTED in commit 9841823*)
   - **M4 — Frontend Foundation:** Standalone React 19 SPA scaffold with TypeScript, Vite, Tailwind CSS v4, and starter artifact cleanup. (*Status: ACCEPTED in commit 21087e2*)
-  - **M5 — Full-stack Integration:** Foundation communication chain (React SPA → Laravel REST API → MySQL), read-only DB health endpoint (`GET /api/health/database`), restricted development CORS, centralized API client abstraction, and live full-stack connectivity verification. (*Status: CURRENT / implementation completed pending review*)
-  - **M6 — Testing & CI:** Backend PHPUnit and frontend Vitest testing pipelines, GitHub Actions CI workflow for automated linting, typechecking, and test execution. (*Status: PENDING AUTHORIZATION*)
+  - **M5 — Full-stack Integration:** Foundation communication chain (React SPA → Laravel REST API → MySQL), read-only DB health endpoint (`GET /api/health/database`), restricted development CORS, centralized API client abstraction, and live full-stack connectivity verification. (*Status: ACCEPTED in commit 5adc47b*)
+  - **M6 — Testing & CI:** Backend PHPUnit and frontend Vitest testing pipelines, Playwright Chromium E2E smoke tests, and GitHub Actions CI workflow. (*Status: CURRENT / implementation completed pending review*)
   - **M7 — Docker & Reproducibility:** Reproducible `docker-compose.yml` baseline for frontend, backend, and MySQL services, validating clean-clone reproducibility. (*Status: PENDING AUTHORIZATION*)
   - **M8 — Phase 1 Acceptance / Freeze:** Formal Phase 1 milestone verification and baseline freeze before proceeding to Phase 2. (*Status: PENDING AUTHORIZATION*)
 
@@ -56,7 +56,8 @@ flowchart LR
   - *Step 3 / 3R — Laravel Backend Foundation:* Decoupled REST API backend and API boundary cleanup. (ACCEPTED in bafe6e6, 66d7ef5)
   - *Step 4 / 4R / 4R2 / 4R3 — MySQL Foundation:* Local database connection, contract cleanup, test lifecycle safety hardening, and evidence cleanup. (ACCEPTED in 57a77a0, 9bb1dea, 1500a59, 9841823)
   - *Step 5 / 5R — React Frontend Foundation:* React SPA scaffolding and starter artifact cleanup. (ACCEPTED in e1f748a, 21087e2)
-  - *Step 6 / M5 — Full-Stack Integration:* Cross-origin communication between React, Laravel, and MySQL. (CURRENT)
+  - *Step 6 / M5 — Full-Stack Integration:* Cross-origin communication between React, Laravel, and MySQL. (ACCEPTED in 5adc47b)
+  - *Step 7 / M6 — Testing & CI:* Automated test suites and CI pipeline. (CURRENT)
 - **Exit Criteria:** `frontend` and `backend` build cleanly; Docker Compose boots core services; CI pipeline passes; test runners execute green baseline tests.
 
 ---

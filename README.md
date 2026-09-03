@@ -36,16 +36,16 @@ The platform follows a decoupled **Monorepo** architecture:
 ## 3. Current Implementation Status
 
 > **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Milestone:** M5 — Full-stack Integration (Implementation completed, pending review)<br>
-> **Next Authorized Milestone:** M6 — Testing & CI (Do NOT begin yet)
+> **Current Milestone:** M6 — Testing & CI (Implementation completed, pending review)<br>
+> **Next Authorized Milestone:** M7 — Docker & Reproducibility (Do NOT begin yet)
 
 ### Phase 1 Milestone Progress:
 - **M1 — Specification & Governance:** ACCEPTED (commit `d08048f`)
 - **M2 — Backend Foundation:** ACCEPTED (commit `66d7ef5`)
 - **M3 — Database Foundation:** ACCEPTED (commit `9841823`)
 - **M4 — Frontend Foundation:** ACCEPTED (commit `21087e2`)
-- **M5 — Full-stack Integration:** CURRENT (Implementation completed, pending review)
-- **M6 — Testing & CI:** PENDING
+- **M5 — Full-stack Integration:** ACCEPTED (commit `5adc47b`)
+- **M6 — Testing & CI:** CURRENT (Implementation completed, pending review)
 - **M7 — Docker & Reproducibility:** PENDING
 - **M8 — Phase 1 Acceptance / Freeze:** PENDING
 
@@ -59,9 +59,12 @@ The platform follows a decoupled **Monorepo** architecture:
 - Centralized native `fetch` API client abstraction (`frontend/src/lib/api/`)
 - Narrow development CORS policy allowing `http://127.0.0.1:5173` and `http://localhost:5173`
 - Full-stack foundation communication chain (React SPA → Laravel REST API → MySQL) verified end-to-end
+- Automated backend PHPUnit test suite with negative-path failure and error-leakage assertions
+- Frontend Vitest + React Testing Library + jsdom unit and component test suite
+- Playwright Chromium E2E smoke tests with automatic lifecycle server management
+- Multi-job GitHub Actions CI workflow (`.github/workflows/ci.yml`) for backend, frontend, and E2E
 
 ### Not Yet Implemented:
-- Automated full-stack and CI test pipelines (M6)
 - Docker Compose development and deployment baseline (M7)
 - Application-domain database schema and migrations (Phase 2+)
 - Authentication and account management (Phase 2)
@@ -130,6 +133,8 @@ The platform follows a decoupled **Monorepo** architecture:
 - **Start dev server:** `npm run dev` (http://127.0.0.1:5173)
 - **Build production bundle:** `npm run build`
 - **Run linter:** `npm run lint`
+- **Run unit & component tests:** `npm run test:run`
+- **Run Playwright E2E smoke tests:** `npm run test:e2e`
 - **Preview production build:** `npm run preview`
 
 ---

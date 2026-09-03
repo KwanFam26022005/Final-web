@@ -29,6 +29,12 @@ npm run build
 # Run code linter
 npm run lint
 
+# Run unit & component tests (Vitest)
+npm run test:run
+
+# Run E2E smoke tests (Playwright Chromium)
+npm run test:e2e
+
 # Preview production build locally
 npm run preview
 ```
@@ -49,5 +55,6 @@ The frontend template is defined in `.env.example`:
 
 ## 4. Current Status
 
-- **Foundation Established (Phase 1 Step 5):** React, TypeScript, Vite, and Tailwind CSS active.
-- **Backend API Integration:** Deferred to **Phase 1 Step 6**.
+- **Foundation Established (Phase 1 M4):** React 19, TypeScript, Vite, and Tailwind CSS v4 active.
+- **Backend API Integration (Phase 1 M5):** Native fetch abstraction, infrastructure health checks, and narrow CORS verified.
+- **Automated Testing Foundation (Phase 1 M6):** Vitest + Testing Library unit/component tests and Playwright E2E smoke tests active.
