@@ -2,17 +2,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -23,6 +23,7 @@ class User extends Authenticatable
         'display_name',
         'email',
         'password',
+        'avatar_path',
     ];
 
     /**
@@ -33,6 +34,16 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'avatar_path',
+    ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'avatar_url',
     ];
 
     /**
@@ -46,5 +57,32 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the safe avatar URL without exposing internal storage paths.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar_path ? '/api/account/avatar' : null;
+    }
+
+    /**
+     * Get the preferences associated with the user.
+     */
+    public function preference(): HasOne
+    {
+        return $this->hasOne(UserPreference::class);
+    }
+
+    /**
+     * Get or lazy-create the user's preferences.
+     */
+    public function getOrCreatePreference(): UserPreference
+    {
+        return $this->preference()->firstOrCreate([], [
+            'theme' => 'system',
+            'default_note_view' => 'grid',
+        ]);
     }
 }

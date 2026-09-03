@@ -114,10 +114,13 @@ export const LoginPage: React.FC = () => {
               />
             </FormField>
 
-            <div className="flex items-center justify-between text-xs sm:text-sm">
-              <span className="text-slate-400 cursor-not-allowed" title="Password recovery will be available in Phase 2 Milestone 2">
+            <div className="flex items-center justify-end text-xs sm:text-sm">
+              <Link
+                to="/forgot-password"
+                className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+              >
                 Forgot your password?
-              </span>
+              </Link>
             </div>
 
             <Button
