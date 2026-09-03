@@ -18,7 +18,7 @@ export const AcademicAuthShell: React.FC<AcademicAuthShellProps> = ({
   footer,
 }) => {
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-academic-light text-slate-900 dark:text-slate-100 selection:bg-blue-150 selection:text-blue-900">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-academic-light text-slate-900 dark:text-slate-100 selection:bg-blue-100 selection:text-blue-900">
       {/* -------------------------------------------------------------------- */}
       {/* Desktop Left Brand & Atmosphere Column                               */}
       {/* -------------------------------------------------------------------- */}

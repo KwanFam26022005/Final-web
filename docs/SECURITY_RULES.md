@@ -2,7 +2,7 @@
 
 This document establishes the binding security standards and vulnerability defense principles for the Collaborative Intelligent Note Management Web Application.
 
-> **Status Notice:** This policy governs all current and future implementation phases. No application code currently exists.
+> **Status Notice:** This policy governs all repository phases. The Phase 1 infrastructure baseline exists, Phase 2 authentication and account lifecycle implementation is complete, and this policy continues to bind all subsequent phases.
 
 ---
 
@@ -11,7 +11,7 @@ This document establishes the binding security standards and vulnerability defen
 - **Secure Native Hashing:** Passwords MUST always be hashed with `bcrypt` (minimum work factor 12) through Laravel's native secure hashing facilities (`Hash::make()`). Argon2id is not permitted as an alternative for this project requirement. Acceptance criteria mandate that plaintext is never stored, bcrypt verification succeeds, and password hashes are never exposed in API responses or logs.
 - **Zero Plaintext Storage:** Plaintext passwords, temporary tokens, or plaintext per-note passwords must never be stored in the database, caches, or logs.
 - **Registration Form:** User registration UI accepts strictly email, display name, password, and password confirmation.
-- **Password Complexity:** User registration and password change forms must enforce strong password criteria (minimum 8 characters, mixed case, numbers, symbols).
+- **Password Security & Complexity:** In alignment with the master requirements and course rubric, user registration, password changes, and password resets enforce a minimum of 8 characters with mandatory password confirmation, current-password verification on updates, cryptographically signed reset tokens, and native `bcrypt` hashing. (Arbitrary mixed-case, number, or symbol composition rules are not required by the rubric and are not enforced).
 - **Session Security:** First-party SPA authentication relies on Laravel Sanctum using `HttpOnly`, `SameSite=Lax` (or `Strict`), and `Secure` session cookies. Bearer tokens must not be stored in browser `localStorage` or `sessionStorage`.
 
 ---

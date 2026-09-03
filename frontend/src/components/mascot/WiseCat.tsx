@@ -91,7 +91,7 @@ export const WiseCat: React.FC<WiseCatProps> = ({
         {/* Cat Head Body Contour */}
         <path
           d="M26 62C26 44 41 34 60 34C79 34 94 44 94 62C94 80 80 92 60 92C40 92 26 80 26 62Z"
-          className="fill-slate-850 fill-slate-800 dark:fill-slate-200 stroke-slate-900 dark:stroke-white"
+          className="fill-slate-800 dark:fill-slate-200 stroke-slate-900 dark:stroke-white"
           strokeWidth="2.5"
         />
 
