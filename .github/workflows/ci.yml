@@ -38,15 +38,15 @@ jobs:
           extensions: pdo, pdo_mysql, mbstring, openssl
           tools: composer:v2
 
-      - name: Copy testing environment
+      - name: Install Composer dependencies
+        working-directory: backend
+        run: composer install --prefer-dist --no-interaction --optimize-autoloader
+
+      - name: Configure testing environment
         working-directory: backend
         run: |
           cp .env.testing.example .env.testing
           php artisan key:generate --env=testing
-
-      - name: Install Composer dependencies
-        working-directory: backend
-        run: composer install --prefer-dist --no-interaction --optimize-autoloader
 
       - name: Validate composer.json
         working-directory: backend
@@ -107,7 +107,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-          MYSQL_DATABASE: final_web
+          MYSQL_DATABASE: final_web_test
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
@@ -128,12 +128,15 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Configure backend environment
+      - name: Install Composer dependencies
+        working-directory: backend
+        run: composer install --prefer-dist --no-interaction --optimize-autoloader
+
+      - name: Configure backend testing environment for E2E
         working-directory: backend
         run: |
-          cp .env.example .env
+          cp .env.testing.example .env
           php artisan key:generate
-          composer install --prefer-dist --no-interaction --optimize-autoloader
 
       - name: Configure frontend environment & Playwright
         working-directory: frontend
