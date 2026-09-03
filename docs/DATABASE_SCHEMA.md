@@ -29,13 +29,13 @@ The application enforces strict database separation between runtime environments
 | **Production** | Defined at deploy | Future production environment | Isolated credentials; managed container / hosted RDS |
 
 ### Test Database Safety Guard
-To eliminate any risk of automated test runs mutating or truncating development data:
+To prevent accidental test mutation under the governed test hierarchy:
 - All database-backed tests **MUST** extend `Tests\DatabaseTestCase`.
-- `Tests\DatabaseTestCase` automatically verifies during `setUp()` that:
+- `Tests\DatabaseTestCase` automatically verifies during `setUpTraits()` before database-mutating testing traits operate that:
   1. `APP_ENV` is strictly `testing`.
   2. The active database connection is `mysql`.
   3. The active database name equals exactly `final_web_test`.
-- If any condition is violated, a `RuntimeException` is immediately thrown before any query executes.
+- If any condition is violated, a `RuntimeException` is immediately thrown before any database-mutating trait (such as `RefreshDatabase`) or test query can execute.
 - Generic non-database tests (such as `HealthEndpointTest`) extend `Tests\TestCase` and remain completely database-independent.
 
 ---
@@ -91,7 +91,7 @@ erDiagram
    - **Entity Purpose:** Primary note content and metadata.
    - **Relationship Intent:** Many-to-1 with `users`.
    - **Phase Ownership:** Phase 3 (Core CRUD), Phase 4 (Pinning), Phase 5 (Protection).
-   - **Rubric & Frozen Constraints:** Requires storage for owner relationship, title, content (Markdown/rich text), pin state (`NOTE-06`, Phase 4), password protection representation (`SHARE-01`, Phase 5), and timestamps. Speculative fields (e.g., archive state) are excluded.
+   - **Rubric & Frozen Constraints:** Requires storage for owner relationship, title, content, pin state (`NOTE-06`, Phase 4), password protection representation (`SHARE-01`, Phase 5), and timestamps. Speculative fields (e.g., archive state) are excluded.
 
 4. **`labels` (Phase 4: Organization)**
    - **Entity Purpose:** User-defined organization tags.

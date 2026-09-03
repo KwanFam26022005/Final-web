@@ -41,11 +41,12 @@ For every protected endpoint or resource:
 - Test access as a **read-only collaborator** attempting to edit or delete (must return 403 Forbidden).
 - Test access as an **authorized user / owner** (must return 200/201/204).
 
-### 3. Database Isolation
-- Backend tests interacting with the database must run against the dedicated testing MySQL database (`final_web_test`).
-- Database-backed Laravel Feature/Integration tests must extend `DatabaseTestCase` and must never point to `final_web`.
-- Use Laravel's `RefreshDatabase` trait to ensure each test executes in a clean state.
-- Seeders or factories must be used to generate clean fixtures.
+### 3. Database Isolation & Lifecycle Safety
+- **Base Class Mandate:** All database-backed Laravel tests **MUST** extend `Tests\DatabaseTestCase` and must never point to `final_web`.
+- **Pre-Trait Safety Guard:** `DatabaseTestCase` automatically enforces that `APP_ENV === 'testing'`, active connection is `mysql`, and active database is exactly `final_web_test` before any database-mutating trait setup can execute.
+- **Controlled Refresh Strategy:** Where tests modify database state, Laravel's `RefreshDatabase` trait may be used under this protected test base to ensure clean execution. Read-only infrastructure tests (e.g., connection/metadata verification) do not require state wiping.
+- **Decoupled Tests:** Tests not requiring persistence (e.g., health probes, isolated unit tests) must extend generic `Tests\TestCase` and remain completely database-independent.
+- **Clean Fixtures:** Seeders or model factories must be used to generate isolated test fixtures.
 
 ### 4. Regression Testing for Defects
 - Any reported bug or defect must first be captured in a reproducing, failing automated test before any code changes are introduced.

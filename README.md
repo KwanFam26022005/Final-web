@@ -36,7 +36,7 @@ The platform follows a decoupled **Monorepo** architecture:
 ## 3. Current Implementation Status
 
 > **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Step:** Step 4R — Database Contract and Test-Safety Cleanup (Remediation completed, pending review)<br>
+> **Current Step:** Step 4R2 — Database Test Lifecycle Safety Hardening (Remediation completed, pending review)<br>
 > **Next Authorized Step:** Step 5 — React Frontend Foundation (Do NOT begin yet)
 
 ### Implemented:
@@ -52,7 +52,7 @@ The platform follows a decoupled **Monorepo** architecture:
 - Clean API-only backend boundary (removal of redundant backend frontend toolchains and conflicting agent instructions)
 - MySQL database foundation (MySQL 8.4.3, InnoDB, utf8mb4, dev DB `final_web`, isolated test DB `final_web_test`)
 - Migration repository initialized in both databases with zero domain tables
-- Automated MySQL foundation feature test (`MySqlFoundationTest`) and automatic `DatabaseTestCase` safety guard
+- Automated MySQL foundation feature test (`MySqlFoundationTest`) and hardened `DatabaseTestCase` pre-trait lifecycle safety guard
 
 ### Not Yet Implemented:
 - Frontend application scaffold (`frontend/`)
