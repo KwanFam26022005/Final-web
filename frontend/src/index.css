@@ -1,1 +1,173 @@
 @import "tailwindcss";
+
+/* -------------------------------------------------------------------------- */
+/* Final-web Design System: Academic Light — Living Knowledge                 */
+/* -------------------------------------------------------------------------- */
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Motion Tokens */
+  --duration-instant: 100ms;
+  --duration-micro: 150ms;
+  --duration-standard: 220ms;
+  --duration-emphasis: 350ms;
+  --duration-ambient: 12s;
+
+  --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Academic Light Color Tokens */
+  --color-canvas-light: #F8FAFC;
+  --color-academic-navy: #1E3A8A;
+  --color-academic-blue: #2563EB;
+  --color-lotus-accent: #E11D48;
+}
+
+body {
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Motion Keyframes (GPU-friendly transform & opacity only)                  */
+/* -------------------------------------------------------------------------- */
+
+@keyframes academicFadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes academicFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes academicGlowPulse {
+  0%, 100% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes academicFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes subtleInputShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-3px);
+  }
+  40%, 80% {
+    transform: translateX(3px);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Utility Animation Classes                                                  */
+/* -------------------------------------------------------------------------- */
+
+.animate-entrance {
+  animation: academicFadeSlideIn var(--duration-standard) var(--ease-entrance) forwards;
+}
+
+.animate-fade-in {
+  animation: academicFadeIn var(--duration-micro) var(--ease-standard) forwards;
+}
+
+.animate-ambient-glow {
+  animation: academicGlowPulse var(--duration-ambient) ease-in-out infinite;
+}
+
+.animate-mascot-float {
+  animation: academicFloat 6s ease-in-out infinite;
+}
+
+.animate-subtle-shake {
+  animation: subtleInputShake 260ms ease-in-out;
+}
+
+/* Stagger Sequence Delays */
+.stagger-1 {
+  animation-delay: 60ms;
+}
+
+.stagger-2 {
+  animation-delay: 120ms;
+}
+
+.stagger-3 {
+  animation-delay: 180ms;
+}
+
+.stagger-4 {
+  animation-delay: 240ms;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Academic Light Atmosphere Background                                       */
+/* -------------------------------------------------------------------------- */
+
+.bg-academic-light {
+  background-color: #F8FAFC;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(225, 29, 72, 0.05) 0px, transparent 50%);
+}
+
+.dark .bg-academic-light {
+  background-color: #090D16;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(225, 29, 72, 0.08) 0px, transparent 50%);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Accessibility: Strict prefers-reduced-motion: reduce                       */
+/* -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-ambient-glow,
+  .animate-mascot-float,
+  .animate-subtle-shake,
+  .animate-entrance {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

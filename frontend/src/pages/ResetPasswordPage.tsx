@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Alert } from '../components/ui/Alert';
 import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
 import { FormField } from '../components/ui/FormField';
 import { Input } from '../components/ui/Input';
 import { PasswordInput } from '../components/ui/PasswordInput';
 import { apiClient, ApiError, ensureCsrfCookie } from '../lib/api/client';
+import { AcademicAuthShell } from '../components/auth/AcademicAuthShell';
 
 export const ResetPasswordPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -89,116 +89,101 @@ export const ResetPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-900">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h1 className="text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Create a new password
-        </h1>
-        <p className="mt-2 text-center text-sm text-slate-600 dark:text-slate-400">
-          Set a new strong password for your account.
-        </p>
-      </div>
+    <AcademicAuthShell
+      title="Create a new password"
+      subtitle="Set a new strong password for your account."
+      mascotState={isSuccess ? 'success' : 'verification'}
+      footer={
+        <Link
+          to="/login"
+          className="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 hover:underline transition-colors"
+        >
+          &larr; Back to sign in
+        </Link>
+      }
+    >
+      {isSuccess ? (
+        <div className="space-y-6" data-testid="reset-password-success">
+          <Alert variant="success" title="Password updated successfully">
+            Your password has been changed. For security reasons, please manually sign in with your new credentials.
+          </Alert>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card variant="elevated" className="p-8 dark:bg-slate-800 dark:border-slate-700">
-          {isSuccess ? (
-            <div className="space-y-6" data-testid="reset-password-success">
-              <Alert variant="success" title="Password reset successful">
-                Your password has been changed securely. Please log in with your new password.
-              </Alert>
-
-              <div className="text-center">
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center font-medium rounded-md transition-colors bg-blue-600 text-white hover:bg-blue-700 h-10 px-4 text-sm w-full"
-                >
-                  Proceed to Sign in
-                </Link>
-              </div>
+          <div>
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition-colors"
+            >
+              Proceed to sign in
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          {errors.general && (
+            <div role="alert">
+              <Alert variant="error">{errors.general}</Alert>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-              {errors.general && (
-                <div role="alert" className="space-y-2">
-                  <Alert variant="error">{errors.general}</Alert>
-                  <div className="text-right">
-                    <Link to="/forgot-password" className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
-                      Request a new reset link &rarr;
-                    </Link>
-                  </div>
-                </div>
-              )}
-
-              <FormField
-                id="reset-email"
-                label="Email address"
-                required
-                error={errors.email}
-              >
-                <Input
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  disabled={Boolean(initialEmail) || isLoading}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </FormField>
-
-              <FormField
-                id="reset-password"
-                label="New Password"
-                required
-                hint="Minimum 8 characters"
-                error={errors.password}
-              >
-                <PasswordInput
-                  autoComplete="new-password"
-                  placeholder="Enter new password"
-                  value={password}
-                  disabled={isLoading}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </FormField>
-
-              <FormField
-                id="reset-password-confirmation"
-                label="Confirm New Password"
-                required
-                error={errors.passwordConfirmation}
-              >
-                <PasswordInput
-                  autoComplete="new-password"
-                  placeholder="Confirm new password"
-                  value={passwordConfirmation}
-                  disabled={isLoading}
-                  onChange={(e) => setPasswordConfirmation(e.target.value)}
-                />
-              </FormField>
-
-              <div className="pt-2">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="md"
-                  className="w-full"
-                  isLoading={isLoading}
-                >
-                  Reset password
-                </Button>
-              </div>
-
-              <div className="text-center pt-2">
-                <Link
-                  to="/login"
-                  className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                >
-                  Cancel and return to sign in
-                </Link>
-              </div>
-            </form>
           )}
-        </Card>
-      </div>
-    </div>
+
+          <FormField
+            id="reset-email"
+            label="Email address"
+            required
+            error={errors.email}
+          >
+            <Input
+              type="email"
+              autoComplete="email"
+              value={email}
+              disabled={isLoading || !!initialEmail}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </FormField>
+
+          <FormField
+            id="reset-password"
+            label="New Password"
+            required
+            hint="Must be at least 8 characters"
+            error={errors.password}
+          >
+            <PasswordInput
+              autoComplete="new-password"
+              placeholder="Enter new password"
+              value={password}
+              disabled={isLoading}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </FormField>
+
+          <FormField
+            id="reset-password-confirmation"
+            label="Confirm New Password"
+            required
+            error={errors.passwordConfirmation}
+          >
+            <PasswordInput
+              autoComplete="new-password"
+              placeholder="Confirm new password"
+              value={passwordConfirmation}
+              disabled={isLoading}
+              onChange={(e) => setPasswordConfirmation(e.target.value)}
+            />
+          </FormField>
+
+          <div className="pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              isLoading={isLoading}
+              className="w-full shadow-sm hover:shadow active:scale-[0.99] transition-all"
+            >
+              Reset password
+            </Button>
+          </div>
+        </form>
+      )}
+    </AcademicAuthShell>
   );
 };

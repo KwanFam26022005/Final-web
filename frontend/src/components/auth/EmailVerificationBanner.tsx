@@ -34,14 +34,14 @@ export const EmailVerificationBanner: React.FC = () => {
     <div
       role="status"
       aria-live="polite"
-      className="bg-amber-50 border-b border-amber-200 px-4 py-3 sm:px-6 lg:px-8 text-amber-900"
+      className="bg-amber-50 dark:bg-amber-950/50 border-b border-amber-200 dark:border-amber-800/80 px-4 py-3 sm:px-6 lg:px-8 text-amber-900 dark:text-amber-200 transition-colors"
       data-testid="verification-warning-banner"
     >
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="w-5 h-5 text-amber-600 flex-shrink-0"
+            className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0"
             viewBox="0 0 20 20"
             fill="currentColor"
             aria-hidden="true"
@@ -60,7 +60,7 @@ export const EmailVerificationBanner: React.FC = () => {
         <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
           {status === 'sent' ? (
             <span
-              className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full"
+              className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800"
               data-testid="verification-sent-message"
             >
               A new verification email has been sent to your inbox.
@@ -73,7 +73,7 @@ export const EmailVerificationBanner: React.FC = () => {
               onClick={handleResend}
               isLoading={status === 'resending'}
               data-testid="resend-verification-button"
-              className="bg-white border-amber-300 text-amber-900 hover:bg-amber-100/60"
+              className="bg-white dark:bg-slate-800 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 hover:bg-amber-100/60 dark:hover:bg-slate-700"
             >
               Resend verification email
             </Button>
@@ -82,7 +82,7 @@ export const EmailVerificationBanner: React.FC = () => {
       </div>
 
       {status === 'error' && (
-        <div className="max-w-5xl mx-auto mt-2 text-xs font-medium text-red-700" role="alert">
+        <div className="max-w-5xl mx-auto mt-2 text-xs font-medium text-rose-700 dark:text-rose-400" role="alert">
           {errorMessage}
         </div>
       )}

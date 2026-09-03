@@ -1,69 +1,62 @@
 # Final-web UI/UX Design System Specification
 
-> **Status:** Provisional Baseline (Phase 2 Design Gate)<br>
-> **Authority:** Subordinate to repository governance and rubric; source of truth for UI/UX implementation.<br>
-> **Future Adaptability:** This is a provisional design system and may be refined when user-selected visual references are provided. Refinement must preserve interaction semantics and component APIs where possible.
+> **Status:** Accepted & Frozen Baseline (Phase 2 M3 Acceptance)<br>
+> **Authority:** Subordinate to repository governance and rubric; authoritative source of truth for UI/UX implementation.<br>
+> **Approved Direction:** **Concept A — Academic Light** (`Academic Light — Living Knowledge`).
 
 ---
 
-## 1. Product Context & UX Principles
+## 1. Product Context & Brand Identity
 
 ### Product Identity
-**Collaborative Intelligent Note Management Web Application** (`Final-web`) is a high-performance productivity tool designed for personal note-taking, fast organization, multi-user collaboration, and note-grounded AI knowledge work.
+**Collaborative Intelligent Note Management Web Application** (`Final-web`) is a high-performance productivity tool crafted for personal note-taking, fast organization, multi-user collaboration, and note-grounded AI knowledge work.
 
-### Core UX Principles
-1. **Content-First & Low Noise:** The user's notes and ideas take precedence over decorative UI chrome. Chrome is quiet, precise, and unobtrusive.
-2. **Speed & Predictability:** Interactions respond instantly. State changes (saving, syncing, erroring) are immediately perceptible through subtle indicators, never blocking thought.
-3. **Calm Productivity:** Avoid aggressive high-saturation palettes, distracting gradients, or unmotivated animation. Use whitespace and typography to establish hierarchy.
-4. **Progressive Disclosure:** Secondary actions (metadata, version history, export options) remain tucked away until requested, keeping the primary workspace uncluttered.
-5. **Accessible by Default:** Keyboard-driven workflows, strict WCAG 2.2 AA contrast, screen-reader announcements, and visible focus boundaries are intrinsic to every component.
+### Brand DNA Ratio
+- **65% Personal Modern Productivity:** Clean, distraction-free writing surface, precision typography, instantaneous responsiveness, and low cognitive noise.
+- **25% TDTU Cultural Homage:** Subtle academic inspiration drawn from university life—academic navy and blue palette, knowledge-light motif, subtle lotus-red accent, and disciplined structure.
+- **10% Mascot Personality:** Original minimal geometric "Wise Cat" providing subtle intellectual warmth and context across system states.
+
+> [!IMPORTANT]
+> **Cultural Homage & Student Identity Boundary:**
+> This application is an independent personal productivity platform created by students. It is **NOT** an official university website or portal. It does **NOT** use the official university logo, and makes no claim of official university sponsorship or affiliation.
+
+### Visual Character Blend
+- **70% Academic Light:** Clean, bright, calm, light-first canvas (~80% light/neutral surfaces) evoking study halls, libraries, and open notebooks.
+- **20% Tech Scholar Precision:** 1px hairline border hierarchy, monospace code accents, crisp alignment, and high-contrast typography.
+- **10% Scholar Cat Warmth:** Minimalist geometric Wise Cat vector mascot expressing friendly academic states without kawaii overload or emoji clutter.
 
 ### Design Dial Settings
-- **Variance:** `4 / 10` (Balanced, clean, disciplined structure; avoiding chaotic novelty or rigid corporate stagnation)
-- **Motion:** `3 / 10` (Subtle micro-interactions, 150–200ms transitions; purely functional state changes; strict respect for `prefers-reduced-motion`)
-- **Density:** `6 / 10` (Standard productivity density; compact enough for list/card views, comfortable for extended writing)
+- **Variance:** `4 / 10` (Disciplined, clean, structured; avoiding chaotic novelty or rigid enterprise stagnation)
+- **Motion:** `6 / 10` (Balanced, expressive yet functional motion; staged entrances and ambient light glow; strict reduced-motion fallback)
+- **Density:** `5 / 10` (Comfortable productivity density; compact enough for list scanning, generous enough for deep reading)
 
 ---
 
-## 2. Visual Direction: "Calm Collaborative Workspace"
+## 2. Visual Direction & Color System
 
-### Aesthetic Influences
-- **Linear:** Precision typography, subtle 1px border hierarchy, keyboard ergonomics, restrained contrast tiers.
-- **Notion:** Document focus, distraction-free writing surface, fluid layout flexibility.
-- **Google Keep:** Color-accent metadata, rapid card scanning, clear informational hierarchy.
-
-### What We Avoid (Anti-Patterns)
-- ❌ Generic AI purple/pink neon gradients.
-- ❌ Heavy glassmorphism or muddy backdrop blurs that compromise contrast.
-- ❌ Deep floating drop-shadows with blurred silhouettes.
-- ❌ Emoji characters as functional interface icons.
-- ❌ Hover-only interactions that fail on touch devices or for keyboard navigation.
-- ❌ Low-contrast light-gray body text (`#94A3B8` on white is strictly prohibited for readable text).
-- ❌ Wrapping every trivial piece of metadata in heavy bordered cards.
-
----
-
-## 3. Semantic Color System
-
-Colors are defined by **semantic role**, enabling seamless light/dark mode adaptation without altering layout contracts.
+The color architecture follows a disciplined **80 / 15 / 5** visual ratio:
+1. **Neutral & Light Surfaces (≈ 80%):** Clean canvas (`#F8FAFC`), crisp white cards (`#FFFFFF`), and muted borders (`#E2E8F0`).
+2. **Academic Navy & Blue (≈ 15%):** Deep academic navy (`#1E3A8A`), primary action blue (`#2563EB`), and focus highlights (`#3B82F6`).
+3. **Lotus-Pink / Crimson Accent (≈ 5%):** Subtle warm accent (`#E11D48` / `#F43F5E`) used exclusively for small details, ear accents, and highlight dots—never overpowering primary actions.
 
 ### Light Mode (`:root` / default)
 
 | Semantic Role | Hex Value | Tailwind Class Mapping | Intended Usage |
 | :--- | :--- | :--- | :--- |
-| **`bg-canvas`** | `#F8FAFC` (Slate 50) | `bg-slate-50` | Full page viewport background |
-| **`bg-surface`** | `#FFFFFF` (White) | `bg-white` | Cards, modals, sidebars, active workspaces |
-| **`bg-surface-muted`** | `#F1F5F9` (Slate 100) | `bg-slate-100` | Table headers, secondary toolbars, disabled inputs |
+| **`bg-canvas`** | `#F8FAFC` (Slate 50) | `bg-slate-50` / `bg-academic-light` | Full viewport canvas with subtle radial light |
+| **`bg-surface`** | `#FFFFFF` (White) | `bg-white` | Form cards, workspace panels, headers |
+| **`bg-surface-muted`** | `#F1F5F9` (Slate 100) | `bg-slate-100` | Table headers, secondary toolbars, disabled states |
 | **`text-primary`** | `#0F172A` (Slate 900) | `text-slate-900` | Headings, primary body text (contrast > 14:1) |
 | **`text-secondary`** | `#475569` (Slate 600) | `text-slate-600` | Subtitles, labels, timestamps (contrast > 5.5:1) |
 | **`text-muted`** | `#64748B` (Slate 500) | `text-slate-500` | Placeholder text, auxiliary metadata (contrast > 4.5:1) |
 | **`border-subtle`** | `#E2E8F0` (Slate 200) | `border-slate-200` | Component dividers, input outlines, table borders |
 | **`border-emphasis`** | `#CBD5E1` (Slate 300) | `border-slate-300` | Hovered cards, selected tabs, focused container borders |
 | **`accent`** | `#2563EB` (Blue 600) | `bg-blue-600` / `text-blue-600` | Primary buttons, active tab indicators, links |
-| **`accent-hover`** | `#1D4ED8` (Blue 700) | `bg-blue-700` | Hover state for primary buttons |
-| **`accent-subtle`** | `#EFF6FF` (Blue 50) | `bg-blue-50` | Active row highlight, badge background |
+| **`accent-hover`** | `#1D4ED8` (Blue 700) | `bg-blue-700` | Hover state for primary interactive elements |
+| **`brand-navy`** | `#1E3A8A` (Blue 900) | `bg-blue-900` / `text-blue-900` | Brand badges, mortarboard, deep structural accents |
+| **`lotus-accent`** | `#E11D48` (Rose 600) | `text-rose-600` / `bg-rose-600` | Subtle cultural accent dot, inner ear, highlight spark |
 | **`success`** | `#16A34A` (Green 600) | `text-green-600` / `bg-green-600` | Saved state, connected indicator, success banners |
-| **`warning`** | `#D97706` (Amber 600) | `text-amber-600` / `bg-amber-600` | Pending verification, offline draft warning |
+| **`warning`** | `#D97706` (Amber 600) | `text-amber-600` / `bg-amber-600` | Pending verification banner, warning alerts |
 | **`danger`** | `#DC2626` (Red 600) | `text-red-600` / `bg-red-600` | Validation errors, deletion actions, auth failure |
 | **`focus-ring`** | `#3B82F6` (Blue 500) | `ring-blue-500` | Keyboard focus indicator outline |
 
@@ -72,7 +65,7 @@ Colors are defined by **semantic role**, enabling seamless light/dark mode adapt
 | Semantic Role | Hex Value | Tailwind Class Mapping | Intended Usage |
 | :--- | :--- | :--- | :--- |
 | **`bg-canvas`** | `#090D16` (Near Black) | `dark:bg-[#090D16]` | Base viewport background |
-| **`bg-surface`** | `#131B2E` (Deep Navy) | `dark:bg-slate-900` | Main application cards and content surfaces |
+| **`bg-surface`** | `#111827` (Gray 900) | `dark:bg-slate-900` | Main application cards and content surfaces |
 | **`bg-surface-muted`** | `#1E293B` (Slate 800) | `dark:bg-slate-800` | Toolbars, secondary panels, inactive tabs |
 | **`text-primary`** | `#F8FAFC` (Slate 50) | `dark:text-slate-50` | Primary headings and text |
 | **`text-secondary`** | `#94A3B8` (Slate 400) | `dark:text-slate-400` | Labels, supporting copy |
@@ -81,173 +74,112 @@ Colors are defined by **semantic role**, enabling seamless light/dark mode adapt
 | **`border-emphasis`** | `#334155` (Slate 700) | `dark:border-slate-700` | Interactive border hover states |
 | **`accent`** | `#3B82F6` (Blue 500) | `dark:bg-blue-500` | Primary interactive elements |
 | **`accent-hover`** | `#60A5FA` (Blue 400) | `dark:bg-blue-400` | Primary interactive hover |
-| **`accent-subtle`** | `#1E293B` (Slate 800/60) | `dark:bg-blue-950/40` | Subtle active item background |
+| **`lotus-accent`** | `#F43F5E` (Rose 500) | `dark:text-rose-400` | Dark mode lotus accent highlight |
 | **`focus-ring`** | `#60A5FA` (Blue 400) | `dark:ring-blue-400` | Visible focus outline in dark mode |
 
 ---
 
-## 4. Typography Scale & Hierarchy
+## 3. Motion Architecture (`MOTION_INTENSITY = 6 / 10`)
 
-We employ a unified, clean sans-serif system font stack:
-```css
-font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-```
+Motion is structured into **4 distinct layers**, ensuring smooth, GPU-accelerated execution without cognitive fatigue or performance degradation:
 
-### Type Hierarchy Specifications
+### The 4 Motion Layers
+1. **Layer 1: Ambient Motion (Macro):**
+   - Soft, slow radial illumination pulses (`12s` ease-in-out).
+   - Subtle vertical breathing on mascot (`6s` ease-in-out).
+   - Never blocks interaction, automatically disabled under reduced-motion.
+2. **Layer 2: Page & Surface Transitions (Meso):**
+   - Staged entrance sequence on navigation:
+     `Background / Ambient Light -> Brand & Headline -> Mascot -> Form Card`.
+   - Stagger intervals: `60ms` increments (`stagger-1`, `stagger-2`, `stagger-3`).
+   - Duration: `220ms` (`--duration-standard`).
+3. **Layer 3: Component Interactions (Micro):**
+   - Active button press: tactile scale `active:scale-[0.99]` over `100ms` (`--duration-instant`).
+   - Focus ring appearance: `150ms` (`--duration-micro`).
+   - Tab underline transition: `200ms` smooth border color/fill transition.
+4. **Layer 4: State & Feedback (Reactive):**
+   - Form validation shake: gentle `3px` horizontal vibration (`260ms`, 2 cycles).
+   - Password visibility toggle: instant glyph transition with zero layout shift (`CLS = 0`).
+   - Alert toast appearance: smooth slide-in and fade (`200ms`).
 
-| Level | Size | Weight | Line Height | Tracking | Tailwind Classes |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Display / Hero** | 30px (`1.875rem`) | Bold (700) | 36px (`2.25rem`) | `-0.025em` | `text-2xl sm:text-3xl font-bold tracking-tight` |
-| **Page Title (H1)** | 24px (`1.5rem`) | Bold (700) | 32px (`2.0rem`) | `-0.02em` | `text-xl sm:text-2xl font-bold tracking-tight` |
-| **Section Head (H2)**| 18px (`1.125rem`)| SemiBold (600)| 24px (`1.5rem`) | `-0.01em` | `text-lg font-semibold tracking-tight` |
-| **Subheading (H3)** | 15px (`0.9375rem`)| Medium (500) | 22px (`1.375rem`)| `0` | `text-sm sm:text-base font-medium` |
-| **Body (Default)** | 14px (`0.875rem`) | Regular (400) | 20px (`1.25rem`) | `0` | `text-sm leading-relaxed` |
-| **Label / Button** | 13px (`0.8125rem`)| Medium (500) | 16px (`1.0rem`) | `+0.01em` | `text-xs sm:text-sm font-medium` |
-| **Small / Caption** | 12px (`0.75rem`)  | Regular (400) | 16px (`1.0rem`) | `+0.01em` | `text-xs text-slate-500` |
-| **Mono / Code** | 12px (`0.75rem`)  | Regular (400) | 16px (`1.0rem`) | `0` | `font-mono text-xs` |
+### Motion Token Registry
 
----
-
-## 5. Spacing, Sizing & Layout Grid
-
-The layout adheres to a predictable **4px / 0.25rem scale**:
-
-| Token | Pixels | Rem | Typical Usage |
+| Token | Duration | Timing Function | Common Usage |
 | :--- | :--- | :--- | :--- |
-| `0.5` | 2px | `0.125rem` | Micro border offsets, badge gaps |
-| `1` | 4px | `0.25rem` | Icon-to-text spacing, inline tag paddings |
-| `1.5` | 6px | `0.375rem` | Compact button padding vertical |
-| `2` | 8px | `0.5rem` | Standard input vertical padding, item gap |
-| `3` | 12px | `0.75rem` | Input horizontal padding, card content padding |
-| `4` | 16px | `1.0rem` | Default component spacing, form row gap |
-| `6` | 24px | `1.5rem` | Section grouping, card internal padding |
-| `8` | 32px | `2.0rem` | Page gutter, large section separators |
-| `12` | 48px | `3.0rem` | Hero margins, major modal spacing |
+| **`--duration-instant`** | `100ms` | `linear` | Button active scale, toggle switches |
+| **`--duration-micro`** | `150ms` | `cubic-bezier(0.4, 0, 0.2, 1)` | Focus rings, hover highlights, tooltip fades |
+| **`--duration-standard`** | `220ms` | `cubic-bezier(0.16, 1, 0.3, 1)` | Card entrances, modal reveals, accordion slides |
+| **`--duration-emphasis`** | `350ms` | `cubic-bezier(0.16, 1, 0.3, 1)` | Celebration checks, modal backdrops |
+| **`--duration-ambient`** | `12s` | `ease-in-out` | Ambient radial glow, mascot idle float |
 
-### Layout Boundaries
-- **Auth & Dialog Max Width:** `440px` (`max-w-md`) centered with responsive gutters.
-- **Content Main Viewport:** Max `1280px` (`max-w-7xl`), centered with `px-4 sm:px-6 lg:px-8`.
-- **Note Reading Width:** Optimal reading line length capped at `720px` (`max-w-prose` or `max-w-2xl`).
+### GPU Acceleration & Performance Guardrails
+- Animating `transform` and `opacity` exclusively.
+- Zero layout thrashing: no continuous animation of `width`, `height`, `top`, `left`, or `box-shadow`.
+- Animations never delay navigation, network requests, or form submission.
 
----
-
-## 6. Border Radius & Shadows
-
-### Corner Radius Hierarchy
-- **`rounded-sm` (4px):** Badges, inline tags, toast messages.
-- **`rounded-md` (6px):** Standard inputs, textareas, dropdown menus, button controls.
-- **`rounded-lg` (8px):** Cards, list panels, modal headers.
-- **`rounded-xl` (12px):** Main modal dialogs, floating panels, auth containers.
-- **`rounded-full` (9999px):** User avatars, status pills, circular icon buttons.
-
-### Elevation & Shadows
-We favor **border hierarchy over heavy drop-shadows**:
-- **Flat (Default):** `border border-slate-200 dark:border-slate-800` (No shadow).
-- **Subtle Elevation (`shadow-sm`):** Form containers, active note cards (`0 1px 2px 0 rgb(0 0 0 / 0.05)`).
-- **Overlay Elevation (`shadow-lg`):** Modals, popovers, dropdown menus (`0 10px 15px -3px rgb(0 0 0 / 0.1)`).
+### Mandatory Accessibility: Reduced Motion
+Under `@media (prefers-reduced-motion: reduce)`:
+- All ambient loops (`animate-ambient-glow`, `animate-mascot-float`) are completely halted.
+- Translating keyframe entrances collapse to immediate static rendering (`opacity: 1`, `transform: none`).
+- Semantic state indicators (focus rings, error messages, loading spinners) remain fully functional and visible.
 
 ---
 
-## 7. Component Interaction States
+## 4. Original Wise Cat Mascot System
 
-Every interactive element MUST support 8 standardized states:
+The **Wise Cat** is an original vector-based academic mascot providing emotional resonance and clarity across states:
 
-1. **Default:** Stable visual baseline; clearly affords clickability via cursor or clear contrast.
-2. **Hover:** Gentle contrast adjustment (`hover:bg-slate-50`, `hover:border-slate-300`) over 150ms.
-3. **Focus-Visible:** Prominent, uninterrupted 2px ring with 2px offset (`focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`).
-4. **Active (Pressed):** Subtle tactile feedback (`active:scale-[0.99]` or `active:bg-slate-200`).
-5. **Disabled:** Visual de-emphasis (`opacity-50 cursor-not-allowed pointer-events-none`) while retaining readable contrast.
-6. **Loading:** Disabled state coupled with an inline spinner; retains width to avoid layout shift (CLS = 0).
-7. **Error / Invalid:** Bold 1px error border (`border-red-500`), paired with `aria-invalid="true"` and an adjacent text error.
-8. **Success / Valid:** Subtle emerald border or badge indicator affirming completion.
+### Design Language
+- Clean geometric silhouettes rendered in academic navy/slate with subtle warm lotus-pink ear accents (`#F43F5E`).
+- Intellectual rounded-square spectacles with clean bridge.
+- Academic mortarboard cap with golden tassel.
+- Contextual state props: books, student credentials, hourglass nodes, compass/gear tools.
 
----
+### Supported States
 
-## 8. Accessibility Requirements (WCAG 2.2 AA Compliance)
+| State | Contextual Page / Flow | Visual Behavior | Accessibility Name |
+| :--- | :--- | :--- | :--- |
+| **`welcome`** | `/login`, `/`, Workspace Shell | Holds student ID / notebook with lotus dot; friendly gaze | "Wise Cat greeting student warmly" |
+| **`reading`** | `/register`, Study flows | Eyes lowered, reading open academic notebook | "Wise Cat focused on academic reading" |
+| **`loading`** | Asynchronous operations | Orbiting CS knowledge nodes / hourglass | "Wise Cat thinking and processing knowledge" |
+| **`success`** | Post-action confirmations | Cheerful curved eyes with golden star sparkle | "Wise Cat celebrating successful action" |
+| **`verification`**| `/forgot-password`, Email warning | Holds academic credential envelope with wax seal | "Wise Cat holding verification credential" |
+| **`settings`** | `/settings/*` | Holds drafting gear / compass badge | "Wise Cat organizing system preferences" |
 
-1. **Contrast Ratio:** Minimum `4.5:1` for standard text and `3:1` for essential UI borders and large headings.
-2. **Accessible Authentication:**
-   - Allow clipboard paste on all credential inputs (`onPaste` prevention is prohibited).
-   - Integrate programmatic `autocomplete` attributes (`email`, `current-password`, `new-password`).
-   - Offer password visibility toggle button with programmatic `aria-label`.
-3. **Form Error Accessibility:**
-   - Every input has a linked `<label htmlFor="id">`.
-   - Field errors are linked via `aria-describedby="field-error-id"`.
-   - When a form submission fails, programmatic focus is transferred to the top-level error summary (`role="alert"`).
-4. **Keyboard Operability:**
-   - Full tab-index traversal across all inputs and buttons.
-   - Escape key closes modals and popovers, restoring focus to the triggering element.
-5. **Touch Targets:** Minimum `44px × 44px` interactive area on mobile devices (`sm:h-10 h-11`).
-6. **Motion Sensitivity:** All transitions wrapped in `@media (prefers-reduced-motion: reduce)` to disable non-essential animations.
+### Planned Future States (Post-Phase 2)
+- `writing`: Pen/pencil drafting posture for Note editor.
+- `search`: Magnifying glass over node graph for Global search.
+- `ai`: Neural sparkle antenna for AI note synthesis.
+- `offline`: Cozy asleep posture on book for Offline draft cache.
 
 ---
 
-## 9. Primitive Component Contract
+## 5. Screen Layout & Composed Architectures
 
-The following 12 core primitives constitute the project's atomic building blocks (implemented in React + Tailwind CSS):
+### 1. Authentication Split Layout (`/login`, `/register`, etc.)
+- **Desktop (`lg`+):** Composed two-column split layout:
+  - **Left Pane (45%):** Academic Light atmospheric illumination, brand identity badge, Wise Cat mascot, product philosophy bullet points, and independent student project disclaimer.
+  - **Right Pane (55%):** Centered high-contrast card (`max-w-md`) containing title, subtitle, form fields, and auxiliary navigation.
+- **Mobile (`< 1024px`):** Single-column form-first layout with compact header, mini mascot, and zero horizontal scroll.
 
-### 1. `Button`
-- **Purpose:** Primary user actions, form submissions, inline dialog confirmations.
-- **Variants:** `primary` (solid blue), `secondary` (subtle gray border), `ghost` (transparent text-only), `danger` (solid or outline red).
-- **Sizes:** `sm` (h-8, px-2.5, text-xs), `md` (h-10, px-4, text-sm), `lg` (h-12, px-6, text-base).
-- **States:** Default, hover, focus-visible, active, disabled, loading (with SVG spinner).
-- **Accessibility:** Native `<button type="...">`, `aria-busy` during loading, `aria-disabled` when inactive.
+### 2. Authenticated Workspace Shell (`/`)
+- Persistent top bar with brand badge, avatar with initials fallback, user display name, settings shortcut, and sign-out button.
+- Warning banner for unverified accounts (`role="status"`, amber semantics).
+- Hero card with student welcome greeting and `welcome` mascot state.
+- Runtime Foundation Diagnostics card verifying backend API and database connectivity.
+- Clearly labeled Phase 2 boundary note confirming notes and AI modules are scheduled for subsequent milestones.
 
-### 2. `Input`
-- **Purpose:** Single-line alphanumeric text and email entry.
-- **Variants:** `default`, `error` (red border).
-- **Accessibility:** Explicit `id`, programmatic label link, `aria-invalid`, `aria-describedby`.
-
-### 3. `PasswordInput`
-- **Purpose:** Secure password entry with optional visibility toggle.
-- **Contract:** Includes embedded visibility eye icon button (`type="button"`, `aria-label="Show password"` / `aria-label="Hide password"`).
-
-### 4. `FormField`
-- **Purpose:** Composed wrapper providing vertical alignment for `Label`, control child, and `ErrorMessage`.
-- **Contract:** Generates stable unique IDs linking `label` and `aria-describedby` helper/error elements.
-
-### 5. `Alert`
-- **Purpose:** High-visibility banner for critical alerts (form validation errors, success confirmations, auth warnings).
-- **Variants:** `info` (blue), `success` (green), `warning` (amber), `error` (red).
-- **Accessibility:** `role="alert"` or `role="status"`, includes descriptive icon + text.
-
-### 6. `Card`
-- **Purpose:** Surface container for notes, profile sections, and authentication dialogs.
-- **Variants:** `flat` (border only), `elevated` (border + shadow-sm), `interactive` (hover border highlight).
-
-### 7. `Badge`
-- **Purpose:** Compact status indicator (sync state, shared tag, role indicator).
-- **Variants:** `neutral` (slate), `success` (emerald), `warning` (amber), `danger` (rose), `info` (blue).
-
-### 8. `Avatar`
-- **Purpose:** User representation in top navigation, collaboration badges, and account profile settings.
-- **Contract:** Supports image URL with fallback to 2-letter user initials (e.g., "KF" on slate background).
-
-### 9. `Spinner`
-- **Purpose:** Indeterminate progress indicator for asynchronous actions.
-- **Contract:** Pure SVG spinner, uses `animate-spin`, includes screen-reader-only text `<span className="sr-only">Loading...</span>`.
-
-### 10. `Skeleton`
-- **Purpose:** Content placeholder mimicking text and card lines during initial fetch, preventing layout shift.
-- **Contract:** Shimmering gray block (`bg-slate-200 dark:bg-slate-800 animate-pulse rounded`).
-
-### 11. `Modal`
-- **Purpose:** Focused user interaction overlay (confirmation dialogs, note protection prompt).
-- **Contract:** Accessible focus trap, backdrop blur/tint, `Escape` key close, focus restore on unmount.
-
-### 12. `Toast`
-- **Purpose:** Ephemeral non-blocking notifications (e.g., "Note autosaved", "Link copied to clipboard").
-- **Accessibility:** Rendered in an `aria-live="polite"` viewport container.
+### 3. Account Settings Workspace (`/settings/*`)
+- Persistent sub-navigation tabs: **Profile**, **Security**, **Preferences**.
+- Mascot in `settings` state.
+- Profile tab: Avatar upload with hover/focus affordance, live preview, removal button, display name and email editing.
+- Security tab: Current password verification, new password with confirmation, and password visibility toggles.
+- Preferences tab: Theme selector (System, Light, Dark) with immediate local toggle and default note view mode (Grid, List).
 
 ---
 
-## 10. Responsive Breakpoint Matrix
+## 6. Accessibility & Compliance Verification
 
-The application layout explicitly adapts across 4 distinct viewport tiers:
-
-| Breakpoint | Target Device | Layout Strategy |
-| :--- | :--- | :--- |
-| **`375px` (`< 640px`)** | Mobile Phone | Single-column vertical flow, full-width inputs and buttons, bottom-sheet overlays, minimum 44px touch targets. |
-| **`768px` (`sm` / `md`)** | Tablet & Foldables | Compact side navigation drawer, 2-column note masonry/grid, floating action buttons. |
-| **`1024px` (`lg`)** | Laptop / Desktop | Persistent collapsible sidebar, 3-column note grid, split-pane note editor/preview. |
-| **`1440px` (`xl` / `2xl`)| Widescreen Monitor | Max-width content constraint (`1280px`), comfortable reading line widths, multi-panel inspector. |
+- **WCAG 2.2 AA Compliance:** High contrast text (> 4.5:1), visible 2px focus rings (`ring-2 ring-blue-500 ring-offset-2`), programmatic label associations (`for`/`id`), and `aria-describedby` error bindings.
+- **Accessible Authentication:** Native clipboard paste allowed, standard autocomplete attributes (`email`, `current-password`, `new-password`), zero cognitive-test barriers.
+- **Screen Reader Support:** Live status regions (`aria-live="polite"`), `role="status"` on verification alerts, descriptive `aria-label` on mascot states.

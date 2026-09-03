@@ -8,8 +8,12 @@ import { ApiError } from '../../lib/api/client';
 export const PreferencesSettingsPage: React.FC = () => {
   const { preference, updatePreference } = useAuth();
 
-  const [theme, setTheme] = useState<'system' | 'light' | 'dark'>(preference?.theme || 'system');
-  const [defaultNoteView, setDefaultNoteView] = useState<'grid' | 'list'>(preference?.default_note_view || 'grid');
+  const [themeInput, setThemeInput] = useState<'system' | 'light' | 'dark' | null>(null);
+  const [viewInput, setViewInput] = useState<'grid' | 'list' | null>(null);
+
+  const theme = themeInput !== null ? themeInput : preference?.theme || 'system';
+  const defaultNoteView = viewInput !== null ? viewInput : preference?.default_note_view || 'grid';
+
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
@@ -74,7 +78,7 @@ export const PreferencesSettingsPage: React.FC = () => {
                   name="theme"
                   value={t}
                   checked={theme === t}
-                  onChange={() => setTheme(t)}
+                  onChange={() => setThemeInput(t)}
                   className="sr-only"
                 />
                 <span className="capitalize text-sm font-medium">{t}</span>
@@ -115,7 +119,7 @@ export const PreferencesSettingsPage: React.FC = () => {
                   name="defaultNoteView"
                   value={v}
                   checked={defaultNoteView === v}
-                  onChange={() => setDefaultNoteView(v)}
+                  onChange={() => setViewInput(v)}
                   className="sr-only"
                 />
                 <span className="capitalize text-sm font-medium">{v} View</span>

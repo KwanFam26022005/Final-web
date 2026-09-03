@@ -4,6 +4,7 @@ import { useAuth } from '../context';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { EmailVerificationBanner } from '../components/auth/EmailVerificationBanner';
+import { WiseCat } from '../components/mascot/WiseCat';
 import { apiClient } from '../lib/api/client';
 
 interface HealthResponse {
@@ -60,21 +61,33 @@ export const WorkspacePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-      {/* Top navigation header */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-academic-light text-slate-900 dark:text-slate-100 flex flex-col">
+      {/* -------------------------------------------------------------------- */}
+      {/* Top Academic Light Navigation Header                                 */}
+      {/* -------------------------------------------------------------------- */}
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200/80 dark:border-slate-800/80 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between sticky top-0 z-20">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
-            N
-          </div>
-          <span className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">
-            Collaborative Intelligent Note Management
-          </span>
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-8 h-8 rounded-lg bg-blue-900 dark:bg-blue-600 flex items-center justify-center text-white font-bold text-sm relative shadow-sm transition-transform group-hover:scale-105">
+              N
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 border border-white dark:border-slate-900" />
+            </div>
+            <span className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base tracking-tight hidden sm:inline">
+              Collaborative Intelligent Note Management
+            </span>
+            <span className="font-semibold text-slate-900 dark:text-white text-sm sm:hidden tracking-tight">
+              Final-web
+            </span>
+          </Link>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-600">
+            <Link
+              to="/settings/profile"
+              className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-700 hover:ring-2 hover:ring-blue-500/30 transition-all"
+              title="View profile settings"
+            >
               {user?.avatar_url ? (
                 <img
                   src={user.avatar_url}
@@ -85,7 +98,7 @@ export const WorkspacePage: React.FC = () => {
               ) : (
                 <span data-testid="header-avatar-initials">{getInitials(user?.display_name || '')}</span>
               )}
-            </div>
+            </Link>
 
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-slate-900 dark:text-white" data-testid="user-display-name">
@@ -99,7 +112,7 @@ export const WorkspacePage: React.FC = () => {
 
           <Link
             to="/settings/profile"
-            className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+            className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             data-testid="settings-nav-link"
           >
             Settings
@@ -111,6 +124,7 @@ export const WorkspacePage: React.FC = () => {
             onClick={handleLogout}
             isLoading={isLoggingOut}
             data-testid="logout-button"
+            className="shadow-2xs"
           >
             Sign out
           </Button>
@@ -120,108 +134,133 @@ export const WorkspacePage: React.FC = () => {
       {/* Verification Banner */}
       <EmailVerificationBanner />
 
-      {/* Main Workspace Area */}
-      <main className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Welcome, {user?.display_name}!
-            </h1>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Phase 2 Authenticated Workspace Shell
-            </p>
-          </div>
+      {/* -------------------------------------------------------------------- */}
+      {/* Main Workspace Surface                                               */}
+      {/* -------------------------------------------------------------------- */}
+      <main className="flex-1 max-w-5xl w-full mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6">
+        {/* Academic Light Welcome Hero Banner */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xs relative overflow-hidden animate-entrance">
+          {/* Subtle Ambient Accent */}
+          <div
+            className="absolute top-0 right-0 w-80 h-80 rounded-full bg-blue-500/5 dark:bg-blue-500/10 blur-3xl pointer-events-none"
+            aria-hidden="true"
+          />
 
-          <div className="flex gap-2">
-            <Link
-              to="/settings/profile"
-              className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
-            >
-              Account Settings &rarr;
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card variant="elevated" className="p-6 dark:bg-slate-800 dark:border-slate-700">
-            <h2 className="text-base font-semibold text-slate-900 dark:text-white mb-4">
-              Session & Account Info
-            </h2>
-            <dl className="space-y-3 text-sm">
-              <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700">
-                <dt className="text-slate-500 dark:text-slate-400">Display Name</dt>
-                <dd className="font-medium text-slate-900 dark:text-white">{user?.display_name}</dd>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-200/60 dark:border-blue-900">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                Academic Light &bull; Living Knowledge
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700">
-                <dt className="text-slate-500 dark:text-slate-400">Email Address</dt>
-                <dd className="font-medium text-slate-900 dark:text-white">{user?.email}</dd>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700">
-                <dt className="text-slate-500 dark:text-slate-400">Authentication</dt>
-                <dd className="font-medium text-emerald-600 dark:text-emerald-400">Sanctum First-Party SPA</dd>
-              </div>
-              <div className="flex justify-between py-1">
-                <dt className="text-slate-500 dark:text-slate-400">Email Status</dt>
-                <dd className="font-medium text-slate-600 dark:text-slate-300">
-                  {user?.email_verified_at ? (
-                    <span className="text-emerald-600 dark:text-emerald-400">Verified</span>
-                  ) : (
-                    <span className="text-amber-600 dark:text-amber-400">Unverified</span>
-                  )}
-                </dd>
-              </div>
-            </dl>
-          </Card>
-
-          <Card variant="elevated" className="p-6 dark:bg-slate-800 dark:border-slate-700">
-            <h2 className="text-base font-semibold text-slate-900 dark:text-white mb-4">
-              Runtime Foundation Diagnostics
-            </h2>
-            <ul className="space-y-3 text-sm">
-              <li
-                data-testid="backend-status-row"
-                className="flex items-center justify-between py-2 px-3 rounded-md bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
-              >
-                <span className="font-medium text-slate-700 dark:text-slate-300">Backend API</span>
-                <span
-                  data-testid="backend-status-badge"
-                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                    backendStatus === 'ok'
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300'
-                      : backendStatus === 'loading'
-                      ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
-                  }`}
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                Welcome, {user?.display_name}!
+              </h1>
+              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed">
+                Phase 2 Authenticated Workspace Shell. Your secure personal account lifecycle is active, grounded in first-party session authorization and privacy.
+              </p>
+              <div className="pt-2">
+                <Link
+                  to="/settings/profile"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
                 >
-                  {backendStatus === 'ok' ? 'Online' : backendStatus === 'loading' ? 'Checking...' : 'Offline'}
-                </span>
-              </li>
-
-              <li
-                data-testid="database-status-row"
-                className="flex items-center justify-between py-2 px-3 rounded-md bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
-              >
-                <span className="font-medium text-slate-700 dark:text-slate-300">Database Engine</span>
-                <span
-                  data-testid="database-status-badge"
-                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                    dbStatus === 'ok'
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300'
-                      : dbStatus === 'loading'
-                      ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
-                  }`}
-                >
-                  {dbStatus === 'ok' ? 'Connected' : dbStatus === 'loading' ? 'Checking...' : 'Offline'}
-                </span>
-              </li>
-            </ul>
-
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 rounded-lg text-xs text-blue-800 dark:text-blue-300">
-              Notes management, categorization, collaboration, and AI modules are scheduled for subsequent milestones.
+                  Account Settings &rarr;
+                </Link>
+              </div>
             </div>
-          </Card>
+
+            <div className="flex-shrink-0 animate-mascot-float">
+              <WiseCat state="welcome" size="lg" />
+            </div>
+          </div>
         </div>
+
+        {/* Account Details & Session Card */}
+        <Card variant="elevated" className="p-6 dark:bg-slate-900 dark:border-slate-800">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <span>Session &amp; Account Info</span>
+          </h2>
+
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+              <dt className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Display Name</dt>
+              <dd className="mt-1 font-semibold text-slate-900 dark:text-white">{user?.display_name}</dd>
+            </div>
+
+            <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+              <dt className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Address</dt>
+              <dd className="mt-1 font-semibold text-slate-900 dark:text-white">{user?.email}</dd>
+            </div>
+
+            <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+              <dt className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Authentication</dt>
+              <dd className="mt-1 font-semibold text-slate-900 dark:text-white">Sanctum First-Party SPA</dd>
+            </div>
+
+            <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+              <dt className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Status</dt>
+              <dd className="mt-1 font-semibold text-slate-900 dark:text-white">
+                {user?.email_verified_at ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                    Verified
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                    Unverified
+                  </span>
+                )}
+              </dd>
+            </div>
+          </dl>
+        </Card>
+
+        {/* Phase 2 Scoped Architecture & Runtime Diagnostics */}
+        <Card variant="elevated" className="p-6 dark:bg-slate-900 dark:border-slate-800">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-white mb-4">
+            Runtime Foundation Diagnostics
+          </h2>
+
+          <div className="space-y-3">
+            <div
+              className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40"
+              data-testid="backend-status-row"
+            >
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Backend API</span>
+              {backendStatus === 'loading' ? (
+                <span className="text-xs text-slate-400">Checking...</span>
+              ) : backendStatus === 'ok' ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" /> Connected
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+                  <span className="w-2 h-2 rounded-full bg-red-500" /> Unavailable
+                </span>
+              )}
+            </div>
+
+            <div
+              className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40"
+              data-testid="database-status-row"
+            >
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Database Engine</span>
+              {dbStatus === 'loading' ? (
+                <span className="text-xs text-slate-400">Checking...</span>
+              ) : dbStatus === 'ok' ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" /> Connected
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+                  <span className="w-2 h-2 rounded-full bg-red-500" /> Unavailable
+                </span>
+              )}
+            </div>
+          </div>
+
+          <p className="mt-4 text-xs text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-3">
+            Notes management, categorization, collaboration, and AI modules are scheduled for subsequent milestones.
+          </p>
+        </Card>
       </main>
     </div>
   );
