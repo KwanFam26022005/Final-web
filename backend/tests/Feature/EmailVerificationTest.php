@@ -161,12 +161,12 @@ class EmailVerificationTest extends DatabaseTestCase
     {
         $user = User::factory()->unverified()->create();
 
-        // Limit is 30 requests per minute
-        for ($i = 0; $i < 30; $i++) {
+        // Limit is 5 requests per minute
+        for ($i = 0; $i < 5; $i++) {
             $this->actingAs($user)->postJson('/api/auth/email/resend')->assertStatus(200);
         }
 
-        // 31st request must be throttled with HTTP 429
+        // 6th request must be throttled with HTTP 429
         $response = $this->actingAs($user)->postJson('/api/auth/email/resend');
         $response->assertStatus(429);
     }

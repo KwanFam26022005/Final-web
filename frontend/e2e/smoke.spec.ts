@@ -142,10 +142,11 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
   });
 
   test('6. E: forgot-password UI -> generic completion state', async ({ page }) => {
+    const email = `recover_${Date.now()}@example.com`;
     await page.goto('/forgot-password');
 
     await expect(page.getByRole('heading', { name: /reset your password/i })).toBeVisible();
-    await page.getByLabel(/email address/i).fill('anyone@example.com');
+    await page.getByLabel(/email address/i).fill(email);
     await page.getByRole('button', { name: /send reset link/i }).click();
 
     await expect(page.getByTestId('forgot-password-success')).toBeVisible();
@@ -171,5 +172,50 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
 
     await expect(page.locator('body')).not.toContainText('PDOException');
     await expect(page.locator('body')).not.toContainText('SQLSTATE');
+  });
+
+  test('8. F: responsive auth smoke verifies mobile layout adapts cleanly without horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/login');
+
+    await expect(page.getByRole('heading', { name: /sign in to your account/i })).toBeVisible();
+    await expect(page.getByLabel(/email address/i)).toBeVisible();
+    await expect(page.getByLabel(/^password/i)).toBeVisible();
+
+    // Verify no horizontal overflow on mobile
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
+  });
+
+  test('9. G: settings navigation switches between profile, security, and preferences seamlessly', async ({ page }) => {
+    const user = {
+      displayName: 'Nav Candidate',
+      email: `nav_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@example.com`,
+      password: 'Password123!',
+    };
+
+    await page.goto('/register');
+    await page.getByLabel(/display name/i).fill(user.displayName);
+    await page.getByLabel(/email address/i).fill(user.email);
+    await page.getByLabel(/^password/i).fill(user.password);
+    await page.getByLabel(/confirm password/i).fill(user.password);
+    await page.getByRole('button', { name: /create account/i }).click();
+    await expect(page).toHaveURL('/');
+
+    // Navigate to settings
+    await page.goto('/settings/profile');
+    await expect(page).toHaveURL(/\/settings\/profile/);
+    await expect(page.getByRole('heading', { name: /account settings/i })).toBeVisible();
+
+    // Switch to Security
+    await page.getByRole('link', { name: /security/i }).click();
+    await expect(page).toHaveURL(/\/settings\/security/);
+    await expect(page.getByRole('button', { name: /update password/i })).toBeVisible();
+
+    // Switch to Preferences
+    await page.getByRole('link', { name: /preferences/i }).click();
+    await expect(page).toHaveURL(/\/settings\/preferences/);
+    await expect(page.getByRole('button', { name: /save preferences/i })).toBeVisible();
   });
 });

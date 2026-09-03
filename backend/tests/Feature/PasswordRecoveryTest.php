@@ -126,14 +126,14 @@ class PasswordRecoveryTest extends DatabaseTestCase
 
     public function test_forgot_password_is_rate_limited(): void
     {
-        // Limit is 30 requests per minute
-        for ($i = 0; $i < 30; $i++) {
+        // Limit is 5 requests per minute
+        for ($i = 0; $i < 5; $i++) {
             $this->postJson('/api/auth/forgot-password', [
                 'email' => 'throttle@example.com',
             ])->assertStatus(200);
         }
 
-        // 31st request must return 429
+        // 6th request must return 429
         $response = $this->postJson('/api/auth/forgot-password', [
             'email' => 'throttle@example.com',
         ]);

@@ -24,15 +24,15 @@ This matrix establishes end-to-end traceability between project requirements, ta
 | **DEPLOY-01** | Phase 1 / 6 / 10 | TECHNICAL SUPPORTING REQUIREMENT | Docker Compose Orchestration | `docker-compose config` / validation | Core containerized stack (frontend, backend, MySQL) in Phase 1; Reverb in Phase 6 | PLANNED |
 | **DEPLOY-02** | Phase 1 & 10 | TECHNICAL SUPPORTING REQUIREMENT | Automated CI Pipeline | GitHub Actions workflow execution | Phase 1 CI baseline (lint/tests); Phase 10 production verification | PLANNED |
 | **DEPLOY-03** | Phase 10 | MANDATORY COURSE REQUIREMENT | Public Demonstration Target | Deployment health check probe | Public URL returns 200 OK with fully operational features | PLANNED |
-| **ACC-01** | Phase 2 | MANDATORY COURSE REQUIREMENT | Mandatory Session Auth | `AuthMiddlewareTest` (401 on unauth) | Unauthenticated navigation redirects immediately to `/login` | PLANNED |
-| **ACC-02** | Phase 2 | MANDATORY COURSE REQUIREMENT | User Registration & Auto-Login | `RegisterControllerTest` | Registration form (email, name, password, confirmation) auto-logs in | PLANNED |
-| **ACC-03** | Phase 2 | MANDATORY COURSE REQUIREMENT | Secure Password Hashing | `PasswordHashingTest` (Bcrypt check) | Database inspection proves bcrypt (`$2y$`); plaintext never stored | PLANNED |
-| **ACC-04** | Phase 2 | MANDATORY COURSE REQUIREMENT | Email Activation & Warning Banner | `EmailVerificationTest` | Activation email sent; unverified users see persistent warning banner | PLANNED |
-| **ACC-05** | Phase 2 | MANDATORY COURSE REQUIREMENT | Profile & Avatar Upload | `ProfileUpdateTest` | User edits display name and uploads avatar image | PLANNED |
-| **ACC-06** | Phase 2 | MANDATORY COURSE REQUIREMENT | Change Password | `ChangePasswordTest` | Password changed successfully requiring current password check | PLANNED |
-| **ACC-07** | Phase 2 | MANDATORY COURSE REQUIREMENT | User Preferences Persistence | `UserPreferencesTest` | User toggles theme/view mode; preference persists across reload | PLANNED |
-| **ACC-08** | Phase 2 | MANDATORY COURSE REQUIREMENT | Password Recovery Flow | `PasswordResetTest` | Reset via link or OTP; user is NOT auto-logged in and logs in manually | PLANNED |
-| **ACC-09** | Phase 2 | TECHNICAL SUPPORTING REQUIREMENT | Sanctum SPA Cookie Auth | `SanctumCsrfTest` | Network inspection verifies HTTP-only cookie session and CSRF token | PLANNED |
+| **ACC-01** | Phase 2 | MANDATORY COURSE REQUIREMENT | Mandatory Session Auth | `AuthTest` (401 on unauth) & Playwright Test 1 | Unauthenticated navigation redirects immediately to `/login` | **VERIFIED** |
+| **ACC-02** | Phase 2 | MANDATORY COURSE REQUIREMENT | User Registration & Auto-Login | `AuthTest` & Playwright Test 2 | Registration form (email, name, password, confirmation) auto-logs in | **VERIFIED** |
+| **ACC-03** | Phase 2 | MANDATORY COURSE REQUIREMENT | Secure Password Hashing | `AuthTest` & `PasswordChangeTest` | Database inspection proves bcrypt (`$2y$`); plaintext never stored | **VERIFIED** |
+| **ACC-04** | Phase 2 | MANDATORY COURSE REQUIREMENT | Email Activation & Warning Banner | `EmailVerificationTest` & Playwright Test 2 | Activation email sent; unverified users see persistent warning banner | **VERIFIED** |
+| **ACC-05** | Phase 2 | MANDATORY COURSE REQUIREMENT | Profile & Avatar Upload | `ProfileTest` & `AvatarTest` & Playwright Test 3 | User edits display name and uploads avatar image with initials fallback | **VERIFIED** |
+| **ACC-06** | Phase 2 | MANDATORY COURSE REQUIREMENT | Change Password | `PasswordChangeTest` & Playwright Test 4 | Password changed successfully requiring current password check; session regenerated | **VERIFIED** |
+| **ACC-07** | Phase 2 | MANDATORY COURSE REQUIREMENT | User Preferences Persistence | `PreferenceTest` & Playwright Test 5 | User toggles theme/view mode; preference persists across reload | **VERIFIED** |
+| **ACC-08** | Phase 2 | MANDATORY COURSE REQUIREMENT | Password Recovery Flow | `PasswordRecoveryTest` & Playwright Test 6 | Reset via link; user is NOT auto-logged in and logs in manually | **VERIFIED** |
+| **ACC-09** | Phase 2 | TECHNICAL SUPPORTING REQUIREMENT | Sanctum SPA Cookie Auth | `AuthTest` & Playwright hermetic runs | Network inspection verifies HTTP-only cookie session and CSRF token | **VERIFIED** |
 | **NOTE-01** | Phase 3 | MANDATORY COURSE REQUIREMENT | Grid / List View Toggle | Vitest `NotesViewToggle.test.tsx` | Dashboard renders Grid by default; toggle switches cleanly to List | PLANNED |
 | **NOTE-02** | Phase 3 | MANDATORY COURSE REQUIREMENT | Shared Interaction Model | Vitest `NoteEditorModal.test.tsx` | Identical unified editor interaction model for creating and editing | PLANNED |
 | **NOTE-03** | Phase 3 | MANDATORY COURSE REQUIREMENT | Required Title & Content | `NoteValidationTest` (422 response) | Validation errors displayed when attempting to save empty fields | PLANNED |
@@ -70,4 +70,4 @@ This matrix establishes end-to-end traceability between project requirements, ta
 | **SEC-03** | Phases 2–9 | MANDATORY COURSE REQUIREMENT | Input Validation & XSS Defense | FormRequest & sanitize tests | Malicious script payloads sanitized; invalid inputs rejected | PLANNED |
 | **SEC-04** | Phase 4 | MANDATORY COURSE REQUIREMENT | File Upload Security Validation | File upload security tests | Dangerous extensions/MIMEs blocked; storage outside public web root | PLANNED |
 | **SEC-05** | Phase 1 | MANDATORY COURSE REQUIREMENT | Secret Hygiene | Git repository secret scan | No `.env` secrets, credentials, or API keys in version control | **VERIFIED** |
-| **SEC-06** | Phase 2 | MANDATORY COURSE REQUIREMENT | CORS & CSRF Hardening | Security header integration tests | Unauthorized origins blocked; CSRF validation on mutating calls | PLANNED |
+| **SEC-06** | Phase 2 | MANDATORY COURSE REQUIREMENT | CORS & CSRF Hardening | Security header integration tests & named rate limiters | Unauthorized origins blocked; CSRF validation on mutating calls; 5 req/min rate limiters active | **VERIFIED** |
