@@ -29,14 +29,16 @@ The objective of Phase 1 was to establish an uncompromised, reproducible full-st
 | **M5** | Full-stack Integration | `5adc47b` | Cross-origin React → Laravel → MySQL path, `GET /api/health/database`, API client abstraction | **ACCEPTED** |
 | **M6** | Testing & CI | `5ab62a0` | 13 PHPUnit tests, 9 Vitest tests, Playwright smoke test, `.github/workflows/ci.yml` (Run 33725776879) | **ACCEPTED** |
 | **M7** | Docker & Reproducibility | `ae11acd` | `compose.yaml` (mysql + backend + frontend), secret masking, CI Docker runtime (Run 33734842321) | **ACCEPTED** |
-| **M8** | Phase 1 Acceptance / Freeze | *(Current Freeze Candidate)* | Clean-clone reproducibility audit, documentation reconciliation, baseline freeze | **FREEZE CANDIDATE** |
+| **M8** | Phase 1 Acceptance / Freeze | `3a1aba9` (initial freeze), finalized in follow-up docs | Clean-clone reproducibility audit, documentation reconciliation, baseline freeze, CI Run 33736468863 | **ACCEPTED** |
 
 ---
 
 ## 3. Authoritative Baseline Verification
 
-- **Authoritative Main SHA (Pre-M8 Freeze):** `ae11acda477ac0451aef3633a234d7d0ea74a585`
-- **Authoritative Main GitHub Actions CI:** Run ID `33734842321` (All 4 jobs: Backend, Frontend, Playwright E2E, and Docker Runtime passed with `SUCCESS`).
+- **Pre-M8 Foundation SHA:** `ae11acda477ac0451aef3633a234d7d0ea74a585`
+- **M8 Initial Freeze Candidate SHA:** `3a1aba99d374dbabcfaea6d3112768dbabe53ca5`
+- **Authoritative M7 Main GitHub Actions CI:** Run ID `33734842321` (All 4 jobs: Backend, Frontend, Playwright E2E, and Docker Runtime passed with `SUCCESS`).
+- **Authoritative M8 Candidate GitHub Actions CI:** Run ID `33736468863` (All 4 jobs: Backend, Frontend, Playwright E2E, and Docker Runtime passed with `SUCCESS`).
 
 ### Core Automated Test Baselines:
 - **Backend Test Suite (PHPUnit):** 13 passed, 0 failed, 41 assertions.
@@ -64,7 +66,7 @@ The objective of Phase 1 was to establish an uncompromised, reproducible full-st
 
 ## 5. Docker Reproducibility & Host Platform Note
 
-- **Compose Specification:** Root [`compose.yaml`](file:///D:/Projects/Web-final/compose.yaml) defining `mysql` (8.4), `backend` (PHP 8.3 CLI), and `frontend` (Nginx static SPA).
+- **Compose Specification:** Root [`compose.yaml`](../compose.yaml) defining `mysql` (8.4), `backend` (PHP 8.3 CLI), and `frontend` (Nginx static SPA).
 - **Network Isolation:** MySQL does not bind port 3306 on the host; communication occurs strictly over the internal bridge network (`DB_HOST=mysql`).
 - **Secret Hardening:** Required-variable syntax (`:?`) used for all sensitive credentials (`APP_KEY`, `MYSQL_ROOT_PASSWORD`, `DB_PASSWORD`). Ephemeral secrets are masked via GitHub Actions `::add-mask::` during automated validation.
 - **Host Docker Engine Status:** On the local development Windows host, the Docker Desktop daemon service is inactive/stopped. Standalone `docker-compose` v2.39.4 validates syntax via `docker-compose --env-file .env.docker.example config --quiet`. Authoritative Docker runtime execution was proven end-to-end on GitHub Actions Ubuntu hosted runners (Run `33734842321`).
@@ -105,3 +107,5 @@ With all acceptance criteria met, all automated quality gates green, and clean-c
 
 The next authorized implementation phase is:
 **Phase 2 — Authentication and Account Management** (Sanctum authentication, registration, login, logout, password recovery, profile management, and account settings).
+
+> **Notice:** Phase 2 implementation has NOT started.

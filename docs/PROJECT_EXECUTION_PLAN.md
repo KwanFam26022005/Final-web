@@ -2,10 +2,10 @@
 
 This document establishes the multi-phase engineering delivery plan for the Collaborative Intelligent Note Management Web Application. Each phase defines discrete objectives, assigned requirement IDs, technical deliverables, and strict exit criteria.
 
-> **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Milestone:** M8 — Phase 1 Acceptance / Freeze (Freeze Candidate)<br>
-> **Next Authorized Phase:** Phase 2 — Authentication and Account Management (Do NOT begin yet)<br>
-> **Rule:** No feature may be promoted or implemented ahead of its designated phase without explicit authorization.
+> **Current Completed Phase:** Phase 1 — Repository and Runtime Foundation<br>
+> **Phase 1 Status:** COMPLETED / FROZEN<br>
+> **Next Authorized Phase:** Phase 2 — Authentication and Account Management (PLANNED / NOT STARTED)<br>
+> **Rule:** No feature may be promoted or implemented ahead of its designated phase without explicit authorization. Phase 2 implementation has NOT started.
 
 ---
 
@@ -48,7 +48,7 @@ flowchart LR
   - **M5 — Full-stack Integration:** Foundation communication chain (React SPA → Laravel REST API → MySQL), read-only DB health endpoint (`GET /api/health/database`), restricted development CORS, centralized API client abstraction, and live full-stack connectivity verification. (*Status: ACCEPTED in commit 5adc47b*)
   - **M6 — Testing & CI:** Backend PHPUnit and frontend Vitest testing pipelines, Playwright Chromium E2E smoke tests, and GitHub Actions CI workflow. (*Status: ACCEPTED in commit 5ab62a0*)
   - **M7 — Docker & Reproducibility:** Reproducible `compose.yaml` baseline for frontend, backend, and MySQL services, validating clean-clone reproducibility. (*Status: ACCEPTED in commit ae11acd*)
-  - **M8 — Phase 1 Acceptance / Freeze:** Formal Phase 1 milestone verification, clean-clone audit, and baseline freeze before proceeding to Phase 2. (*Status: CURRENT / Freeze Candidate*)
+  - **M8 — Phase 1 Acceptance / Freeze:** Formal Phase 1 milestone verification, clean-clone audit, and baseline freeze. (*Status: ACCEPTED in commit 3a1aba9*, finalized in follow-up docs)
 
 - **Historical Step Execution Detail (Audit Trail):**
   - *Step 1 — Baseline Audit:* Read-only audit of local host environment, toolchains, ports, and empty Git repository. (ACCEPTED)
@@ -59,8 +59,8 @@ flowchart LR
   - *Step 6 / M5 — Full-Stack Integration:* Cross-origin communication between React, Laravel, and MySQL. (ACCEPTED in 5adc47b)
   - *Step 7 / M6 — Testing & CI:* Automated test suites and CI pipeline. (ACCEPTED in 5ab62a0)
   - *Step 8 / M7 — Docker & Reproducibility:* Reproducible Docker Compose baseline and CI validation. (ACCEPTED in ae11acd)
-  - *Step 9 / M8 — Phase 1 Acceptance / Freeze:* Audit, clean-clone reproducibility, and foundation freeze. (CURRENT)
-- **Exit Criteria:** `frontend` and `backend` build cleanly; Docker Compose boots core services; CI pipeline passes; test runners execute green baseline tests. (*Status: MET / Phase 1 Freeze Candidate*)
+  - *Step 9 / M8 — Phase 1 Acceptance / Freeze:* Audit, clean-clone reproducibility, and foundation freeze. (ACCEPTED in 3a1aba9)
+- **Exit Criteria:** `frontend` and `backend` build cleanly; Docker Compose boots core services; CI pipeline passes; test runners execute green baseline tests. (*Status: MET / Phase 1 Complete and Frozen*)
 
 ---
 

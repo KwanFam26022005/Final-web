@@ -35,9 +35,10 @@ The platform follows a decoupled **Monorepo** architecture:
 
 ## 3. Current Implementation Status
 
-> **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Milestone:** M8 — Phase 1 Acceptance / Freeze (Freeze Candidate)<br>
-> **Next Authorized Phase:** Phase 2 — Authentication and Account Management (Do NOT begin yet)
+> **Current Completed Phase:** Phase 1 — Repository and Runtime Foundation<br>
+> **Phase 1 Status:** COMPLETED / FROZEN<br>
+> **Next Authorized Phase:** Phase 2 — Authentication and Account Management (PLANNED / NOT STARTED)<br>
+> **Notice:** Phase 2 implementation has NOT started.
 
 ### Phase 1 Milestone Progress:
 - **M1 — Specification & Governance:** ACCEPTED (commit `d08048f`)
@@ -47,7 +48,7 @@ The platform follows a decoupled **Monorepo** architecture:
 - **M5 — Full-stack Integration:** ACCEPTED (commit `5adc47b`)
 - **M6 — Testing & CI:** ACCEPTED (commit `5ab62a0`)
 - **M7 — Docker & Reproducibility:** ACCEPTED (commit `ae11acd`)
-- **M8 — Phase 1 Acceptance / Freeze:** CURRENT (Freeze Candidate)
+- **M8 — Phase 1 Acceptance / Freeze:** ACCEPTED (commit `3a1aba9`, finalized in follow-up docs)
 
 ### Implemented Capabilities:
 - Governance, specification foundation, rubric alignment, security rules, and testing guidelines
@@ -81,8 +82,8 @@ The platform follows a decoupled **Monorepo** architecture:
 | Phase | Description | Status |
 | :--- | :--- | :--- |
 | **Phase 0** | Specification Freeze & Project Decisions | **COMPLETED** |
-| **Phase 1** | Repository & Runtime Foundation | **FREEZE CANDIDATE** (M8 Active; Phase 2 Next) |
-| **Phase 2** | Authentication & Account Management | PLANNED |
+| **Phase 1** | Repository & Runtime Foundation | **COMPLETED / FROZEN** (M1–M8 Accepted) |
+| **Phase 2** | Authentication & Account Management | PLANNED (Not Started) |
 | **Phase 3** | Core Note CRUD, Views & Autosave | PLANNED |
 | **Phase 4** | Labels, Attachments, Search & Pinning | PLANNED |
 | **Phase 5** | Protected Notes & Sharing Authorization | PLANNED |
