@@ -72,5 +72,48 @@ describe('client', () => {
         expect(apiError.message).toContain('Unable to connect to API server');
       }
     });
+    it('sets Content-Type: application/json for JSON POST requests', async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ success: true }),
+      } as Response);
+
+      await apiClient('/api/test', {
+        method: 'POST',
+        body: JSON.stringify({ key: 'value' }),
+      });
+
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        'http://127.0.0.1:8000/api/test',
+        expect.objectContaining({
+          headers: expect.any(Headers),
+        })
+      );
+
+      const calledHeaders = vi.mocked(globalThis.fetch).mock.calls[0][1]?.headers as Headers;
+      expect(calledHeaders.get('Content-Type')).toBe('application/json');
+    });
+
+    it('does not set Content-Type header when body is FormData', async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ success: true }),
+      } as Response);
+
+      const formData = new FormData();
+      formData.append('file', 'mock-content');
+
+      await apiClient('/api/account/avatar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const calledHeaders = vi.mocked(globalThis.fetch).mock.calls[0][1]?.headers as Headers;
+      expect(calledHeaders.get('Content-Type')).toBeNull();
+    });
   });
 });

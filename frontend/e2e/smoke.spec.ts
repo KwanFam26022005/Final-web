@@ -1,13 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Phase 2 Authentication & Infrastructure E2E Tests', () => {
-  const testUser = {
-    displayName: 'Playwright Tester',
-    email: `e2e_${Date.now()}@example.com`,
-    password: 'Password123!',
-  };
-
-  test('A. anonymous visit to / redirects to /login', async ({ page }) => {
+test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
+  test('1. anonymous visit to / redirects to /login', async ({ page }) => {
     await page.goto('/');
 
     await expect(page).toHaveURL(/\/login/);
@@ -16,45 +10,151 @@ test.describe('Phase 2 Authentication & Infrastructure E2E Tests', () => {
     await expect(page.getByLabel(/^password/i)).toBeVisible();
   });
 
-  test('B. user registration auto-authenticates and navigates to protected workspace', async ({ page }) => {
-    await page.goto('/register');
+  test('2. A: register -> authenticated -> verification warning visible', async ({ page }) => {
+    const user = {
+      displayName: 'Verify Candidate',
+      email: `verify_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@example.com`,
+      password: 'Password123!',
+    };
 
+    await page.goto('/register');
     await expect(page.getByRole('heading', { name: /create your account/i })).toBeVisible();
 
-    await page.getByLabel(/display name/i).fill(testUser.displayName);
-    await page.getByLabel(/email address/i).fill(testUser.email);
-    await page.getByLabel(/^password/i).fill(testUser.password);
-    await page.getByLabel(/confirm password/i).fill(testUser.password);
-
+    await page.getByLabel(/display name/i).fill(user.displayName);
+    await page.getByLabel(/email address/i).fill(user.email);
+    await page.getByLabel(/^password/i).fill(user.password);
+    await page.getByLabel(/confirm password/i).fill(user.password);
     await page.getByRole('button', { name: /create account/i }).click();
 
     // Must navigate to protected workspace
     await expect(page).toHaveURL('/');
-    await expect(page.getByTestId('user-display-name')).toHaveText(testUser.displayName);
-    await expect(page.getByTestId('user-email')).toHaveText(testUser.email);
+    await expect(page.getByTestId('user-display-name')).toHaveText(user.displayName);
+    await expect(page.getByTestId('user-email')).toHaveText(user.email);
 
-    // C. user logs out, ending session; protected route subsequently redirects to /login
-    await page.getByTestId('logout-button').click();
-    await expect(page).toHaveURL(/\/login/);
-
-    // Verify navigating to protected route again redirects to /login
-    await page.goto('/');
-    await expect(page).toHaveURL(/\/login/);
+    // Verification warning banner must be visible for new unverified user
+    await expect(page.getByTestId('verification-warning-banner')).toBeVisible();
+    await expect(page.getByTestId('resend-verification-button')).toBeVisible();
   });
 
-  test('D. registered user can log in via /login', async ({ page }) => {
-    await page.goto('/login');
+  test('3. B: profile display name update -> reflected in authenticated workspace/account UI', async ({ page }) => {
+    const user = {
+      displayName: 'Original Profile Name',
+      email: `profile_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@example.com`,
+      password: 'Password123!',
+      updatedDisplayName: 'Updated Profile Name',
+    };
 
-    await page.getByLabel(/email address/i).fill(testUser.email);
-    await page.getByLabel(/^password/i).fill(testUser.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
-
+    // Register new user
+    await page.goto('/register');
+    await page.getByLabel(/display name/i).fill(user.displayName);
+    await page.getByLabel(/email address/i).fill(user.email);
+    await page.getByLabel(/^password/i).fill(user.password);
+    await page.getByLabel(/confirm password/i).fill(user.password);
+    await page.getByRole('button', { name: /create account/i }).click();
     await expect(page).toHaveURL('/');
-    await expect(page.getByTestId('user-display-name')).toHaveText(testUser.displayName);
-    await expect(page.getByTestId('user-email')).toHaveText(testUser.email);
+
+    // Navigate to profile settings
+    await page.goto('/settings/profile');
+    await expect(page.getByTestId('profile-display-name-input')).toHaveValue(user.displayName);
+
+    // Update display name
+    await page.getByTestId('profile-display-name-input').fill(user.updatedDisplayName);
+    await page.getByTestId('save-profile-button').click();
+
+    await expect(page.getByTestId('profile-success-alert')).toBeVisible();
+
+    // Return to workspace and verify updated display name is reflected
+    await page.goto('/');
+    await expect(page.getByTestId('user-display-name')).toHaveText(user.updatedDisplayName);
   });
 
-  test('E. foundation diagnostics route confirms backend and database connectivity', async ({ page }) => {
+  test('4. C: change password -> logout -> old password rejected -> new password login succeeds', async ({ page }) => {
+    const user = {
+      displayName: 'Security Candidate',
+      email: `sec_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@example.com`,
+      password: 'InitialPassword123!',
+      newPassword: 'BrandNewPassword456!',
+    };
+
+    // Register user
+    await page.goto('/register');
+    await page.getByLabel(/display name/i).fill(user.displayName);
+    await page.getByLabel(/email address/i).fill(user.email);
+    await page.getByLabel(/^password/i).fill(user.password);
+    await page.getByLabel(/confirm password/i).fill(user.password);
+    await page.getByRole('button', { name: /create account/i }).click();
+    await expect(page).toHaveURL('/');
+
+    // Navigate to security settings
+    await page.goto('/settings/security');
+    await page.getByTestId('current-password-input').fill(user.password);
+    await page.getByTestId('new-password-input').fill(user.newPassword);
+    await page.getByTestId('confirm-new-password-input').fill(user.newPassword);
+    await page.getByTestId('update-password-button').click();
+
+    await expect(page.getByTestId('security-success-alert')).toBeVisible();
+
+    // Log out
+    await page.getByRole('button', { name: /sign out/i }).click();
+    await expect(page).toHaveURL(/\/login/);
+
+    // Old password must be rejected
+    await page.getByLabel(/email address/i).fill(user.email);
+    await page.getByLabel(/^password/i).fill(user.password);
+    await page.getByRole('button', { name: /sign in/i }).click();
+    await expect(page.getByRole('alert')).toBeVisible();
+
+    // New password must succeed
+    await page.getByLabel(/^password/i).fill(user.newPassword);
+    await page.getByRole('button', { name: /sign in/i }).click();
+    await expect(page).toHaveURL('/');
+    await expect(page.getByTestId('user-display-name')).toHaveText(user.displayName);
+  });
+
+  test('5. D: preferences theme switch -> persisted after navigation/reload', async ({ page }) => {
+    const user = {
+      displayName: 'Theme Candidate',
+      email: `theme_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@example.com`,
+      password: 'Password123!',
+    };
+
+    // Register user
+    await page.goto('/register');
+    await page.getByLabel(/display name/i).fill(user.displayName);
+    await page.getByLabel(/email address/i).fill(user.email);
+    await page.getByLabel(/^password/i).fill(user.password);
+    await page.getByLabel(/confirm password/i).fill(user.password);
+    await page.getByRole('button', { name: /create account/i }).click();
+    await expect(page).toHaveURL('/');
+
+    // Navigate to preferences settings
+    await page.goto('/settings/preferences');
+    await page.getByTestId('theme-option-dark').click();
+    await page.getByTestId('save-preferences-button').click();
+    await expect(page.getByTestId('preferences-success-alert')).toBeVisible();
+
+    // Verify dark class applied to document element
+    await expect(page.locator('html')).toHaveClass(/dark/);
+
+    // Reload page and verify dark theme is persisted from server preferences
+    await page.reload();
+    await expect(page.locator('html')).toHaveClass(/dark/);
+  });
+
+  test('6. E: forgot-password UI -> generic completion state', async ({ page }) => {
+    await page.goto('/forgot-password');
+
+    await expect(page.getByRole('heading', { name: /reset your password/i })).toBeVisible();
+    await page.getByLabel(/email address/i).fill('anyone@example.com');
+    await page.getByRole('button', { name: /send reset link/i }).click();
+
+    await expect(page.getByTestId('forgot-password-success')).toBeVisible();
+    await expect(
+      page.getByText(/if an account exists for this email, a password reset link has been sent/i)
+    ).toBeVisible();
+  });
+
+  test('7. foundation diagnostics route confirms backend and database connectivity', async ({ page }) => {
     await page.goto('/foundation');
 
     await expect(page.locator('h1')).toHaveText('Collaborative Intelligent Note Management');
