@@ -36,8 +36,8 @@ The platform follows a decoupled **Monorepo** architecture:
 ## 3. Current Implementation Status
 
 > **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Step:** Step 4R3 — Database Safety Test Evidence Cleanup (Remediation completed, pending review)<br>
-> **Next Authorized Step:** Step 5 — React Frontend Foundation (Do NOT begin yet)
+> **Current Step:** Step 5 — React Frontend Foundation (Implementation completed, pending review)<br>
+> **Next Authorized Step:** Step 6 — Frontend ↔ Backend ↔ Database Integration (Do NOT begin yet)
 
 ### Implemented:
 - Governance and specification foundation
@@ -53,9 +53,11 @@ The platform follows a decoupled **Monorepo** architecture:
 - MySQL database foundation (MySQL 8.4.3, InnoDB, utf8mb4, dev DB `final_web`, isolated test DB `final_web_test`)
 - Migration repository initialized in both databases with zero domain tables
 - Automated MySQL foundation feature test (`MySqlFoundationTest`) and hardened `DatabaseTestCase` pre-trait lifecycle safety guard
+- Standalone React SPA frontend foundation (`frontend/`, React 19.2.8, Vite 8.2.2, TypeScript 6.0.3, Tailwind CSS 4.3.3)
+- Minimal neutral frontend application shell, build/linting pipeline (`oxlint`), and client environment template (`.env.example`)
 
 ### Not Yet Implemented:
-- Frontend application scaffold (`frontend/`)
+- Frontend ↔ Backend ↔ Database integration (Step 6)
 - Application-domain database schema and migrations (Phase 2+)
 - Authentication and account management
 - Core and advanced note features (CRUD, labels, attachments, search, pinning)
@@ -88,7 +90,7 @@ The platform follows a decoupled **Monorepo** architecture:
 
 ---
 
-## 5. Repository Layout
+## 5. Repository Layout & Development Commands
 
 ### Current Structure:
 ```text
@@ -99,28 +101,35 @@ The platform follows a decoupled **Monorepo** architecture:
 ├── AGENTS.md
 ├── CONTRIBUTING.md
 ├── README.md
-└── docs/
-    ├── ARCHITECTURE_DECISIONS.md
-    ├── GIT_CONTRIBUTION_RULES.md
-    ├── MASTER_REQUIREMENTS.md
-    ├── PROJECT_EXECUTION_PLAN.md
-    ├── RUBRIC_TRACEABILITY.md
-    ├── RUNTIME_BASELINE.md
-    ├── SCOPE_AND_CONSTRAINTS.md
-    ├── SECURITY_RULES.md
-    └── TESTING_GUIDELINES.md
+├── backend/                  # Decoupled Laravel 13 REST API
+│   ├── app/
+│   ├── bootstrap/
+│   ├── config/
+│   ├── database/
+│   ├── routes/
+│   └── tests/
+├── frontend/                 # Decoupled React 19 + Vite SPA
+│   ├── src/
+│   ├── public/
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.ts
+└── docs/                     # Authoritative project specifications
 ```
 
-### Planned Target Structure:
-```text
-.
-├── frontend/             # React + TypeScript + Vite SPA
-├── backend/              # Laravel REST API
-├── docker/               # Custom Docker configuration
-├── docs/                 # Authoritative project specifications
-├── docker-compose.yml    # Development & deployment orchestration
-└── ...
-```
+### Independent Development Commands:
+
+#### Backend (`cd backend`)
+- **Start server:** `php artisan serve --port=8000`
+- **Run tests:** `php artisan test`
+- **Format code:** `php vendor/bin/pint`
+- **Validate Composer:** `composer validate`
+
+#### Frontend (`cd frontend`)
+- **Start dev server:** `npm run dev` (http://127.0.0.1:5173)
+- **Build production bundle:** `npm run build`
+- **Run linter:** `npm run lint`
+- **Preview production build:** `npm run preview`
 
 ---
 

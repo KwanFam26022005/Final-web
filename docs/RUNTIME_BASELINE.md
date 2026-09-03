@@ -17,6 +17,10 @@ This document records the exact results of the read-only, non-destructive baseli
 | **Composer** | `2.9.4` | `C:\laragon\bin\composer\composer.bat` | $\ge 2.7.0$ | Single Composer installation in Laragon. |
 | **MySQL Client** | `8.4.3` | `C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin\mysql.exe` | $\ge 8.0.0$ | Community Server GPL x64 client. |
 | **Laravel Framework** | `13.30.1` | `backend/artisan` | Current Stable ($\ge 11.0.0$) | Resolved in Phase 1 Step 3 (`laravel/framework: v13.30.1`). |
+| **React** | `19.2.8` | `frontend/node_modules/react` | Current Stable ($\ge 18.0.0$) | Resolved in Phase 1 Step 5 (`react`, `react-dom: 19.2.8`). |
+| **Vite** | `8.2.2` | `frontend/node_modules/vite` | Current Stable ($\ge 5.0.0$) | Resolved in Phase 1 Step 5 (`vite: 8.2.2`). |
+| **Tailwind CSS** | `4.3.3` | `frontend/node_modules/tailwindcss` | Current Stable ($\ge 3.4.0$) | Resolved in Phase 1 Step 5 (`@tailwindcss/vite: 4.3.3`). |
+| **TypeScript** | `6.0.3` | `frontend/node_modules/typescript` | Current Stable ($\ge 5.0.0$) | Resolved in Phase 1 Step 5 (`typescript: 6.0.3`). |
 | **Docker CLI** | `28.4.0` | `D:\Docker\resources\bin\docker.exe` | $\ge 26.0.0$ | Host Docker binary. |
 | **Docker Compose**| `v2.39.4-desktop.1` | `D:\Docker\resources\bin\docker-compose.exe` | $\ge 2.20.0$ | Standalone binary works; `docker compose` plugin syntax unlinked. |
 
@@ -69,3 +73,17 @@ The target development ports were inspected via `Get-NetTCPConnection` and `nets
    - **Testing Database:** `final_web_test` (configured via `.env.testing`, protected by test safety guards)
    - **Migration Repository:** Initialized via `php artisan migrate:install` in both databases; zero domain tables present.
    - **Driver Verification:** `PDO` and `pdo_mysql` confirmed active; automated feature tests pass.
+
+8. **React Frontend Foundation (Resolved Phase 1 Step 5):**
+   - **Resolution Date:** 2026-09-03 (Phase 1 Step 5)
+   - **Installed Scaffold:** Vite React TypeScript (`react-ts` template)
+   - **Installed Versions:**
+     - `react`: `19.2.8`
+     - `react-dom`: `19.2.8`
+     - `typescript`: `6.0.3`
+     - `vite`: `8.2.2`
+     - `@vitejs/plugin-react`: `6.1.1`
+     - `tailwindcss`: `4.3.3`
+     - `@tailwindcss/vite`: `4.3.3`
+   - **Host Compatibility:** Validated under Node `v24.18.0` and npm `11.16.0`.
+   - **Validation Evidence:** `npm run build` (`tsc -b && vite build`) and `npm run lint` (`oxlint`) pass cleanly with 0 errors/warnings; local Vite dev server and preview server verified responding with HTTP 200 OK.
