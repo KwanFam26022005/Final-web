@@ -60,3 +60,7 @@ desktop.ini
 *.pid
 *.seed
 *.log
+
+# Python Cache
+__pycache__/
+*.py[cod]
