@@ -3,8 +3,8 @@
 This document establishes the multi-phase engineering delivery plan for the Collaborative Intelligent Note Management Web Application. Each phase defines discrete objectives, assigned requirement IDs, technical deliverables, and strict exit criteria.
 
 > **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Step:** Phase 1 Step 5R — Frontend Starter Artifact Cleanup (Remediation completed, pending orchestrator review)<br>
-> **Next Authorized Step:** Phase 1 Step 6 — Frontend ↔ Backend ↔ Database Integration (Do NOT begin yet)<br>
+> **Current Milestone:** M5 — Full-stack Integration (Implementation completed, pending review)<br>
+> **Next Authorized Milestone:** M6 — Testing & CI (Do NOT begin yet)<br>
 > **Rule:** No feature may be promoted or implemented ahead of its designated phase without explicit authorization.
 
 ---
@@ -40,24 +40,23 @@ flowchart LR
 ### Phase 1: Repository and Runtime Foundation
 - **Target Requirements:** `GIT-01`, `GIT-02`, `DEPLOY-01`, `DEPLOY-02`, `SEC-05`
 - **Objective:** Establish the development environment, version control governance, decoupled scaffolding, containerized baseline, and automated CI foundation.
-- **Detailed Step Sequence:**
-  - **Step 1 — Baseline Audit:** Read-only audit of local host environment, toolchains, ports, and empty Git repository. (*Status: COMPLETED*)
-  - **Step 2 — Governance & Specification Bootstrap:** Initial commit establishing governance policies, ADRs, requirement catalogs, and repository hygiene. (*Status: COMPLETED in commit 881078d*)
-  - **Step 2R — Governance Specification Alignment:** Remediation aligning requirements with rubric (bcrypt, registration/reset contracts, deletion confirmation, metadata exposure, step plan). (*Status: COMPLETED in commit d08048f*)
-  - **Step 3 — Laravel Backend Foundation:** Scaffolding the decoupled Laravel REST API backend, resolving exact stable Laravel version against host PHP 8.3/Composer. (*Status: COMPLETED in commit bafe6e6*)
-  - **Step 3R — Laravel Backend Boundary Cleanup:** Enforcing API-only boundary, removing conflicting nested agent instructions, removing backend frontend toolchains, and updating migration evidence. (*Status: COMPLETED in commit 66d7ef5*)
-  - **Step 4 — MySQL Foundation:** Establishing local database connection, schema migration baseline, and database health verification. (*Status: COMPLETED in commit 57a77a0*)
-  - **Step 4R — Database Contract & Test-Safety Cleanup:** Tightening database documentation boundaries and implementing automatic DatabaseTestCase test safety enforcement. (*Status: COMPLETED in commit 9bb1dea*)
-  - **Step 4R2 — Database Test Lifecycle Safety Hardening:** Hardening DatabaseTestCase to enforce safety guards during setUpTraits() prior to database-mutating trait execution. (*Status: COMPLETED in commit 1500a59*)
-  - **Step 4R3 — Database Safety Test Evidence Cleanup:** Eliminating placeholder assertions and validating controlled RefreshDatabase trait lifecycle order. (*Status: COMPLETED in commit 9841823*)
-  - **Step 5 — React Frontend Foundation:** Scaffolding the React SPA with TypeScript, Vite, and Tailwind CSS. (*Status: COMPLETED in commit e1f748a*)
-  - **Step 5R — Frontend Starter Artifact Cleanup:** Removing unused Vite starter SVGs (icons, favicon) and references. (*Status: CURRENT / starter artifact cleanup completed pending review*)
-  - **Step 6 — Frontend ↔ Backend ↔ Database Integration:** Establishing clean cross-origin communication between React and Laravel. (*Status: PENDING AUTHORIZATION*)
-  - **Step 7 — Testing Foundation:** Establishing backend PHPUnit and frontend Vitest execution pipelines. (*Status: PENDING AUTHORIZATION*)
-  - **Step 8 — Docker Foundation:** Creating reproducible `docker-compose.yml` baseline for frontend, backend, and MySQL services. (*Status: PENDING AUTHORIZATION*)
-  - **Step 9 — GitHub Actions CI Foundation:** Initializing CI workflow to run linters, typechecks, and baseline tests on pull requests. (*Status: PENDING AUTHORIZATION*)
-  - **Step 10 — Clean-Clone Reproducibility Verification:** Validating that a fresh checkout builds and passes tests out-of-the-box. (*Status: PENDING AUTHORIZATION*)
-  - **Step 11 — Phase 1 Freeze:** Freezing foundation baseline before proceeding to Phase 2. (*Status: PENDING AUTHORIZATION*)
+- **Primary Milestone Delivery Model:**
+  - **M1 — Specification & Governance:** Repository governance, baseline audit, ADRs, requirement catalogs, security policies, and rubric alignment. (*Status: ACCEPTED in commit d08048f*)
+  - **M2 — Backend Foundation:** Decoupled Laravel 13 REST API backend skeleton, API-only boundary, GET /api/health endpoint. (*Status: ACCEPTED in commit 66d7ef5*)
+  - **M3 — Database Foundation:** MySQL 8.4.3 connection, database isolation (`final_web` / `final_web_test`), hardened DatabaseTestCase pre-trait lifecycle safety guards. (*Status: ACCEPTED in commit 9841823*)
+  - **M4 — Frontend Foundation:** Standalone React 19 SPA scaffold with TypeScript, Vite, Tailwind CSS v4, and starter artifact cleanup. (*Status: ACCEPTED in commit 21087e2*)
+  - **M5 — Full-stack Integration:** Foundation communication chain (React SPA → Laravel REST API → MySQL), read-only DB health endpoint (`GET /api/health/database`), restricted development CORS, centralized API client abstraction, and live full-stack connectivity verification. (*Status: CURRENT / implementation completed pending review*)
+  - **M6 — Testing & CI:** Backend PHPUnit and frontend Vitest testing pipelines, GitHub Actions CI workflow for automated linting, typechecking, and test execution. (*Status: PENDING AUTHORIZATION*)
+  - **M7 — Docker & Reproducibility:** Reproducible `docker-compose.yml` baseline for frontend, backend, and MySQL services, validating clean-clone reproducibility. (*Status: PENDING AUTHORIZATION*)
+  - **M8 — Phase 1 Acceptance / Freeze:** Formal Phase 1 milestone verification and baseline freeze before proceeding to Phase 2. (*Status: PENDING AUTHORIZATION*)
+
+- **Historical Step Execution Detail (Audit Trail):**
+  - *Step 1 — Baseline Audit:* Read-only audit of local host environment, toolchains, ports, and empty Git repository. (ACCEPTED)
+  - *Step 2 / 2R — Governance & Specification Bootstrap:* Initial governance policies, ADRs, and rubric alignment. (ACCEPTED in 881078d, d08048f)
+  - *Step 3 / 3R — Laravel Backend Foundation:* Decoupled REST API backend and API boundary cleanup. (ACCEPTED in bafe6e6, 66d7ef5)
+  - *Step 4 / 4R / 4R2 / 4R3 — MySQL Foundation:* Local database connection, contract cleanup, test lifecycle safety hardening, and evidence cleanup. (ACCEPTED in 57a77a0, 9bb1dea, 1500a59, 9841823)
+  - *Step 5 / 5R — React Frontend Foundation:* React SPA scaffolding and starter artifact cleanup. (ACCEPTED in e1f748a, 21087e2)
+  - *Step 6 / M5 — Full-Stack Integration:* Cross-origin communication between React, Laravel, and MySQL. (CURRENT)
 - **Exit Criteria:** `frontend` and `backend` build cleanly; Docker Compose boots core services; CI pipeline passes; test runners execute green baseline tests.
 
 ---

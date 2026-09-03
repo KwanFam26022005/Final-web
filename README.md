@@ -36,39 +36,40 @@ The platform follows a decoupled **Monorepo** architecture:
 ## 3. Current Implementation Status
 
 > **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Step:** Step 5R — Frontend Starter Artifact Cleanup (Remediation completed, pending review)<br>
-> **Next Authorized Step:** Step 6 — Frontend ↔ Backend ↔ Database Integration (Do NOT begin yet)
+> **Current Milestone:** M5 — Full-stack Integration (Implementation completed, pending review)<br>
+> **Next Authorized Milestone:** M6 — Testing & CI (Do NOT begin yet)
 
-### Implemented:
-- Governance and specification foundation
-- Rubric alignment, requirement classification, and 11-step execution plan
-- Master requirements catalog and rubric traceability
-- Architectural decisions and security rules
-- Testing guidelines and Git contribution rules
-- Runtime environment baseline documentation
-- Repository hygiene configuration (`.gitignore`, `.gitattributes`, `.editorconfig`)
-- Decoupled API-only Laravel REST API backend foundation (`backend/`, Laravel Framework v13.30.1)
-- Minimal infrastructure health endpoint (`GET /api/health`) and automated Feature test
-- Clean API-only backend boundary (removal of redundant backend frontend toolchains and conflicting agent instructions)
-- MySQL database foundation (MySQL 8.4.3, InnoDB, utf8mb4, dev DB `final_web`, isolated test DB `final_web_test`)
-- Migration repository initialized in both databases with zero domain tables
-- Automated MySQL foundation feature test (`MySqlFoundationTest`) and hardened `DatabaseTestCase` pre-trait lifecycle safety guard
-- Standalone React SPA frontend foundation (`frontend/`, React 19.2.8, Vite 8.2.2, TypeScript 6.0.3, Tailwind CSS 4.3.3)
-- Minimal neutral frontend application shell, build/linting pipeline (`oxlint`), and client environment template (`.env.example`)
+### Phase 1 Milestone Progress:
+- **M1 — Specification & Governance:** ACCEPTED (commit `d08048f`)
+- **M2 — Backend Foundation:** ACCEPTED (commit `66d7ef5`)
+- **M3 — Database Foundation:** ACCEPTED (commit `9841823`)
+- **M4 — Frontend Foundation:** ACCEPTED (commit `21087e2`)
+- **M5 — Full-stack Integration:** CURRENT (Implementation completed, pending review)
+- **M6 — Testing & CI:** PENDING
+- **M7 — Docker & Reproducibility:** PENDING
+- **M8 — Phase 1 Acceptance / Freeze:** PENDING
+
+### Implemented Capabilities:
+- Governance, specification foundation, rubric alignment, security rules, and testing guidelines
+- Repository hygiene (`.gitignore`, `.gitattributes`, `.editorconfig`)
+- Decoupled API-only Laravel REST API backend (`backend/`, Laravel Framework v13.30.1)
+- Minimal infrastructure health endpoint (`GET /api/health`) and database health probe (`GET /api/health/database`)
+- Strict database isolation (`final_web` / `final_web_test`) and `DatabaseTestCase` pre-trait lifecycle safety guard
+- Standalone React SPA frontend (`frontend/`, React 19.2.8, Vite 8.2.2, TypeScript 6.0.3, Tailwind CSS 4.3.3)
+- Centralized native `fetch` API client abstraction (`frontend/src/lib/api/`)
+- Narrow development CORS policy allowing `http://127.0.0.1:5173` and `http://localhost:5173`
+- Full-stack foundation communication chain (React SPA → Laravel REST API → MySQL) verified end-to-end
 
 ### Not Yet Implemented:
-- Frontend ↔ Backend ↔ Database integration (Step 6)
+- Automated full-stack and CI test pipelines (M6)
+- Docker Compose development and deployment baseline (M7)
 - Application-domain database schema and migrations (Phase 2+)
-- Authentication and account management
-- Core and advanced note features (CRUD, labels, attachments, search, pinning)
-- Password-protected notes and sharing authorization
-- Real-time collaboration (Reverb/Echo)
-- AI summarization and note-grounded Q&A
-- PWA, Service Worker, and IndexedDB offline synchronization
-- Docker Compose services
-
-> [!WARNING]
-> **No application source code exists yet.** Do not attempt to run frontend dev servers or backend services until scaffolding is authorized in subsequent Phase 1 steps.
+- Authentication and account management (Phase 2)
+- Core and advanced note features (CRUD, labels, attachments, search, pinning) (Phase 3-4)
+- Password-protected notes and sharing authorization (Phase 5)
+- Real-time collaboration (Reverb/Echo) (Phase 6)
+- AI summarization and note-grounded Q&A (Phase 7)
+- PWA, Service Worker, and IndexedDB offline synchronization (Phase 8)
 
 ---
 
@@ -77,7 +78,7 @@ The platform follows a decoupled **Monorepo** architecture:
 | Phase | Description | Status |
 | :--- | :--- | :--- |
 | **Phase 0** | Specification Freeze & Project Decisions | **COMPLETED** |
-| **Phase 1** | Repository & Runtime Foundation | **IN PROGRESS** (Step 2R Active; Step 3 Next) |
+| **Phase 1** | Repository & Runtime Foundation | **IN PROGRESS** (M5 Active; M6 Next) |
 | **Phase 2** | Authentication & Account Management | PLANNED |
 | **Phase 3** | Core Note CRUD, Views & Autosave | PLANNED |
 | **Phase 4** | Labels, Attachments, Search & Pinning | PLANNED |
