@@ -16,6 +16,7 @@ This document records the exact results of the read-only, non-destructive baseli
 | **PHP** | `8.3.30` | `C:\laragon\bin\php\php-8.3.30-Win32-vs16-x64\php.exe` | $\ge 8.2.0$ | Single PHP installation in Laragon. ZTS x64 build. |
 | **Composer** | `2.9.4` | `C:\laragon\bin\composer\composer.bat` | $\ge 2.7.0$ | Single Composer installation in Laragon. |
 | **MySQL Client** | `8.4.3` | `C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin\mysql.exe` | $\ge 8.0.0$ | Community Server GPL x64 client. |
+| **Laravel Framework** | `13.30.1` | `backend/artisan` | Current Stable ($\ge 11.0.0$) | Resolved in Phase 1 Step 3 (`laravel/framework: v13.30.1`). |
 | **Docker CLI** | `28.4.0` | `D:\Docker\resources\bin\docker.exe` | $\ge 26.0.0$ | Host Docker binary. |
 | **Docker Compose**| `v2.39.4-desktop.1` | `D:\Docker\resources\bin\docker-compose.exe` | $\ge 2.20.0$ | Standalone binary works; `docker compose` plugin syntax unlinked. |
 
@@ -31,7 +32,7 @@ This document records the exact results of the read-only, non-destructive baseli
 ### Port Verification
 The target development ports were inspected via `Get-NetTCPConnection` and `netstat -ano`:
 - **Port 5173 (Vite Frontend):** **Available** (Unoccupied)
-- **Port 8000 (Laravel Backend API):** **Available** (Unoccupied)
+- **Port 8000 (Laravel Backend API):** **Available** (Unoccupied; validated via temporary HTTP probe in Step 3)
 - **Port 3306 (MySQL Database):** **Available** (Unoccupied)
 
 ---
@@ -50,5 +51,9 @@ The target development ports were inspected via `Get-NetTCPConnection` and `nets
 4. **Git Identity:**
    Git identity is authoritatively bound to the global Git configuration (`KwanFam26022005` / `phdk2602@gmail.com`). AI agents must never modify local or global Git identities.
 
-5. **Laravel Framework Version Resolution:**
-   The exact major/minor Laravel version is not pre-selected. It will be resolved, frozen, and recorded here during Phase 1 Step 3 after verifying the latest compatible stable release against the host PHP 8.3.30 and Composer 2.9.4 runtime.
+5. **Laravel Framework Version Resolution (Resolved Phase 1 Step 3):**
+   - **Resolution Date:** 2026-09-03 (Phase 1 Step 3)
+   - **Installed Application Skeleton:** `laravel/laravel`
+   - **Installed Framework Version:** `Laravel Framework 13.30.1` (`laravel/framework: v13.30.1`)
+   - **Composer Framework Constraint:** `^13.17`
+   - **Host Runtime Compatibility Evidence:** Successfully resolved and installed on host PHP `8.3.30` (cli) ZTS Visual C++ 2019 x64 and Composer `2.9.4`. Full test suite and HTTP health probe validated without regressions.
