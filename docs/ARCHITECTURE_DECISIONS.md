@@ -32,7 +32,13 @@ This document records the binding technical architecture decisions governing the
 
 - **Status:** APPROVED
 - **Context:** A robust backend is needed to provide RESTful endpoints, database migrations, authorization policies, background jobs, and WebSocket integration.
-- **Choice:** Laravel 11.x on PHP 8.3+.
+- **Choice:** Laravel (exact major/minor version resolved and frozen during Phase 1 Step 3).
+- **Policy:**
+  - Backend framework: Laravel.
+  - Exact Laravel version is resolved and frozen during Phase 1 Step 3 after checking the current compatible stable release against the verified host PHP/Composer runtime.
+  - Do not silently pin an older major version.
+  - Once Step 3 installs Laravel, record the exact installed version in `RUNTIME_BASELINE.md` and implementation evidence.
+  - Observed PHP 8.3.30 is a host baseline, not permission to invent or assume a Laravel version in advance.
 - **Rationale:** Rich ecosystem providing battle-tested ORM (Eloquent), FormRequest validation, Gate/Policy authorization, Sanctum authentication, and first-party WebSocket support via Reverb.
 - **Consequences:** PHP runtime dependencies and Composer package management required on host and in containers.
 - **Deferred Alternatives:** Express/NestJS (less comprehensive built-in ORM and auth policies out of the box), Django (team environment standardized on PHP/Laravel).
@@ -67,18 +73,21 @@ This document records the binding technical architecture decisions governing the
 - **Context:** Notes require real-time collaborative editing indicators and concurrent update broadcasts.
 - **Choice:** Laravel Reverb as the WebSocket server, paired with Laravel Echo on the React frontend.
 - **Rationale:** Native first-party Laravel WebSocket engine offering high performance, zero external SaaS dependencies (e.g., Pusher), and deep integration with Laravel event broadcasting.
-- **Consequences:** Requires running the Reverb daemon process and exposing a WebSocket port.
+- **Consequences:** Requires running the Reverb daemon process and exposing a WebSocket port during Phase 6.
 - **Deferred Alternatives:** Pusher SaaS (incurs vendor limits/costs), Socket.io with Node microservice (introduces architectural split).
 
 ---
 
 ## ADR-007: Custom Docker Compose for Orchestration
 
-- **Status:** APPROVED (Scaffolded Phase 1, Finalized Phase 10)
-- **Context:** Development and production environments require identical, reproducible runtime environments.
-- **Choice:** Multi-container `docker-compose.yml` defining services for `backend` (PHP-FPM/Nginx), `frontend` (Node/Vite or Nginx web server), `database` (MySQL 8), and `reverb` (WebSockets).
-- **Rationale:** Ensures clean developer onboarding, platform independence, and automated CI test execution.
-- **Consequences:** Requires host Docker Desktop daemon. Standalone `docker-compose.exe` syntax must be accommodated on Windows host during Phase 1.
+- **Status:** APPROVED (Baseline in Phase 1, Finalized in Phase 10)
+- **Context:** Development and production environments require reproducible runtime environments across the project lifecycle.
+- **Choice:** Phased Docker Compose architecture:
+  - **Phase 1 Baseline:** Multi-container `docker-compose.yml` defining core services: `frontend`, `backend`, and `database` (MySQL 8). Does not permanently lock PHP-FPM/Nginx topology before the Docker foundation step validates the simplest reproducible architecture.
+  - **Phase 6:** Add/revise the WebSocket service (`reverb`) when real-time collaboration is implemented. Reverb is explicitly NOT required during Phase 1.
+  - **Phase 10:** Final production hardening and deployment topology.
+- **Rationale:** Ensures clean developer onboarding, platform independence, and automated CI test execution while preserving strict phase boundaries.
+- **Consequences:** Requires host Docker Desktop daemon when running containerized workflows. Standalone `docker-compose.exe` syntax must be accommodated on Windows host during Phase 1.
 - **Deferred Alternatives:** Kubernetes / Helm (excessive operational overhead for project scope).
 
 ---
@@ -112,7 +121,7 @@ This document records the binding technical architecture decisions governing the
 
 - **Status:** APPROVED (Scheduled for Phase 8)
 - **Context:** Users must be able to view, create, and modify notes without an active network connection.
-- **Choice:** Service Worker caching combined with browser IndexedDB managed through the Dexie.js abstraction library, coupled with a synchronization queue.
-- **Rationale:** Provides structured, high-capacity client storage and reliable transaction handling. Abstracted repository pattern on the frontend allows switching transparently between IndexedDB cache and REST API.
+- **Choice:** Service Worker caching combined with browser IndexedDB persistence, coupled with a synchronization queue. Dexie is recognized as a candidate implementation library for Phase 8 until the Phase 8 technology decision formally confirms it, rather than a permanent binding product requirement.
+- **Rationale:** IndexedDB provides structured, high-capacity client storage and reliable transaction handling. An abstracted repository pattern on the frontend allows switching transparently between IndexedDB offline cache and REST API.
 - **Consequences:** Synchronization conflict resolution strategies (e.g., timestamp-based last-write-wins) must be implemented.
 - **Deferred Alternatives:** LocalStorage (5MB cap, synchronous blocking I/O, lacks indexing).

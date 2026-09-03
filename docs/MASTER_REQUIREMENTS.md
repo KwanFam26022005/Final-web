@@ -2,7 +2,7 @@
 
 This catalog serves as the authoritative, stable reference for all functional, non-functional, security, and operational requirements. Requirements are grouped into distinct families with persistent alphanumeric identifiers.
 
-Initial status of all application features is **PLANNED**. Only repository governance items established in Phase 1 Step 2 may be marked with their verified baseline state.
+Initial status of all application features is **PLANNED**. Repository governance baselines established in Phase 1 Step 1 and Step 2 are **VERIFIED**. Remediation alignment is active under Step 2R.
 
 ---
 
@@ -29,13 +29,13 @@ Initial status of all application features is **PLANNED**. Only repository gover
 | ID | Requirement | Acceptance Intent | Target Phase | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **ACC-01** | Mandatory Authentication | Application access to private data requires authenticated session; unauthenticated requests redirect to login. | Phase 2 | PLANNED |
-| **ACC-02** | User Registration | Guest can register with valid email, name, and strong password; automatic login occurs upon successful registration. | Phase 2 | PLANNED |
-| **ACC-03** | Secure Password Hashing | Passwords are automatically hashed via Laravel's native bcrypt or argon2id; plaintext is never stored or logged. | Phase 2 | PLANNED |
+| **ACC-02** | User Registration | Registration UI accepts strictly email, display name, password, and password confirmation; user is automatically logged in upon successful registration. | Phase 2 | PLANNED |
+| **ACC-03** | Secure Password Hashing | Passwords MUST be hashed with bcrypt through Laravel's secure hashing facility; plaintext is never stored or logged, bcrypt verification succeeds, and hashes are never exposed. | Phase 2 | PLANNED |
 | **ACC-04** | Activation Email & Grace Period | System dispatches an account activation email; unverified users can use the app but display a persistent verification warning banner. | Phase 2 | PLANNED |
 | **ACC-05** | Profile Management | Authenticated user can view and edit profile details, including display name and custom avatar image upload. | Phase 2 | PLANNED |
 | **ACC-06** | Change Password | Authenticated user can change password after providing and validating their current password. | Phase 2 | PLANNED |
 | **ACC-07** | User Preferences | User can select and persist UI preferences (e.g., default view mode, dark/light theme) across sessions. | Phase 2 | PLANNED |
-| **ACC-08** | Password Recovery | User can request password reset via email magic link or secure OTP token. | Phase 2 | PLANNED |
+| **ACC-08** | Password Recovery | User can request password reset via email reset link OR secure OTP flow. After successful reset, user MUST NOT be automatically authenticated and must log in manually. | Phase 2 | PLANNED |
 | **ACC-09** | SPA Session Auth (Sanctum) | Secure first-party cookie/session authentication with CSRF protection, avoiding unencrypted token storage in localStorage. | Phase 2 | PLANNED |
 
 ---
@@ -48,9 +48,9 @@ Initial status of all application features is **PLANNED**. Only repository gover
 | **NOTE-02** | Shared Interaction Model | Note creation and note editing share an intuitive, unified modal or inline workspace interface. | Phase 3 | PLANNED |
 | **NOTE-03** | Title & Content Fields | Every note requires a title and body content as initial user-facing fields; changes validate correctly on save. | Phase 3 | PLANNED |
 | **NOTE-04** | Debounced Autosave | Active edits to title and content are automatically persisted to backend with debounce, showing visual sync status. | Phase 3 | PLANNED |
-| **NOTE-05** | Safe Deletion | Deleting a note requires explicit user confirmation and moves note to trash or performs soft delete. | Phase 3 | PLANNED |
-| **NOTE-06** | Note Pinning | User can toggle pin status on notes; pinned notes always appear in a dedicated top section above unpinned notes. | Phase 4 | PLANNED |
-| **NOTE-07** | Live Search | Instant client-debounced search filtering by note title and text content without full-page reloads. | Phase 4 | PLANNED |
+| **NOTE-05** | Safe Deletion | Deleting a note requires explicit user confirmation before the deletion action is executed. (Trash / soft delete is not a mandatory product requirement). | Phase 3 | PLANNED |
+| **NOTE-06** | Note Pinning | User can toggle pin status on notes; pinned notes always appear in a dedicated top section with a visual pin indicator. | Phase 4 | PLANNED |
+| **NOTE-07** | Live Search | Live debounced search (~300 ms guidance) filtering by note title and note content without full-page reloads. | Phase 4 | PLANNED |
 | **NOTE-08** | File Attachments | User can attach permitted file types (images, PDFs) to notes with backend size and MIME-type validation. | Phase 4 | PLANNED |
 
 ---
@@ -69,12 +69,12 @@ Initial status of all application features is **PLANNED**. Only repository gover
 
 | ID | Requirement | Acceptance Intent | Target Phase | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **SHARE-01** | Per-Note Password Protection | Owner can lock specific sensitive notes with an individual password; content is obfuscated until unlocked. | Phase 5 | PLANNED |
-| **SHARE-02** | Server-Side Unlock Verification | Unlocking a protected note validates password on backend before returning note body; client never holds encrypted secrets. | Phase 5 | PLANNED |
+| **SHARE-01** | Per-Note Password Protection | Owner can lock specific sensitive notes with an individual password; note card visually indicates locked state and content is obscured until unlocked. | Phase 5 | PLANNED |
+| **SHARE-02** | Server-Side Unlock Verification | Unlocking a protected note validates password on backend before returning note body; client never holds unverified secrets. | Phase 5 | PLANNED |
 | **SHARE-03** | User-to-User Sharing | Note owner can grant explicit access to other registered users identified by their email address. | Phase 5 | PLANNED |
-| **SHARE-04** | Granular Permissions | Sharing supports read-only (`view`) and read-write (`edit`) permissions enforced server-side. | Phase 5 | PLANNED |
-| **SHARE-05** | Shared-Note Metadata | Notes list and editor display clear visual indicators for ownership, collaborator badges, and permission levels. | Phase 5 | PLANNED |
-| **SHARE-06** | Access Revocation | Owner can view collaborator list and instantly revoke or alter permissions for any collaborator. | Phase 5 | PLANNED |
+| **SHARE-04** | Granular Permissions | Sharing supports read-only (`read`) and read-write (`edit`) permissions strictly enforced server-side. | Phase 5 | PLANNED |
+| **SHARE-05** | Shared-Note Metadata | Recipient-facing shared-note section exposes permission level, identity of the user who shared the note, sharing timestamp, and visual shared indicator. | Phase 5 | PLANNED |
+| **SHARE-06** | Access Revocation (Optional) | OPTIONAL / FUTURE ENHANCEMENT: Owner can view collaborator list and alter or revoke sharing permissions. Not required for Phase 5 PASS. | Phase 5 | OPTIONAL |
 
 ---
 
@@ -82,9 +82,9 @@ Initial status of all application features is **PLANNED**. Only repository gover
 
 | ID | Requirement | Acceptance Intent | Target Phase | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **RT-01** | Real-Time Sync (Reverb) | Note updates by one collaborator broadcast via Laravel Reverb WebSockets and update clients via Laravel Echo. | Phase 6 | PLANNED |
-| **RT-02** | Presence & Active Collaborators | Users viewing or editing a shared note see real-time presence indicators (avatars/cursors) of other active users. | Phase 6 | PLANNED |
-| **RT-03** | Conflict Resolution Strategy | Concurrent edits maintain data integrity with deterministic last-write-wins or structured merge mechanics. | Phase 6 | PLANNED |
+| **RT-01** | Real-Time Sync (Reverb) | Authorized collaborators editing the same shared note receive updates through Laravel Reverb WebSockets and Laravel Echo in real time. | Phase 6 | PLANNED |
+| **RT-02** | Active Collaborators (Optional) | OPTIONAL / FUTURE ENHANCEMENT: Visual collaborator presence pills or live cursors. (The rubric requires realtime editing updates, not presence indicators). | Phase 6 | OPTIONAL |
+| **RT-03** | Concurrent Edit Integrity | Implementation concern: Backend maintains data integrity during concurrent edits. | Phase 6 | PLANNED |
 
 ---
 
@@ -105,7 +105,7 @@ Initial status of all application features is **PLANNED**. Only repository gover
 | ID | Requirement | Acceptance Intent | Target Phase | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **PWA-01** | Web App Manifest & Installability | Application registers a valid PWA manifest and service worker, allowing installation as a standalone desktop/mobile app. | Phase 8 | PLANNED |
-| **PWA-02** | Client-Side Storage (IndexedDB) | Cached notes and metadata are stored in browser IndexedDB (via Dexie abstraction) for rapid offline access. | Phase 8 | PLANNED |
+| **PWA-02** | Client-Side Storage (IndexedDB) | Cached notes and metadata persist in browser JavaScript database (IndexedDB) for offline access. (Dexie is a candidate library for Phase 8, not a permanent requirement). | Phase 8 | PLANNED |
 | **PWA-03** | Offline Create & Edit | User can create and edit notes while offline; changes are staged locally in an offline queue. | Phase 8 | PLANNED |
 | **PWA-04** | Automatic Synchronization | When connectivity resumes, staged offline changes sync to backend API with server verification. | Phase 8 | PLANNED |
 
@@ -130,7 +130,7 @@ Initial status of all application features is **PLANNED**. Only repository gover
 | :--- | :--- | :--- | :--- | :--- |
 | **UX-01** | Cross-Device Responsive Layout | UI adapts seamlessly across smartphone (mobile), tablet, and desktop viewports using Tailwind CSS. | Phase 9 | PLANNED |
 | **UX-02** | Accessibility (a11y) Standards | Keyboard navigability, semantic HTML, ARIA attributes, and WCAG AA contrast compliance across all major components. | Phase 9 | PLANNED |
-| **UX-03** | State & Feedback Indicators | Clear visual loading skeletons, autosave indicators, error toast alerts, and modal confirmation states. | Phase 9 | PLANNED |
+| **UX-03** | State & Feedback Indicators | Clear visual indicators for note states (pinned, shared, password-protected/locked), autosave status, and error toast alerts. | Phase 3–9 | PLANNED |
 
 ---
 
@@ -138,9 +138,9 @@ Initial status of all application features is **PLANNED**. Only repository gover
 
 | ID | Requirement | Acceptance Intent | Target Phase | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **DEPLOY-01** | Custom Docker Compose | Reproducible multi-container Docker Compose setup for backend, frontend, database, and websocket services. | Phase 1 / 10 | PLANNED |
-| **DEPLOY-02** | Automated CI Pipeline | GitHub Actions workflow executing linter, frontend typecheck/test, and backend PHPUnit suite on pull requests. | Phase 10 | PLANNED |
+| **DEPLOY-01** | Custom Docker Compose | Reproducible multi-container Docker Compose setup for backend, frontend, and database (MySQL 8) in Phase 1; Reverb added in Phase 6; production hardening in Phase 10. | Phase 1 / 6 / 10 | PLANNED |
+| **DEPLOY-02** | Automated CI Pipeline | Initial GitHub Actions CI foundation established in Phase 1 (lint, typecheck, baseline tests); production/deployment verification finalized in Phase 10. | Phase 1 & 10 | PLANNED |
 | **DEPLOY-03** | Public Demonstration Target | Fully deployed, publicly accessible demo instance matching submission specifications. | Phase 10 | PLANNED |
 | **GIT-01** | Baseline Repository Audit | Non-destructive audit of local environment, toolchains, ports, and remote Git status. | Phase 1 Step 1 | **VERIFIED** |
-| **GIT-02** | Governance & Spec Bootstrap | Repository governance, specification documentation, and baseline configurations established in clean initial commit. | Phase 1 Step 2 | **IN PROGRESS** |
+| **GIT-02** | Governance & Spec Bootstrap | Repository governance, specification documentation, and baseline configurations established in clean initial commit. | Phase 1 Step 2 | **VERIFIED** |
 | **GIT-03** | Academic Cadence Compliance | Verified history of $\ge 2$ meaningful commits per member per week across 4 consecutive calendar weeks. | Phase 1–10 | PLANNED |

@@ -49,3 +49,6 @@ The target development ports were inspected via `Get-NetTCPConnection` and `nets
 
 4. **Git Identity:**
    Git identity is authoritatively bound to the global Git configuration (`KwanFam26022005` / `phdk2602@gmail.com`). AI agents must never modify local or global Git identities.
+
+5. **Laravel Framework Version Resolution:**
+   The exact major/minor Laravel version is not pre-selected. It will be resolved, frozen, and recorded here during Phase 1 Step 3 after verifying the latest compatible stable release against the host PHP 8.3.30 and Composer 2.9.4 runtime.

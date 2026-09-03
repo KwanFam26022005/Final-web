@@ -10,31 +10,32 @@ The application is purpose-built as a full-stack, collaborative, intelligent not
 
 ### Account & Identity
 - Mandatory authenticated session for private application access.
-- User registration with validation and automatic login upon creation.
-- Secure password hashing natively handled by Laravel (bcrypt / argon2id).
+- User registration accepting strictly: email, display name, password, and password confirmation, with automatic login upon successful registration.
+- Secure password hashing natively handled by Laravel (`bcrypt` mandatory; plaintext never stored).
 - Account activation email flow; unverified accounts remain functional during a grace period but display a prominent warning banner.
 - Profile management: display name modification, avatar upload, and password changes.
 - UI preferences persistence (view modes, theme choices).
-- Password recovery via secure email link or OTP token.
+- Password recovery via secure email reset link or secure OTP flow. After successful reset, the user is NOT automatically authenticated and must log in manually.
 
 ### Core Notes
 - Dual-mode visualization: responsive Grid view (default) with toggle to List view.
 - Unified creation and editing interaction model (shared modal or workspace canvas).
 - Primary user-facing required note fields: Title and Content.
 - Continuous, debounced autosave with visual save/sync indicators.
-- Safe deletion flow with explicit user confirmation.
+- Safe deletion flow with explicit user confirmation before deletion is executed. (Trash / soft delete is not a mandatory product requirement).
 - Categorization through Many-to-Many labels (CRUD, color/tags, filtering).
-- Fast, live client search indexing title and body content.
+- Live debounced search (~300 ms guidance) on note title and body content without full-page reloads.
 - Attachment management for allowed file types with backend validation.
-- Pinned notes hierarchy maintaining priority positioning at the top of the interface.
+- Pinned notes hierarchy maintaining priority positioning at the top of the interface with visual indicator.
 
 ### Advanced Notes & Collaboration
-- Individual per-note password protection with server-side unlock verification.
+- Individual per-note password protection with server-side unlock verification and visual locked indicator.
 - Direct note sharing with registered platform users via email address.
-- Granular permissions: Read-only (`view`) and Read-write (`edit`).
-- Metadata visibility: collaborator lists, permission level badges, and ownership markers.
+- Granular permissions: Read-only (`read`) and Read-write (`edit`) enforced server-side.
+- Recipient-facing shared-note metadata: permission level, identity of sharing user, and sharing timestamp.
 - Distinct visual state indicators distinguishing pinned, shared, and locked notes.
-- Real-time multi-user editing and presence tracking via Laravel Reverb and Echo.
+- Real-time multi-user editing via Laravel Reverb and Echo (authorized collaborators receive live WebSocket updates).
+- (Optional / Future Enhancement: live presence indicators, avatars, cursors, and owner collaborator revocation UI; not mandatory for phase pass).
 
 ### Artificial Intelligence
 - Service layer abstraction decoupled from underlying LLM vendors.
@@ -46,12 +47,12 @@ The application is purpose-built as a full-stack, collaborative, intelligent not
 ### PWA & Offline Support
 - Mobile, tablet, and desktop responsive layout via Tailwind CSS.
 - Progressive Web App (PWA) manifest and Service Worker caching.
-- Client-side persistence using browser IndexedDB (abstracted via Dexie).
+- Client-side persistence using browser JavaScript database (IndexedDB; Dexie is a candidate library for Phase 8, not a permanent requirement).
 - Offline creation, editing, and staging queue with automatic synchronization upon reconnection.
 
 ### Deployment & Demonstration
-- Self-contained, multi-container Docker Compose configuration.
-- GitHub Actions automated testing and linting workflow.
+- Self-contained multi-container Docker Compose configuration (Phase 1: frontend, backend, MySQL; Phase 6: Reverb; Phase 10: production hardening).
+- GitHub Actions CI automated testing and linting workflow established in Phase 1 and finalized in Phase 10.
 - Publicly demonstrable deployment endpoint for project evaluation.
 
 ---

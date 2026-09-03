@@ -17,7 +17,7 @@ The **Collaborative Intelligent Note Management Web Application** is a full-stac
 The platform follows a decoupled **Monorepo** architecture:
 
 - **Frontend:** React (SPA), TypeScript, Vite, Tailwind CSS
-- **Backend:** Laravel REST API (PHP 8.3+)
+- **Backend:** Laravel REST API (PHP 8.3+ host baseline; exact Laravel version resolved in Phase 1 Step 3)
 - **Database:** MySQL 8.x (InnoDB engine, `utf8mb4` character set)
 - **Authentication:** Laravel Sanctum (First-party SPA cookie/session-based authentication, Phase 2)
 - **Realtime Collaboration:** Laravel Reverb + Laravel Echo (WebSockets, Phase 6)
@@ -25,9 +25,9 @@ The platform follows a decoupled **Monorepo** architecture:
   - Backend: PHPUnit / Laravel Test Suite
   - Frontend: Vitest + React Testing Library
   - End-to-End: Playwright
-- **Offline / PWA:** Service Worker + IndexedDB (Dexie abstraction, Phase 8)
+- **Offline / PWA:** Service Worker + IndexedDB browser database (candidate library Dexie deferred to Phase 8)
 - **AI Layer:** Provider-neutral LLM service abstraction (Phase 7)
-- **DevOps:** Custom Docker Compose + GitHub Actions CI/CD
+- **DevOps:** Custom Docker Compose (core baseline Phase 1, Reverb Phase 6, prod Phase 10) + GitHub Actions CI (Phase 1 & 10)
 
 > **Notice:** Deferred technologies (Redis, RabbitMQ, Kubernetes, external vector DB, agent framework, microservices, JWT, Inertia) are explicitly out-of-scope for the initial baseline.
 
@@ -35,11 +35,13 @@ The platform follows a decoupled **Monorepo** architecture:
 
 ## 3. Current Implementation Status
 
-> **Current Phase:** Phase 1 — Repository and Runtime Foundation  
-> **Current Step:** Step 2 — Repository Governance and Specification Bootstrap  
+> **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
+> **Current Step:** Step 2R — Governance Specification Alignment<br>
+> **Next Authorized Step:** Step 3 — Laravel Backend Foundation (Do NOT begin yet)
 
 ### Implemented:
 - Governance and specification foundation only
+- Rubric alignment, requirement classification, and 11-step execution plan
 - Master requirements catalog and rubric traceability
 - Architectural decisions and security rules
 - Testing guidelines and Git contribution rules
@@ -68,7 +70,7 @@ The platform follows a decoupled **Monorepo** architecture:
 | Phase | Description | Status |
 | :--- | :--- | :--- |
 | **Phase 0** | Specification Freeze & Project Decisions | **COMPLETED** |
-| **Phase 1** | Repository & Runtime Foundation | **IN PROGRESS** (Step 2 Active) |
+| **Phase 1** | Repository & Runtime Foundation | **IN PROGRESS** (Step 2R Active; Step 3 Next) |
 | **Phase 2** | Authentication & Account Management | PLANNED |
 | **Phase 3** | Core Note CRUD, Views & Autosave | PLANNED |
 | **Phase 4** | Labels, Attachments, Search & Pinning | PLANNED |

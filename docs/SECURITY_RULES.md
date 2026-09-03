@@ -8,8 +8,9 @@ This document establishes the binding security standards and vulnerability defen
 
 ## 1. Authentication and Credential Protection
 
-- **Secure Native Hashing:** Passwords must always be hashed using Laravel's native hashing facilities (`Hash::make()`) backed by `bcrypt` (minimum work factor 12) or `argon2id`.
+- **Secure Native Hashing:** Passwords MUST always be hashed with `bcrypt` (minimum work factor 12) through Laravel's native secure hashing facilities (`Hash::make()`). Argon2id is not permitted as an alternative for this project requirement. Acceptance criteria mandate that plaintext is never stored, bcrypt verification succeeds, and password hashes are never exposed in API responses or logs.
 - **Zero Plaintext Storage:** Plaintext passwords, temporary tokens, or plaintext per-note passwords must never be stored in the database, caches, or logs.
+- **Registration Form:** User registration UI accepts strictly email, display name, password, and password confirmation.
 - **Password Complexity:** User registration and password change forms must enforce strong password criteria (minimum 8 characters, mixed case, numbers, symbols).
 - **Session Security:** First-party SPA authentication relies on Laravel Sanctum using `HttpOnly`, `SameSite=Lax` (or `Strict`), and `Secure` session cookies. Bearer tokens must not be stored in browser `localStorage` or `sessionStorage`.
 
@@ -20,7 +21,7 @@ This document establishes the binding security standards and vulnerability defen
 - **Mandatory Server Authorization:** Every API endpoint handling private resources must evaluate authorization policies (`Gate` / `Policy`).
 - **Client Hiding is NOT Security:** Hiding buttons, links, or navigation options in the React UI is strictly a UX affordance. The backend must independently reject unauthorized requests with HTTP `403 Forbidden`.
 - **IDOR (Insecure Direct Object Reference) Defense:** When accessing resources by ID (e.g., `GET /api/notes/{id}`), the backend must explicitly verify that the authenticated user is either the resource owner or an authorized collaborator.
-- **Sharing Permissions Enforcement:** The backend must differentiate and strictly enforce read (`view`) versus read-write (`edit`) permissions for shared notes. Read-only collaborators attempting `PUT`, `PATCH`, or `DELETE` mutations must be rejected.
+- **Sharing Permissions Enforcement:** The backend must differentiate and strictly enforce read (`read`) versus read-write (`edit`) permissions for shared notes. Read-only collaborators attempting `PUT`, `PATCH`, or `DELETE` mutations must be rejected.
 - **Protected Notes Enforcement:** For password-protected notes, the backend must verify the note-specific password before decrypting or returning the note content. The client must never receive locked note bodies until authenticated against that note.
 
 ---

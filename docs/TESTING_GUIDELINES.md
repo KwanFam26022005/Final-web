@@ -22,7 +22,7 @@ $$\text{Claim} \longrightarrow \text{Implementation} \longrightarrow \text{Execu
 | **Unit Tests** | Pure algorithmic logic, utility functions, data mappers, isolated services | PHPUnit / Vitest | `backend/tests/Unit/`, `frontend/src/**/*.test.ts` |
 | **Feature / API Tests** | HTTP endpoints, FormRequest validation, middleware, Policies, Eloquent relationships | PHPUnit / Laravel Test Suite | `backend/tests/Feature/` |
 | **Frontend Component Tests** | React component rendering, user events, UI state transitions, mock API interactions | Vitest + React Testing Library | `frontend/src/**/*.test.tsx` |
-| **Integration Tests** | Multi-service interactions (e.g., Reverb broadcasts, Dexie IndexedDB sync, AI adapter mocks) | PHPUnit / Vitest | `backend/tests/Integration/`, `frontend/src/tests/` |
+| **Integration Tests** | Multi-service interactions (e.g., Reverb broadcasts, IndexedDB offline sync, AI adapter mocks) | PHPUnit / Vitest | `backend/tests/Integration/`, `frontend/src/tests/` |
 | **End-to-End (E2E) Tests** | Full browser user journeys, authentication flows, cross-client realtime sync | Playwright | `tests/e2e/` |
 
 ---
