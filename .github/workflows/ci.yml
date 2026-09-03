@@ -199,11 +199,14 @@ jobs:
           APP_KEY="base64:$(openssl rand -base64 32)"
           MYSQL_ROOT_PASSWORD="$(openssl rand -hex 16)"
           DB_PASSWORD="$(openssl rand -hex 16)"
+          echo "::add-mask::$APP_KEY"
+          echo "::add-mask::$MYSQL_ROOT_PASSWORD"
+          echo "::add-mask::$DB_PASSWORD"
           printf 'APP_KEY=%s\nMYSQL_ROOT_PASSWORD=%s\nDB_USERNAME=final_web_user\nDB_PASSWORD=%s\nVITE_API_BASE_URL=http://127.0.0.1:8000\n' \
             "$APP_KEY" "$MYSQL_ROOT_PASSWORD" "$DB_PASSWORD" > .env.docker
 
-      - name: Verify Compose configuration
-        run: docker compose --env-file .env.docker config
+      - name: Verify Compose configuration without rendering secrets
+        run: docker compose --env-file .env.docker config --quiet
 
       - name: Build all images (clean, no cache)
         run: docker compose --env-file .env.docker build --no-cache
