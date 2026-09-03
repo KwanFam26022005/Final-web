@@ -51,6 +51,7 @@ The repository enforces a clear three-tier testing hierarchy executed locally an
    - Managed by `.github/workflows/ci.yml`.
    - Runs on push to `main` and `phase-1/**` branches, as well as pull requests targeting `main`.
    - Dedicated matrix jobs for `backend`, `frontend`, and `e2e` with containerized MySQL 8.4 service.
+   - Explicitly normalizes CI test database (`final_web_test`) character set to `utf8mb4` and collation to `utf8mb4_unicode_ci` to mirror repository baseline contracts.
 
 ## 4. Mandatory Testing Rules
 

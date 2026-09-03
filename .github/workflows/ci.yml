@@ -48,6 +48,22 @@ jobs:
           cp .env.testing.example .env.testing
           php artisan key:generate --env=testing
 
+      - name: Normalize MySQL test database collation
+        run: |
+          if ! command -v mysql &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y mysql-client
+          fi
+          mysql -h 127.0.0.1 -P 3306 -u root -e "ALTER DATABASE final_web_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+      - name: Verify MySQL database collation contract
+        run: |
+          RESULT=$(mysql -h 127.0.0.1 -P 3306 -u root -N -s -e "SELECT CONCAT(DEFAULT_CHARACTER_SET_NAME, ':', DEFAULT_COLLATION_NAME) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = 'final_web_test';")
+          echo "Database charset and collation: $RESULT"
+          if [ "$RESULT" != "utf8mb4:utf8mb4_unicode_ci" ]; then
+            echo "Error: Database collation mismatch. Expected utf8mb4:utf8mb4_unicode_ci, got $RESULT"
+            exit 1
+          fi
+
       - name: Validate composer.json
         working-directory: backend
         run: composer validate --strict
@@ -137,6 +153,22 @@ jobs:
         run: |
           cp .env.testing.example .env
           php artisan key:generate
+
+      - name: Normalize MySQL test database collation
+        run: |
+          if ! command -v mysql &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y mysql-client
+          fi
+          mysql -h 127.0.0.1 -P 3306 -u root -e "ALTER DATABASE final_web_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+      - name: Verify MySQL database collation contract
+        run: |
+          RESULT=$(mysql -h 127.0.0.1 -P 3306 -u root -N -s -e "SELECT CONCAT(DEFAULT_CHARACTER_SET_NAME, ':', DEFAULT_COLLATION_NAME) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = 'final_web_test';")
+          echo "Database charset and collation: $RESULT"
+          if [ "$RESULT" != "utf8mb4:utf8mb4_unicode_ci" ]; then
+            echo "Error: Database collation mismatch. Expected utf8mb4:utf8mb4_unicode_ci, got $RESULT"
+            exit 1
+          fi
 
       - name: Configure frontend environment & Playwright
         working-directory: frontend
