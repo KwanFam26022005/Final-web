@@ -36,8 +36,8 @@ The platform follows a decoupled **Monorepo** architecture:
 ## 3. Current Implementation Status
 
 > **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Step:** Step 3R — Laravel Backend Boundary Cleanup (Remediation completed, pending review)<br>
-> **Next Authorized Step:** Step 4 — MySQL Foundation (Do NOT begin yet)
+> **Current Step:** Step 4 — MySQL Foundation (Implementation completed, pending review)<br>
+> **Next Authorized Step:** Step 5 — React Frontend Foundation (Do NOT begin yet)
 
 ### Implemented:
 - Governance and specification foundation
@@ -50,10 +50,13 @@ The platform follows a decoupled **Monorepo** architecture:
 - Decoupled API-only Laravel REST API backend foundation (`backend/`, Laravel Framework v13.30.1)
 - Minimal infrastructure health endpoint (`GET /api/health`) and automated Feature test
 - Clean API-only backend boundary (removal of redundant backend frontend toolchains and conflicting agent instructions)
+- MySQL database foundation (MySQL 8.4.3, InnoDB, utf8mb4, dev DB `final_web`, isolated test DB `final_web_test`)
+- Migration repository initialized in both databases with zero domain tables
+- Automated MySQL foundation feature test (`MySqlFoundationTest`) and test database safety guard
 
 ### Not Yet Implemented:
 - Frontend application scaffold (`frontend/`)
-- Database integration and MySQL schema / migrations (Step 4)
+- Application-domain database schema and migrations (Phase 2+)
 - Authentication and account management
 - Core and advanced note features (CRUD, labels, attachments, search, pinning)
 - Password-protected notes and sharing authorization

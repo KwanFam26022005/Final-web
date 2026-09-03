@@ -26,14 +26,14 @@ This document records the exact results of the read-only, non-destructive baseli
 
 ### Service States
 - **Docker Daemon (Docker Desktop):** Inactive / stopped during baseline (`open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`). Must be launched when container operations begin.
-- **MySQL Server:** Stopped during baseline. Windows Service `mysql` exists in `Stopped` state. No `mysqld` process listening.
+- **MySQL Server:** Active under Laragon (mysqld Community Server 8.4.3, port 3306).
 - **Apache (httpd):** Active (PIDs 4116, 7160) under Laragon. Does not occupy frontend or backend target ports.
 
 ### Port Verification
 The target development ports were inspected via `Get-NetTCPConnection` and `netstat -ano`:
 - **Port 5173 (Vite Frontend):** **Available** (Unoccupied)
 - **Port 8000 (Laravel Backend API):** **Available** (Unoccupied; validated via temporary HTTP probe in Step 3)
-- **Port 3306 (MySQL Database):** **Available** (Unoccupied)
+- **Port 3306 (MySQL Database):** **Active** (Occupied by MySQL 8.4.3; validated in Step 4)
 
 ---
 
@@ -62,3 +62,10 @@ The target development ports were inspected via `Get-NetTCPConnection` and `nets
    - **API-Only Backend:** Backend is strictly a headless REST API (`backend/routes/api.php`); generic Laravel frontend assets (`package.json`, `vite.config.js`, `.npmrc`, `resources/css`, `resources/js`, `resources/views/welcome.blade.php`, and `routes/web.php`) were removed. Project frontend belongs exclusively to root `/frontend` (Phase 1 Step 5).
    - **Scaffold SQLite & Migration Audit:** During `composer create-project`, Laravel's default post-create script generated a local `database/database.sqlite` and ran default skeleton migrations (`users`, `cache`, `jobs`). This file remains local, untracked, and gitignored. No MySQL server was started, no MySQL database was created, and no MySQL migrations were executed. Authoritative MySQL schema foundation is deferred to Phase 1 Step 4.
    - **Agent Governance & Boost Policy:** Scaffold-generated `backend/AGENTS.md` and `backend/CLAUDE.md` (which instructed agents to install Laravel Boost and alter host PHP) were removed. Authoritative agent governance remains root `/AGENTS.md`. Laravel Boost is NOT installed.
+
+7. **MySQL Foundation & Database Isolation (Resolved Phase 1 Step 4):**
+   - **RDBMS Engine:** MySQL Community Server `8.4.3` (`InnoDB`, `utf8mb4`, `utf8mb4_unicode_ci`)
+   - **Development Database:** `final_web` (configured via `.env`)
+   - **Testing Database:** `final_web_test` (configured via `.env.testing`, protected by test safety guards)
+   - **Migration Repository:** Initialized via `php artisan migrate:install` in both databases; zero domain tables present.
+   - **Driver Verification:** `PDO` and `pdo_mysql` confirmed active; automated feature tests pass.
