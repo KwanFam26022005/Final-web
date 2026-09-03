@@ -310,9 +310,27 @@ jobs:
           echo "Users table count: $USERS_COUNT"
           [ "$USERS_COUNT" = "1" ] || (echo "FAIL: users table missing" && exit 1)
 
+          RESET_TOKENS_COUNT=$(docker compose --env-file .env.docker exec -T mysql \
+            mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
+            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME = 'password_reset_tokens';")
+          echo "Password reset tokens table count: $RESET_TOKENS_COUNT"
+          [ "$RESET_TOKENS_COUNT" = "1" ] || (echo "FAIL: password_reset_tokens table missing" && exit 1)
+
+          PREFERENCES_COUNT=$(docker compose --env-file .env.docker exec -T mysql \
+            mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
+            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME = 'user_preferences';")
+          echo "User preferences table count: $PREFERENCES_COUNT"
+          [ "$PREFERENCES_COUNT" = "1" ] || (echo "FAIL: user_preferences table missing" && exit 1)
+
+          AVATAR_COL_COUNT=$(docker compose --env-file .env.docker exec -T mysql \
+            mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
+            -N -s -e "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'avatar_path';")
+          echo "Users avatar_path column count: $AVATAR_COL_COUNT"
+          [ "$AVATAR_COL_COUNT" = "1" ] || (echo "FAIL: avatar_path column missing in users table" && exit 1)
+
           UNEXPECTED=$(docker compose --env-file .env.docker exec -T mysql \
             mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
-            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME IN ('notes', 'labels', 'attachments', 'note_shares', 'personal_access_tokens');")
+            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME IN ('notes', 'labels', 'note_label', 'attachments', 'note_shares', 'personal_access_tokens');")
           echo "Unexpected future tables count: $UNEXPECTED"
           [ "$UNEXPECTED" = "0" ] || (echo "FAIL: unexpected future tables found" && exit 1)
 

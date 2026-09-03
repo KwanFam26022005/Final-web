@@ -1,6 +1,12 @@
 <?php
 
+use App\Http\Controllers\Account\AvatarController;
+use App\Http\Controllers\Account\PasswordChangeController;
+use App\Http\Controllers\Account\PreferenceController;
+use App\Http\Controllers\Account\ProfileController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Auth\VerificationController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -28,11 +34,32 @@ Route::get('/health/database', function () {
 });
 
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:30,1');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:30,1');
+    Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])->middleware('throttle:30,1');
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:30,1');
+
+    Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:30,1'])
+        ->name('verification.verify');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
+        Route::post('/email/resend', [VerificationController::class, 'resend'])->middleware('throttle:30,1');
     });
+});
+
+Route::prefix('account')->middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::patch('/profile', [ProfileController::class, 'update']);
+
+    Route::post('/avatar', [AvatarController::class, 'upload']);
+    Route::delete('/avatar', [AvatarController::class, 'destroy']);
+    Route::get('/avatar', [AvatarController::class, 'show']);
+
+    Route::post('/password', [PasswordChangeController::class, 'update'])->middleware('throttle:10,1');
+
+    Route::get('/preferences', [PreferenceController::class, 'show']);
+    Route::patch('/preferences', [PreferenceController::class, 'update']);
 });

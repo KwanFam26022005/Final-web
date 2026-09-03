@@ -67,7 +67,8 @@ export async function apiClient<T>(
     if (xsrfToken && !headers.has('X-XSRF-TOKEN')) {
       headers.set('X-XSRF-TOKEN', xsrfToken);
     }
-    if (!headers.has('Content-Type') && init?.body) {
+    const isFormData = typeof FormData !== 'undefined' && init?.body instanceof FormData;
+    if (!headers.has('Content-Type') && init?.body && !isFormData) {
       headers.set('Content-Type', 'application/json');
     }
   }

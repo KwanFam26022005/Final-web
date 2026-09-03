@@ -33,6 +33,7 @@ export default defineConfig({
         DB_CONNECTION: 'mysql',
         DB_DATABASE: 'final_web_test',
         SESSION_DRIVER: 'file',
+        CACHE_STORE: 'file',
       },
     },
     {

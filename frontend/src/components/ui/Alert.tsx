@@ -1,6 +1,6 @@
 import React from 'react';
 
-export interface AlertProps {
+export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'info' | 'success' | 'warning' | 'error';
   title?: string;
   children: React.ReactNode;
@@ -12,6 +12,7 @@ export const Alert: React.FC<AlertProps> = ({
   title,
   children,
   className = '',
+  ...props
 }) => {
   const variantStyles = {
     info: 'bg-blue-50 border-blue-200 text-blue-900',
@@ -57,6 +58,7 @@ export const Alert: React.FC<AlertProps> = ({
     <div
       role={isRoleAlert ? 'alert' : 'status'}
       className={`flex gap-3 p-4 rounded-lg border text-sm ${variantStyles[variant]} ${className}`}
+      {...props}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
