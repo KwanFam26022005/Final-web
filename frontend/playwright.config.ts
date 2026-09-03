@@ -32,6 +32,7 @@ export default defineConfig({
         APP_ENV: 'testing',
         DB_CONNECTION: 'mysql',
         DB_DATABASE: 'final_web_test',
+        SESSION_DRIVER: 'file',
       },
     },
     {
