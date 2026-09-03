@@ -1,0 +1,60 @@
+# Environment and Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies
+node_modules/
+vendor/
+frontend/node_modules/
+backend/vendor/
+
+# Build and Distribution
+dist/
+build/
+frontend/dist/
+frontend/build/
+
+# Testing and Coverage
+coverage/
+.phpunit.result.cache
+playwright-report/
+test-results/
+.nyc_output/
+
+# Laravel Storage and Framework Cache
+storage/logs/*
+!storage/logs/.gitkeep
+storage/framework/cache/*
+!storage/framework/cache/.gitkeep
+storage/framework/sessions/*
+!storage/framework/sessions/.gitkeep
+storage/framework/views/*
+!storage/framework/views/.gitkeep
+backend/storage/logs/*
+!backend/storage/logs/.gitkeep
+backend/storage/framework/cache/*
+!backend/storage/framework/cache/.gitkeep
+backend/storage/framework/sessions/*
+!backend/storage/framework/sessions/.gitkeep
+backend/storage/framework/views/*
+!backend/storage/framework/views/.gitkeep
+
+# IDE and Editor Files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker / Temporary runtime files
+*.pid
+*.seed
+*.log
