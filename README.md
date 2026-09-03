@@ -36,7 +36,7 @@ The platform follows a decoupled **Monorepo** architecture:
 ## 3. Current Implementation Status
 
 > **Current Phase:** Phase 1 — Repository and Runtime Foundation<br>
-> **Current Step:** Step 3 — Laravel Backend Foundation (Implementation completed, pending review)<br>
+> **Current Step:** Step 3R — Laravel Backend Boundary Cleanup (Remediation completed, pending review)<br>
 > **Next Authorized Step:** Step 4 — MySQL Foundation (Do NOT begin yet)
 
 ### Implemented:
@@ -47,8 +47,9 @@ The platform follows a decoupled **Monorepo** architecture:
 - Testing guidelines and Git contribution rules
 - Runtime environment baseline documentation
 - Repository hygiene configuration (`.gitignore`, `.gitattributes`, `.editorconfig`)
-- Decoupled Laravel REST API backend foundation (`backend/`, Laravel Framework v13.30.1)
+- Decoupled API-only Laravel REST API backend foundation (`backend/`, Laravel Framework v13.30.1)
 - Minimal infrastructure health endpoint (`GET /api/health`) and automated Feature test
+- Clean API-only backend boundary (removal of redundant backend frontend toolchains and conflicting agent instructions)
 
 ### Not Yet Implemented:
 - Frontend application scaffold (`frontend/`)

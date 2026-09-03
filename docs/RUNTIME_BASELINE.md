@@ -52,8 +52,13 @@ The target development ports were inspected via `Get-NetTCPConnection` and `nets
    Git identity is authoritatively bound to the global Git configuration (`KwanFam26022005` / `phdk2602@gmail.com`). AI agents must never modify local or global Git identities.
 
 5. **Laravel Framework Version Resolution (Resolved Phase 1 Step 3):**
-   - **Resolution Date:** 2026-09-03 (Phase 1 Step 3)
+   - **Resolution Date:** 2026-09-03 (Phase 1 Step 3 / 3R)
    - **Installed Application Skeleton:** `laravel/laravel`
    - **Installed Framework Version:** `Laravel Framework 13.30.1` (`laravel/framework: v13.30.1`)
    - **Composer Framework Constraint:** `^13.17`
    - **Host Runtime Compatibility Evidence:** Successfully resolved and installed on host PHP `8.3.30` (cli) ZTS Visual C++ 2019 x64 and Composer `2.9.4`. Full test suite and HTTP health probe validated without regressions.
+
+6. **Backend Boundary & Migration Audit (Resolved Phase 1 Step 3R):**
+   - **API-Only Backend:** Backend is strictly a headless REST API (`backend/routes/api.php`); generic Laravel frontend assets (`package.json`, `vite.config.js`, `.npmrc`, `resources/css`, `resources/js`, `resources/views/welcome.blade.php`, and `routes/web.php`) were removed. Project frontend belongs exclusively to root `/frontend` (Phase 1 Step 5).
+   - **Scaffold SQLite & Migration Audit:** During `composer create-project`, Laravel's default post-create script generated a local `database/database.sqlite` and ran default skeleton migrations (`users`, `cache`, `jobs`). This file remains local, untracked, and gitignored. No MySQL server was started, no MySQL database was created, and no MySQL migrations were executed. Authoritative MySQL schema foundation is deferred to Phase 1 Step 4.
+   - **Agent Governance & Boost Policy:** Scaffold-generated `backend/AGENTS.md` and `backend/CLAUDE.md` (which instructed agents to install Laravel Boost and alter host PHP) were removed. Authoritative agent governance remains root `/AGENTS.md`. Laravel Boost is NOT installed.
