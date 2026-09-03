@@ -10,11 +10,13 @@ test.describe('Infrastructure Smoke Test', () => {
     await expect(page.getByText('Ready')).toBeVisible();
 
     // 2. Connectivity states transition to Connected
-    const backendRow = page.locator('div', { has: page.getByText('Backend API') });
-    await expect(backendRow.getByText('Connected')).toBeVisible({ timeout: 15000 });
+    await expect(
+      page.getByTestId('backend-status-row').getByText('Connected', { exact: true })
+    ).toBeVisible({ timeout: 15000 });
 
-    const dbRow = page.locator('div', { has: page.getByText('MySQL Database') });
-    await expect(dbRow.getByText('Connected')).toBeVisible({ timeout: 15000 });
+    await expect(
+      page.getByTestId('database-status-row').getByText('Connected', { exact: true })
+    ).toBeVisible({ timeout: 15000 });
 
     // 3. Ensure no sensitive errors or unhandled exceptions are present in the DOM
     await expect(page.locator('body')).not.toContainText('PDOException');

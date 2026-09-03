@@ -90,11 +90,11 @@ export default function App() {
                 Ready
               </dd>
             </div>
-            <div className="flex items-center justify-between py-2">
+            <div data-testid="backend-status-row" className="flex items-center justify-between py-2">
               <dt className="text-slate-600 dark:text-slate-300">Backend API</dt>
               <dd>{getStatusBadge(backendStatus, 'Connected')}</dd>
             </div>
-            <div className="flex items-center justify-between py-2">
+            <div data-testid="database-status-row" className="flex items-center justify-between py-2">
               <dt className="text-slate-600 dark:text-slate-300">MySQL Database</dt>
               <dd>{getStatusBadge(databaseStatus, 'Connected')}</dd>
             </div>

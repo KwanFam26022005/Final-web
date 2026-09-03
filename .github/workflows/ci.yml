@@ -209,7 +209,37 @@ jobs:
         run: docker compose --env-file .env.docker build --no-cache
 
       - name: Start Docker Compose stack
+        id: compose-up
+        continue-on-error: true
         run: docker compose --env-file .env.docker up -d
+
+      - name: Diagnose Docker startup
+        run: |
+          echo "=== All Container Statuses ==="
+          docker compose --env-file .env.docker ps -a
+          echo "=== MySQL Container Logs ==="
+          docker compose --env-file .env.docker logs --no-color mysql
+          echo "=== Backend Container Logs ==="
+          docker compose --env-file .env.docker logs --no-color backend
+          echo "=== Backend State & Health Details ==="
+          if docker inspect final-web-backend >/dev/null 2>&1; then
+            echo "State.Status: $(docker inspect final-web-backend --format='{{.State.Status}}')"
+            echo "State.Running: $(docker inspect final-web-backend --format='{{.State.Running}}')"
+            echo "State.ExitCode: $(docker inspect final-web-backend --format='{{.State.ExitCode}}')"
+            echo "State.Error: $(docker inspect final-web-backend --format='{{.State.Error}}')"
+            echo "Health.Status: $(docker inspect final-web-backend --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}')"
+            echo "Health.FailingStreak: $(docker inspect final-web-backend --format='{{if .State.Health}}{{.State.Health.FailingStreak}}{{else}}none{{end}}')"
+            echo "Health.Log:"
+            docker inspect final-web-backend --format='{{if .State.Health}}{{range .State.Health.Log}}ExitCode: {{.ExitCode}}, Output: {{.Output}}{{end}}{{else}}none{{end}}'
+          else
+            echo "final-web-backend container does not exist."
+          fi
+
+      - name: Enforce Docker Compose startup success
+        if: steps.compose-up.outcome != 'success'
+        run: |
+          echo "ERROR: Docker Compose startup failed. Diagnostic details captured above."
+          exit 1
 
       - name: Wait for all services to become healthy
         run: |
