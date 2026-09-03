@@ -8,11 +8,11 @@ services:
       - --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_DATABASE: final_web
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
       MYSQL_USER: ${DB_USERNAME:-final_web_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-secretpassword}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD:-rootpassword} || exit 1"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -31,7 +31,7 @@ services:
     environment:
       APP_NAME: Laravel
       APP_ENV: production
-      APP_KEY: ${APP_KEY}
+      APP_KEY: ${APP_KEY:?APP_KEY is required}
       APP_DEBUG: "false"
       APP_URL: http://127.0.0.1:8000
       DB_CONNECTION: mysql
@@ -39,7 +39,7 @@ services:
       DB_PORT: 3306
       DB_DATABASE: final_web
       DB_USERNAME: ${DB_USERNAME:-final_web_user}
-      DB_PASSWORD: ${DB_PASSWORD:-secretpassword}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       SESSION_DRIVER: array
       CACHE_STORE: array
       QUEUE_CONNECTION: sync

@@ -179,3 +179,142 @@ jobs:
       - name: Run Playwright E2E smoke tests
         working-directory: frontend
         run: npx playwright test
+
+  docker-runtime:
+    name: Docker Runtime Reproducibility
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Docker and Compose versions
+        run: |
+          docker version
+          docker compose version
+
+      - name: Generate ephemeral Docker environment
+        run: |
+          APP_KEY="base64:$(openssl rand -base64 32)"
+          MYSQL_ROOT_PASSWORD="$(openssl rand -hex 16)"
+          DB_PASSWORD="$(openssl rand -hex 16)"
+          printf 'APP_KEY=%s\nMYSQL_ROOT_PASSWORD=%s\nDB_USERNAME=final_web_user\nDB_PASSWORD=%s\nVITE_API_BASE_URL=http://127.0.0.1:8000\n' \
+            "$APP_KEY" "$MYSQL_ROOT_PASSWORD" "$DB_PASSWORD" > .env.docker
+
+      - name: Verify Compose configuration
+        run: docker compose --env-file .env.docker config
+
+      - name: Build all images (clean, no cache)
+        run: docker compose --env-file .env.docker build --no-cache
+
+      - name: Start Docker Compose stack
+        run: docker compose --env-file .env.docker up -d
+
+      - name: Wait for all services to become healthy
+        run: |
+          echo "Waiting for all containers to reach healthy status..."
+          for i in $(seq 1 60); do
+            MYSQL_STATUS=$(docker inspect --format='{{.State.Health.Status}}' final-web-mysql 2>/dev/null || echo "missing")
+            BACKEND_STATUS=$(docker inspect --format='{{.State.Health.Status}}' final-web-backend 2>/dev/null || echo "missing")
+            FRONTEND_STATUS=$(docker inspect --format='{{.State.Health.Status}}' final-web-frontend 2>/dev/null || echo "missing")
+            echo "[$i/60] mysql=$MYSQL_STATUS backend=$BACKEND_STATUS frontend=$FRONTEND_STATUS"
+            if [ "$MYSQL_STATUS" = "healthy" ] && [ "$BACKEND_STATUS" = "healthy" ] && [ "$FRONTEND_STATUS" = "healthy" ]; then
+              echo "All services healthy."
+              break
+            fi
+            if [ "$i" -eq 60 ]; then
+              echo "Timeout: not all services reached healthy within 300s"
+              docker compose --env-file .env.docker ps
+              docker compose --env-file .env.docker logs
+              exit 1
+            fi
+            sleep 5
+          done
+
+      - name: Inspect container health status
+        run: docker compose --env-file .env.docker ps
+
+      - name: Verify frontend HTTP 200
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5173/)
+          echo "Frontend HTTP status: $STATUS"
+          [ "$STATUS" = "200" ] || (echo "FAIL: Expected 200, got $STATUS" && exit 1)
+
+      - name: Verify backend health HTTP 200
+        run: |
+          RESPONSE=$(curl -s http://127.0.0.1:8000/api/health)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/api/health)
+          echo "Backend health HTTP status: $STATUS"
+          echo "Backend health response: $RESPONSE"
+          [ "$STATUS" = "200" ] || (echo "FAIL: Expected 200, got $STATUS" && exit 1)
+
+      - name: Verify database health HTTP 200
+        run: |
+          RESPONSE=$(curl -s http://127.0.0.1:8000/api/health/database)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/api/health/database)
+          echo "Database health HTTP status: $STATUS"
+          echo "Database health response: $RESPONSE"
+          [ "$STATUS" = "200" ] || (echo "FAIL: Expected 200, got $STATUS" && exit 1)
+
+      - name: Verify MySQL database contract inside container
+        run: |
+          RESULT=$(docker compose --env-file .env.docker exec -T mysql \
+            mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
+            -N -s -e "SELECT CONCAT(DEFAULT_CHARACTER_SET_NAME, ':', DEFAULT_COLLATION_NAME) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = 'final_web';")
+          echo "MySQL charset:collation = $RESULT"
+          [ "$RESULT" = "utf8mb4:utf8mb4_unicode_ci" ] || (echo "FAIL: unexpected collation $RESULT" && exit 1)
+
+      - name: Verify no domain tables in final_web
+        run: |
+          TABLES=$(docker compose --env-file .env.docker exec -T mysql \
+            mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
+            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME != 'migrations';")
+          echo "Domain table count (excluding migrations): $TABLES"
+          [ "$TABLES" = "0" ] || (echo "FAIL: unexpected domain tables found" && exit 1)
+
+      - name: Verify host-independence — backend DB_HOST=mysql
+        run: |
+          DB_HOST=$(docker inspect final-web-backend --format='{{range .Config.Env}}{{println .}}{{end}}' | grep '^DB_HOST=' | cut -d= -f2)
+          echo "backend DB_HOST=$DB_HOST"
+          [ "$DB_HOST" = "mysql" ] || (echo "FAIL: DB_HOST not 'mysql'" && exit 1)
+
+      - name: Verify MySQL has no host port binding
+        run: |
+          HOST_PORT=$(docker inspect final-web-mysql --format='{{json .NetworkSettings.Ports}}')
+          echo "MySQL port bindings: $HOST_PORT"
+          echo "$HOST_PORT" | grep -q '"3306/tcp":\[' && echo "FAIL: 3306 is host-bound" && exit 1
+          echo "PASS: MySQL 3306 is not bound to host"
+
+      - name: Set up Node.js 24 for Playwright Docker proof
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install frontend dependencies and Playwright browser
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run Playwright smoke test against Docker stack
+        working-directory: frontend
+        env:
+          CI: ''
+        run: npx playwright test
+
+      - name: Cleanup — tear down Docker Compose stack and volumes
+        if: always()
+        run: |
+          docker compose --env-file .env.docker down -v --remove-orphans
+          rm -f .env.docker
+
+      - name: Verify all project containers removed
+        if: always()
+        run: |
+          REMAINING=$(docker ps -a --filter "name=final-web" --format "{{.Names}}")
+          if [ -n "$REMAINING" ]; then
+            echo "FAIL: containers still present: $REMAINING"
+            exit 1
+          fi
+          echo "PASS: no project containers remaining"
