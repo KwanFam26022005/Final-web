@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class NoteController extends Controller
 {
@@ -23,7 +24,8 @@ class NoteController extends Controller
     {
         $request->validate([
             'q' => ['nullable', 'string', 'max:200'],
-            'label_ids' => ['nullable'],
+            'label_ids' => ['nullable', 'array'],
+            'label_ids.*' => ['integer', 'distinct', 'min:1'],
         ]);
 
         $user = $request->user();
@@ -43,30 +45,22 @@ class NoteController extends Controller
 
         // Optional multi-label filtering with ALL-match (AND) semantics
         $rawLabelIds = $request->input('label_ids');
-        if ($rawLabelIds !== null) {
-            if (is_string($rawLabelIds)) {
-                $rawLabelIds = explode(',', $rawLabelIds);
-            }
-            $labelIds = array_filter(
-                array_map('intval', (array) $rawLabelIds),
-                fn ($id) => $id > 0
-            );
-            $labelIds = array_values(array_unique($labelIds));
+        if (! empty($rawLabelIds)) {
+            $labelIds = array_map('intval', $rawLabelIds);
 
-            if (! empty($labelIds)) {
-                // Verify all requested label IDs belong to the authenticated user
-                $ownedCount = $user->labels()->whereIn('id', $labelIds)->count();
-                if ($ownedCount !== count($labelIds)) {
-                    // Foreign label ID must not reveal existence or leak notes
-                    $notesQuery->whereRaw('1 = 0');
-                } else {
-                    foreach ($labelIds as $labelId) {
-                        $notesQuery->whereHas('labels', function ($sub) use ($labelId, $user) {
-                            $sub->where('labels.id', $labelId)
-                                ->where('labels.user_id', $user->id);
-                        });
-                    }
-                }
+            // Verify all requested label IDs belong to the authenticated user
+            $ownedCount = $user->labels()->whereIn('id', $labelIds)->count();
+            if ($ownedCount !== count($labelIds)) {
+                throw ValidationException::withMessages([
+                    'label_ids' => ['One or more selected labels are invalid.'],
+                ]);
+            }
+
+            foreach ($labelIds as $labelId) {
+                $notesQuery->whereHas('labels', function ($sub) use ($labelId, $user) {
+                    $sub->where('labels.id', $labelId)
+                        ->where('labels.user_id', $user->id);
+                });
             }
         }
 

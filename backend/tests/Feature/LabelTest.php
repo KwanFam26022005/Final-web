@@ -549,7 +549,7 @@ class LabelTest extends TestCase
             ->assertJsonPath('data.0.id', $ownNote->id);
     }
 
-    public function test_foreign_label_filter_ids_rejected_safely_returning_empty_collection(): void
+    public function test_foreign_label_filter_ids_rejected_with_generic_422(): void
     {
         $this->authenticatedUser();
         $otherUser = User::factory()->create();
@@ -557,8 +557,51 @@ class LabelTest extends TestCase
 
         $response = $this->getJson("/api/notes?label_ids[]={$foreignLabel->id}");
 
-        $response->assertOk()
-            ->assertJsonCount(0, 'data');
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['label_ids'])
+            ->assertJsonPath('errors.label_ids.0', 'One or more selected labels are invalid.');
+    }
+
+    public function test_nonexistent_label_filter_ids_rejected_with_generic_422(): void
+    {
+        $this->authenticatedUser();
+
+        $response = $this->getJson('/api/notes?label_ids[]=999999');
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['label_ids'])
+            ->assertJsonPath('errors.label_ids.0', 'One or more selected labels are invalid.');
+    }
+
+    public function test_malformed_label_filter_inputs_rejected_with_422(): void
+    {
+        $user = $this->authenticatedUser();
+        $label = Label::factory()->create(['user_id' => $user->id, 'name' => 'Test']);
+
+        // Non-array input
+        $this->getJson('/api/notes?label_ids=not-an-array')
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['label_ids']);
+
+        // Negative integer
+        $this->getJson('/api/notes?label_ids[]=-5')
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['label_ids.0']);
+
+        // Zero
+        $this->getJson('/api/notes?label_ids[]=0')
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['label_ids.0']);
+
+        // Non-numeric string in array
+        $this->getJson('/api/notes?label_ids[]=invalid')
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['label_ids.0']);
+
+        // Duplicate IDs in array
+        $this->getJson("/api/notes?label_ids[]={$label->id}&label_ids[]={$label->id}")
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['label_ids.0']);
     }
 
     public function test_search_text_and_single_label_composition(): void
