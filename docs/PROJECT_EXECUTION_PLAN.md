@@ -2,10 +2,11 @@
 
 This document establishes the multi-phase engineering delivery plan for the Collaborative Intelligent Note Management Web Application. Each phase defines discrete objectives, assigned requirement IDs, technical deliverables, and strict exit criteria.
 
-> **Current Completed Phases:** Phase 1 — Repository and Runtime Foundation; Phase 2 — Authentication and Account Management<br>
+> **Current Completed Phases:** Phase 1 — Repository and Runtime Foundation; Phase 2 — Authentication and Account Management; Phase 3 — Core Note CRUD, Views, and Autosave<br>
 > **Phase 1 Status:** COMPLETED / FROZEN<br>
 > **Phase 2 Status:** COMPLETED / VERIFIED / FROZEN (Academic Light V2 visual direction accepted)<br>
-> **Current Authorized Phase:** Phase 3 — Core Note CRUD, Views, and Autosave (IN PROGRESS)<br>
+> **Phase 3 Status:** COMPLETED / VERIFIED / FROZEN<br>
+> **Current Authorized Phase:** Phase 4 — Labels, Attachments, Search, and Pinning (IN PROGRESS)<br>
 > **Rule:** No feature may be promoted or implemented ahead of its designated phase without explicit authorization.
 
 ---
@@ -75,7 +76,7 @@ flowchart LR
 ---
 
 ### Phase 3: Core Note CRUD, Views, and Autosave
-- **Status:** IMPLEMENTATION COMPLETE / PENDING MAIN INTEGRATION
+- **Status:** COMPLETED / VERIFIED / FROZEN
 - **Target Requirements:** `NOTE-01` through `NOTE-05`
 - **Objective:** Build foundational note management capabilities on frontend and backend.
 - **Deliverables:** Grid and List views with toggle; unified note creation/editing interaction model; debounced autosave with visual status; safe delete requiring explicit confirmation dialog; backend REST endpoints with FormRequest validation.
@@ -84,6 +85,7 @@ flowchart LR
 ---
 
 ### Phase 4: Labels, Attachments, Search, and Pinning
+- **Status:** IN PROGRESS
 - **Target Requirements:** `LABEL-01` to `LABEL-03`, `NOTE-06` to `NOTE-08`, `SEC-04`
 - **Objective:** Extend notes with rich metadata, categorization, instant search, and file attachments.
 - **Deliverables:** Many-to-many labels with CRUD and filter pills; pinned notes section rendered at top with visual indicator; live debounced client search (~300 ms); validated secure file attachment uploads.

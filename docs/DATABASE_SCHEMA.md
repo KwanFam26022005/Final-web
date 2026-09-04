@@ -2,7 +2,7 @@
 
 This document defines the authoritative database runtime standards, environment isolation boundaries, physical migration baseline, and planned conceptual entity relationships for the Collaborative Intelligent Note Management Web Application.
 
-> **Status Notice:** This document records the **Phase 3 Core Notes Baseline**. The physical persistence foundation includes the framework migration repository, Phase 2 authentication and user account tables (`users`, `password_reset_tokens`, `user_preferences`), and the Phase 3 Core Notes persistence table (`notes`). Subsequent domain entities documented below represent conceptual architectural intent and will be frozen in their respective phases.
+> **Status Notice:** This document records the **Phase 4 Organization, Discovery & Media Baseline** (in progress). The physical persistence foundation includes the framework migration repository, Phase 2 authentication and user account tables (`users`, `password_reset_tokens`, `user_preferences`), Phase 3 Core Notes persistence table (`notes`), and Phase 4 organizational extensions. Subsequent domain entities documented below represent conceptual architectural intent and will be frozen in their respective phases.
 
 ---
 
