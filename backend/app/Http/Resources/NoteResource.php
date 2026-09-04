@@ -18,6 +18,7 @@ class NoteResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'content' => $this->content,
+            'is_pinned' => (bool) $this->is_pinned,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

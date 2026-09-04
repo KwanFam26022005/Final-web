@@ -4,6 +4,7 @@ export interface Note {
   id: number;
   title: string;
   content: string;
+  is_pinned: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -16,8 +17,11 @@ interface NoteResponse {
   data: Note;
 }
 
-export async function fetchNotes(): Promise<Note[]> {
-  const res = await apiClient<NoteListResponse>('/api/notes');
+export async function fetchNotes(query?: string, signal?: AbortSignal): Promise<Note[]> {
+  const url = query && query.trim() !== ''
+    ? `/api/notes?q=${encodeURIComponent(query.trim())}`
+    : '/api/notes';
+  const res = await apiClient<NoteListResponse>(url, { signal });
   return res.data;
 }
 
@@ -40,6 +44,15 @@ export async function updateNote(id: number, data: { title?: string; content?: s
   const res = await apiClient<NoteResponse>(`/api/notes/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
+  });
+  return res.data;
+}
+
+export async function pinNote(id: number, is_pinned: boolean): Promise<Note> {
+  await ensureCsrfCookie();
+  const res = await apiClient<NoteResponse>(`/api/notes/${id}/pin`, {
+    method: 'PATCH',
+    body: JSON.stringify({ is_pinned }),
   });
   return res.data;
 }

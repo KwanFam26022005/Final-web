@@ -24,6 +24,17 @@ class NoteFactory extends Factory
             'user_id' => User::factory(),
             'title' => fake()->sentence(4),
             'content' => fake()->paragraphs(2, true),
+            'is_pinned' => false,
         ];
+    }
+
+    /**
+     * Indicate that the note is pinned.
+     */
+    public function pinned(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_pinned' => true,
+        ]);
     }
 }

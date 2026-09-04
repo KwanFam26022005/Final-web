@@ -20,7 +20,20 @@ class Note extends Model
     protected $fillable = [
         'title',
         'content',
+        'is_pinned',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_pinned' => 'boolean',
+        ];
+    }
 
     /**
      * Get the user that owns the note.

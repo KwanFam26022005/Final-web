@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Note\PinNoteRequest;
 use App\Http\Requests\Note\StoreNoteRequest;
 use App\Http\Requests\Note\UpdateNoteRequest;
 use App\Http\Resources\NoteResource;
@@ -19,8 +20,25 @@ class NoteController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        $notes = $request->user()
-            ->notes()
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        $notesQuery = $request->user()->notes();
+
+        $q = $request->query('q');
+        if (is_string($q) && trim($q) !== '') {
+            $escaped = addcslashes(trim($q), '%_\\');
+            $pattern = '%'.$escaped.'%';
+
+            $notesQuery->where(function ($sub) use ($pattern) {
+                $sub->where('title', 'LIKE', $pattern)
+                    ->orWhere('content', 'LIKE', $pattern);
+            });
+        }
+
+        $notes = $notesQuery
+            ->orderByDesc('is_pinned')
             ->orderByDesc('updated_at')
             ->orderByDesc('id')
             ->get();
@@ -72,5 +90,19 @@ class NoteController extends Controller
         $note->delete();
 
         return response()->noContent();
+    }
+
+    /**
+     * Pin or unpin the specified note.
+     */
+    public function pin(PinNoteRequest $request, Note $note): NoteResource
+    {
+        Gate::authorize('pin', $note);
+
+        $note->update([
+            'is_pinned' => $request->boolean('is_pinned'),
+        ]);
+
+        return new NoteResource($note->fresh());
     }
 }

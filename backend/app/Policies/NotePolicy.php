@@ -30,4 +30,12 @@ class NotePolicy
     {
         return $user->id === $note->user_id;
     }
+
+    /**
+     * Determine whether the user can pin or unpin the note.
+     */
+    public function pin(User $user, Note $note): bool
+    {
+        return $user->id === $note->user_id;
+    }
 }

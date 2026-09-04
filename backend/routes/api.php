@@ -71,4 +71,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notes/{note}', [NoteController::class, 'show']);
     Route::patch('/notes/{note}', [NoteController::class, 'update']);
     Route::delete('/notes/{note}', [NoteController::class, 'destroy']);
+    Route::patch('/notes/{note}/pin', [NoteController::class, 'pin']);
 });
