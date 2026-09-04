@@ -40,9 +40,9 @@ To prevent accidental test mutation under the governed test hierarchy:
 
 ---
 
-## 3. Current Physical Schema Baseline (Phase 3 Core Notes)
+## 3. Current Physical Schema Baseline (Phase 4 M2 Labels & Filtering)
 
-The physical database schema contains the framework migration repository and the domain tables established through Phase 2 and Phase 3:
+The physical database schema contains the framework migration repository and the domain tables established through Phase 2, Phase 3, and Phase 4 Milestones 1 & 2:
 
 ### Table: `migrations`
 Established via `php artisan migrate:install`.
@@ -103,14 +103,44 @@ Established via Phase 3 (`2026_09_04_000001_create_notes_table.php`), extended v
 | `updated_at` | `TIMESTAMP` | Nullable | Record update timestamp |
 
 **Indexes on `notes`:**
-- Primary Key: `(`id`)`
-- Composite Index: `(`user_id`, `updated_at`)` (Optimizes personal note list queries ordered by recent activity)
-- Composite Index: `(`user_id`, `is_pinned`, `updated_at`)` (Phase 4 M1: Optimizes personal note queries ordered by pinned status and recent activity)
-- Foreign Key: `(`user_id`)` referencing `users(`id`)` ON DELETE CASCADE
+- Primary Key: `(id)`
+- Composite Index: `(user_id, updated_at)` (Optimizes personal note list queries ordered by recent activity)
+- Composite Index: `(user_id, is_pinned, updated_at)` (Phase 4 M1: Optimizes personal note queries ordered by pinned status and recent activity)
+- Foreign Key: `(user_id)` referencing `users(id)` ON DELETE CASCADE
+
+### Table: `labels`
+Established via Phase 4 M2 (`2026_09_04_000003_create_labels_table.php`).
+
+| Column | Type | Attributes | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `BIGINT UNSIGNED` | Primary Key, Auto Increment | Unique label identifier |
+| `user_id` | `BIGINT UNSIGNED` | Foreign Key (`users.id` ON DELETE CASCADE) | Owner user identifier |
+| `name` | `VARCHAR(50)` | Not Null | User-defined label name (1-50 characters) |
+| `created_at` | `TIMESTAMP` | Nullable | Record creation timestamp |
+| `updated_at` | `TIMESTAMP` | Nullable | Record update timestamp |
+
+**Indexes on `labels`:**
+- Primary Key: `(id)`
+- Unique Key: `(user_id, name)` (Enforces case-insensitive scoped label uniqueness per user)
+- Foreign Key: `(user_id)` referencing `users(id)` ON DELETE CASCADE
+
+### Table: `note_label`
+Established via Phase 4 M2 (`2026_09_04_000004_create_note_label_table.php`).
+
+| Column | Type | Attributes | Description |
+| :--- | :--- | :--- | :--- |
+| `note_id` | `BIGINT UNSIGNED` | Foreign Key (`notes.id` ON DELETE CASCADE) | Associated note identifier |
+| `label_id` | `BIGINT UNSIGNED` | Foreign Key (`labels.id` ON DELETE CASCADE) | Associated label identifier |
+
+**Indexes on `note_label`:**
+- Primary Key: `(note_id, label_id)` (Composite PK ensuring idempotent note-label pairings)
+- Secondary Index: `(label_id)` (Optimizes reverse lookups and label filtering queries)
+- Foreign Key: `(note_id)` referencing `notes(id)` ON DELETE CASCADE
+- Foreign Key: `(label_id)` referencing `labels(id)` ON DELETE CASCADE
 
 **Current Physical Table Inventory:**
-- `final_web` / `final_web_test`: `migrations`, `users`, `password_reset_tokens`, `user_preferences`, `notes` (5 tables)
-- **Domain Tables Present:** `users`, `password_reset_tokens`, `user_preferences`, `notes`
+- `final_web` / `final_web_test`: `migrations`, `users`, `password_reset_tokens`, `user_preferences`, `notes`, `labels`, `note_label` (7 tables)
+- **Domain Tables Present:** `users`, `password_reset_tokens`, `user_preferences`, `notes`, `labels`, `note_label`
 
 ---
 

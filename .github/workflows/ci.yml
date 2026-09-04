@@ -314,7 +314,7 @@ jobs:
           echo "MySQL charset:collation = $RESULT"
           [ "$RESULT" = "utf8mb4:utf8mb4_unicode_ci" ] || (echo "FAIL: unexpected collation $RESULT" && exit 1)
 
-      - name: Verify Phase 4 M1 database schema contract in final_web
+      - name: Verify Phase 4 M2 database schema contract in final_web
         run: |
           USERS_COUNT=$(docker compose --env-file .env.docker exec -T mysql \
             mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
@@ -352,9 +352,27 @@ jobs:
           echo "Notes is_pinned column count: $PINNED_COL_COUNT"
           [ "$PINNED_COL_COUNT" = "1" ] || (echo "FAIL: is_pinned column missing or invalid default in notes table" && exit 1)
 
+          LABELS_COUNT=$(docker compose --env-file .env.docker exec -T mysql \
+            mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
+            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME = 'labels';")
+          echo "Labels table count: $LABELS_COUNT"
+          [ "$LABELS_COUNT" = "1" ] || (echo "FAIL: labels table missing" && exit 1)
+
+          LABEL_UNIQUE_COUNT=$(docker compose --env-file .env.docker exec -T mysql \
+            mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
+            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME = 'labels' AND CONSTRAINT_NAME = 'labels_user_id_name_unique';")
+          echo "Labels user_id_name unique constraint count: $LABEL_UNIQUE_COUNT"
+          [ "$LABEL_UNIQUE_COUNT" = "1" ] || (echo "FAIL: labels user_id_name unique constraint missing" && exit 1)
+
+          NOTE_LABEL_COUNT=$(docker compose --env-file .env.docker exec -T mysql \
+            mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
+            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME = 'note_label';")
+          echo "note_label table count: $NOTE_LABEL_COUNT"
+          [ "$NOTE_LABEL_COUNT" = "1" ] || (echo "FAIL: note_label table missing" && exit 1)
+
           UNEXPECTED=$(docker compose --env-file .env.docker exec -T mysql \
             mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
-            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME IN ('labels', 'note_label', 'attachments', 'note_shares', 'personal_access_tokens');")
+            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME IN ('attachments', 'note_shares', 'personal_access_tokens');")
           echo "Unexpected future tables count: $UNEXPECTED"
           [ "$UNEXPECTED" = "0" ] || (echo "FAIL: unexpected future tables found" && exit 1)
 

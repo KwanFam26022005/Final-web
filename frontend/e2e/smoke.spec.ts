@@ -543,4 +543,183 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
   });
+
+  test('15. LABEL-01..03: Label lifecycle, note assignment, multi-label filtering, and composite search', async ({ page }) => {
+    // Reset desktop viewport
+    await page.setViewportSize({ width: 1280, height: 720 });
+
+    // Log in existing sharedUserA
+    await page.goto('/login');
+    await page.getByLabel(/email address/i).fill(sharedUserA.email);
+    await page.getByLabel(/^password/i).fill(sharedUserA.password);
+    await page.getByRole('button', { name: /sign in/i }).click();
+    await expect(page).toHaveURL('/');
+
+    // Existing notes from test 14 should be present
+    await expect(page.getByText('Algorithms Lecture')).toBeVisible();
+    await expect(page.getByText('Database Systems')).toBeVisible();
+
+    // 1. Open Labels Modal
+    await page.getByTestId('labels-nav-link').click();
+    const modal = page.getByTestId('labels-modal');
+    await expect(modal).toBeVisible();
+    await expect(modal.getByText('Manage Labels')).toBeVisible();
+
+    // 2. Create Label "Computer Science"
+    const labelInput = modal.getByTestId('new-label-name-input');
+    await labelInput.fill('Computer Science');
+    const createRes1 = page.waitForResponse(
+      (res) => res.url().includes('/api/labels') && res.request().method() === 'POST'
+    );
+    await modal.getByTestId('create-label-button').click();
+    const resp1 = await createRes1;
+    expect(resp1.status()).toBe(201);
+    await expect(modal.getByText('Computer Science')).toBeVisible();
+
+    // 3. Create Label "Databases"
+    await labelInput.fill('Databases');
+    const createRes2 = page.waitForResponse(
+      (res) => res.url().includes('/api/labels') && res.request().method() === 'POST'
+    );
+    await modal.getByTestId('create-label-button').click();
+    const resp2 = await createRes2;
+    expect(resp2.status()).toBe(201);
+    await expect(modal.getByText('Databases')).toBeVisible();
+
+    // Close modal
+    await modal.getByTestId('close-labels-modal').click();
+    await expect(modal).not.toBeVisible();
+
+    // 4. Label filters bar is now visible with both label chips
+    const filterBar = page.getByTestId('label-filters-bar');
+    await expect(filterBar).toBeVisible();
+    await expect(filterBar.getByText('Computer Science')).toBeVisible();
+    await expect(filterBar.getByText('Databases')).toBeVisible();
+
+    // 5. Assign labels to "Database Systems" (assign both CS and Databases)
+    await page.getByText('Database Systems').click();
+    await expect(page).toHaveURL(/\/notes\/\d+/);
+    await expect(page.getByTestId('note-labels-section')).toBeVisible();
+
+    // Add "Computer Science"
+    await page.getByTestId('add-label-button').click();
+    const syncRes1 = page.waitForResponse(
+      (res) => res.url().includes('/labels') && res.request().method() === 'PUT'
+    );
+    await page.getByTestId('label-picker').getByText('Computer Science').click();
+    const syncResp1 = await syncRes1;
+    expect(syncResp1.status()).toBe(200);
+    await expect(page.getByTestId('note-labels-section')).toContainText('Computer Science');
+
+    // Add "Databases" (picker is still open)
+    const syncRes2 = page.waitForResponse(
+      (res) => res.url().includes('/labels') && res.request().method() === 'PUT'
+    );
+    await page.getByTestId('label-picker').getByText('Databases').click();
+    const syncResp2 = await syncRes2;
+    expect(syncResp2.status()).toBe(200);
+    await expect(page.getByTestId('note-labels-section')).toContainText('Databases');
+
+    // Return to workspace
+    await page.getByTestId('back-to-notes').click();
+    await expect(page).toHaveURL('/');
+
+    // 6. Assign "Computer Science" to "Algorithms Lecture"
+    await page.getByText('Algorithms Lecture').click();
+    await expect(page).toHaveURL(/\/notes\/\d+/);
+    await page.getByTestId('add-label-button').click();
+    const syncRes3 = page.waitForResponse(
+      (res) => res.url().includes('/labels') && res.request().method() === 'PUT'
+    );
+    await page.getByTestId('label-picker').getByText('Computer Science').click();
+    const syncResp3 = await syncRes3;
+    expect(syncResp3.status()).toBe(200);
+    await expect(page.getByTestId('note-labels-section')).toContainText('Computer Science');
+
+    // Return to workspace
+    await page.getByTestId('back-to-notes').click();
+    await expect(page).toHaveURL('/');
+
+    // 7. Test Label Filtering
+    // Filter by "Databases" -> only "Database Systems" visible
+    const dbChip = filterBar.getByTestId('label-filter-chip').filter({ hasText: 'Databases' });
+    await dbChip.click();
+    await expect(page.getByText('Database Systems')).toBeVisible();
+    await expect(page.getByText('Algorithms Lecture')).not.toBeVisible();
+
+    // Filter by both "Databases" AND "Computer Science" -> still "Database Systems" (ALL-match)
+    const csChip = filterBar.getByTestId('label-filter-chip').filter({ hasText: 'Computer Science' });
+    await csChip.click();
+    await expect(page.getByText('Database Systems')).toBeVisible();
+    await expect(page.getByText('Algorithms Lecture')).not.toBeVisible();
+
+    // Deselect "Databases" (only "Computer Science" active) -> both notes visible
+    await dbChip.click();
+    await expect(page.getByText('Database Systems')).toBeVisible();
+    await expect(page.getByText('Algorithms Lecture')).toBeVisible();
+
+    // 8. Test Filter + Live Search composition
+    const searchInput = page.getByTestId('search-input');
+    await searchInput.fill('SQL');
+    await expect(page.getByText('Database Systems')).toBeVisible();
+    await expect(page.getByText('Algorithms Lecture')).not.toBeVisible();
+
+    // Clear search
+    await page.getByTestId('clear-search-button').click();
+    await expect(page.getByText('Database Systems')).toBeVisible();
+    await expect(page.getByText('Algorithms Lecture')).toBeVisible();
+
+    // 9. Clear label filters
+    await page.getByTestId('clear-label-filters-button').click();
+    await expect(page.getByTestId('clear-label-filters-button')).not.toBeVisible();
+
+    // 10. Test Rename & Delete in Labels Modal
+    await page.getByTestId('labels-nav-link').click();
+    await expect(modal).toBeVisible();
+
+    // Rename "Databases" -> "Data Systems"
+    const dbItem = modal.getByTestId('label-item').filter({ hasText: 'Databases' });
+    await dbItem.getByTestId('edit-label-button').click();
+    const editInput = modal.getByTestId('edit-label-name-input');
+    await editInput.fill('Data Systems');
+    const patchRes = page.waitForResponse(
+      (res) => res.url().includes('/api/labels') && res.request().method() === 'PATCH'
+    );
+    await modal.getByTestId('save-label-name-button').click();
+    const patchResp = await patchRes;
+    expect(patchResp.status()).toBe(200);
+    await expect(modal.getByText('Data Systems')).toBeVisible();
+
+    // Delete "Data Systems"
+    const dsItem = modal.getByTestId('label-item').filter({ hasText: 'Data Systems' });
+    await dsItem.getByTestId('delete-label-button').click();
+    const confirmDialog = page.getByTestId('confirm-delete-dialog');
+    await expect(confirmDialog).toBeVisible();
+    await expect(confirmDialog.getByText('Delete label "Data Systems"?')).toBeVisible();
+
+    const deleteRes = page.waitForResponse(
+      (res) => res.url().includes('/api/labels') && res.request().method() === 'DELETE'
+    );
+    await confirmDialog.getByTestId('confirm-dialog-confirm').click();
+    const deleteResp = await deleteRes;
+    expect(deleteResp.status()).toBe(200);
+    await expect(modal.getByText('Data Systems')).not.toBeVisible();
+
+    await modal.getByTestId('close-labels-modal').click();
+    await expect(modal).not.toBeVisible();
+
+    // Verify note is PRESERVED even though its label was deleted
+    await expect(page.getByText('Database Systems')).toBeVisible();
+    await expect(page.getByText('Algorithms Lecture')).toBeVisible();
+
+    // 11. Clean up notes for clean workspace state
+    for (const noteTitle of ['Algorithms Lecture', 'Database Systems']) {
+      const card = page.getByTestId('note-card').filter({ hasText: noteTitle });
+      if (await card.isVisible()) {
+        await card.getByTestId('delete-note-button').click();
+        await page.getByTestId('confirm-dialog-confirm').click();
+        await expect(card).not.toBeVisible();
+      }
+    }
+  });
 });

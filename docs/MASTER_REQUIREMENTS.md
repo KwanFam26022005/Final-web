@@ -2,7 +2,7 @@
 
 This catalog serves as the authoritative, stable reference for all functional, non-functional, security, and operational requirements. Requirements are grouped into distinct families with persistent alphanumeric identifiers.
 
-Initial status of all application features is **PLANNED**. Repository governance baselines established in Phase 1 are **VERIFIED** and frozen. Phase 2 Authentication and Account Management (`ACC-01` through `ACC-09`, `SEC-06`) is **VERIFIED** and frozen. Phase 3 Core Notes Management (`NOTE-01` through `NOTE-05`) is **VERIFIED** and frozen. Phase 4 Organization, Discovery & Media (`NOTE-06`, `NOTE-07`, `NOTE-08`, `LABEL-01` through `LABEL-03`) is **IN PROGRESS**.
+Initial status of all application features is **PLANNED**. Repository governance baselines established in Phase 1 are **VERIFIED** and frozen. Phase 2 Authentication and Account Management (`ACC-01` through `ACC-09`, `SEC-06`) is **VERIFIED** and frozen. Phase 3 Core Notes Management (`NOTE-01` through `NOTE-05`) is **VERIFIED** and frozen. Phase 4 Organization, Discovery & Media (`NOTE-06`, `NOTE-07`, `LABEL-01` through `LABEL-03` are **VERIFIED**; `NOTE-08` is **PLANNED**) is **IN PROGRESS**.
 
 ---
 
@@ -59,9 +59,9 @@ Initial status of all application features is **PLANNED**. Repository governance
 
 | ID | Requirement | Acceptance Intent | Target Phase | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **LABEL-01** | Label CRUD | User can create, view, rename, and delete custom organizational labels. | Phase 4 | PLANNED |
-| **LABEL-02** | Many-to-Many Association | A note can possess multiple labels, and a label can belong to multiple notes via a pivot table. | Phase 4 | PLANNED |
-| **LABEL-03** | Label Filtering | Clicking a label or selecting multiple labels filters the note list to matching notes immediately. | Phase 4 | PLANNED |
+| **LABEL-01** | Label CRUD | User can create, view, rename, and delete custom organizational labels. | Phase 4 | **VERIFIED** |
+| **LABEL-02** | Many-to-Many Association | A note can possess multiple labels, and a label can belong to multiple notes via a pivot table. | Phase 4 | **VERIFIED** |
+| **LABEL-03** | Label Filtering | Clicking a label or selecting multiple labels filters the note list to matching notes immediately. | Phase 4 | **VERIFIED** |
 
 ---
 
