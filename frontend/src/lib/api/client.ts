@@ -81,6 +81,9 @@ export async function apiClient<T>(
       headers,
     });
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw error;
+    }
     const message = error instanceof Error ? error.message : 'Network request failed';
     throw new ApiError(`Unable to connect to API server: ${message}`, 0);
   }
