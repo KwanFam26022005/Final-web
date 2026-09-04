@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAutosave, type AutosaveStatus } from '../hooks/useAutosave';
-import { createNote, updateNote, fetchNote, deleteNote, pinNote } from '../lib/api/notes';
+import { createNote, updateNote, fetchNote, deleteNote, pinNote, syncNoteLabels } from '../lib/api/notes';
+import { type Label, fetchLabels } from '../lib/api/labels';
 import { KnowledgeMark } from '../components/brand/KnowledgeMark';
 import { WiseCat } from '../components/mascot/WiseCat';
 import { ConfirmDeleteDialog } from '../components/ui/ConfirmDeleteDialog';
@@ -57,6 +58,12 @@ export const NoteEditorPage: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  const [assignedLabels, setAssignedLabels] = useState<Label[]>([]);
+  const [allLabels, setAllLabels] = useState<Label[]>([]);
+  const [isLabelPickerOpen, setIsLabelPickerOpen] = useState(false);
+  const [isSyncingLabels, setIsSyncingLabels] = useState(false);
+  const [syncLabelError, setSyncLabelError] = useState<string | null>(null);
+
   const persistedNoteIdRef = useRef<number | null>(noteId ? Number(noteId) : createdNoteId);
   const isDeletedRef = useRef(false);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -66,6 +73,16 @@ export const NoteEditorPage: React.FC = () => {
   useEffect(() => {
     persistedNoteIdRef.current = noteId ? Number(noteId) : createdNoteId;
   }, [noteId, createdNoteId]);
+
+  useEffect(() => {
+    void fetchLabels().then(setAllLabels).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (isLabelPickerOpen) {
+      void fetchLabels().then(setAllLabels).catch(() => {});
+    }
+  }, [isLabelPickerOpen]);
 
   const validate = useCallback((data: { title: string; content: string }) => {
     return data.title.trim().length > 0 && data.content.trim().length > 0;
@@ -81,6 +98,7 @@ export const NoteEditorPage: React.FC = () => {
       if (isDeletedRef.current) return;
       persistedNoteIdRef.current = created.id;
       setCreatedNoteId(created.id);
+      setAssignedLabels(created.labels || []);
       navigate(`/notes/${created.id}`, { replace: true });
     }
   }, [navigate]);
@@ -98,6 +116,7 @@ export const NoteEditorPage: React.FC = () => {
           setTitle(note.title);
           setContent(note.content);
           setIsPinned(Boolean(note.is_pinned));
+          setAssignedLabels(note.labels || []);
           setIsLoadingNote(false);
         })
         .catch(() => {
@@ -113,6 +132,52 @@ export const NoteEditorPage: React.FC = () => {
       titleRef.current?.focus();
     }
   }, [noteId, isNewNote]);
+
+  const handleToggleLabel = async (label: Label) => {
+    const id = persistedNoteIdRef.current;
+    if (!id || isSyncingLabels) return;
+
+    const isAssigned = assignedLabels.some((l) => l.id === label.id);
+    const nextLabels = isAssigned
+      ? assignedLabels.filter((l) => l.id !== label.id)
+      : [...assignedLabels, label];
+
+    setAssignedLabels(nextLabels);
+    setIsSyncingLabels(true);
+    setSyncLabelError(null);
+
+    try {
+      const updated = await syncNoteLabels(id, nextLabels.map((l) => l.id));
+      setAssignedLabels(updated.labels || nextLabels);
+    } catch (err: unknown) {
+      setAssignedLabels(assignedLabels);
+      const msg = err instanceof Error ? err.message : 'Failed to update note labels.';
+      setSyncLabelError(msg);
+    } finally {
+      setIsSyncingLabels(false);
+    }
+  };
+
+  const handleRemoveLabel = async (labelId: number) => {
+    const id = persistedNoteIdRef.current;
+    if (!id || isSyncingLabels) return;
+
+    const nextLabels = assignedLabels.filter((l) => l.id !== labelId);
+    setAssignedLabels(nextLabels);
+    setIsSyncingLabels(true);
+    setSyncLabelError(null);
+
+    try {
+      const updated = await syncNoteLabels(id, nextLabels.map((l) => l.id));
+      setAssignedLabels(updated.labels || nextLabels);
+    } catch (err: unknown) {
+      setAssignedLabels(assignedLabels);
+      const msg = err instanceof Error ? err.message : 'Failed to remove label.';
+      setSyncLabelError(msg);
+    } finally {
+      setIsSyncingLabels(false);
+    }
+  };
 
   const handleTogglePin = async () => {
     const id = persistedNoteIdRef.current;
@@ -271,6 +336,94 @@ export const NoteEditorPage: React.FC = () => {
             aria-label="Note title"
             data-testid="note-title-input"
           />
+
+          {isPersisted && (
+            <div className="flex flex-wrap items-center gap-2 pt-1 pb-2" data-testid="note-labels-section">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">
+                Labels:
+              </span>
+              {assignedLabels.map((label) => (
+                <span
+                  key={label.id}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/80"
+                  data-testid="note-assigned-label"
+                >
+                  <span>{label.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => void handleRemoveLabel(label.id)}
+                    aria-label={`Remove label ${label.name}`}
+                    data-testid="remove-label-button"
+                    className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-0.5 rounded transition-colors"
+                  >
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              ))}
+
+              <div className="relative inline-block">
+                <button
+                  type="button"
+                  onClick={() => setIsLabelPickerOpen((prev) => !prev)}
+                  aria-expanded={isLabelPickerOpen}
+                  aria-haspopup="true"
+                  data-testid="add-label-button"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Add label</span>
+                </button>
+
+                {isLabelPickerOpen && (
+                  <div
+                    className="absolute left-0 mt-1.5 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg p-2 z-30 space-y-1"
+                    data-testid="label-picker"
+                  >
+                    {allLabels.length === 0 ? (
+                      <p className="text-xs text-slate-400 dark:text-slate-500 p-2 text-center" data-testid="label-picker-empty">
+                        No labels yet.
+                      </p>
+                    ) : (
+                      allLabels.map((l) => {
+                        const isSelected = assignedLabels.some((assigned) => assigned.id === l.id);
+                        return (
+                          <button
+                            key={l.id}
+                            type="button"
+                            onClick={() => void handleToggleLabel(l)}
+                            data-testid="label-picker-item"
+                            className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded text-left transition-colors ${
+                              isSelected
+                                ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-medium'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }`}
+                          >
+                            <span className="truncate">{l.name}</span>
+                            {isSelected && (
+                              <svg className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {syncLabelError && (
+                <span className="text-xs text-red-600 dark:text-red-400" data-testid="sync-label-error">
+                  {syncLabelError}
+                </span>
+              )}
+            </div>
+          )}
+
           <textarea
             value={content}
             onChange={handleContentChange}

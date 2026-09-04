@@ -6,7 +6,9 @@ import { EmailVerificationBanner } from '../components/auth/EmailVerificationBan
 import { WiseCat } from '../components/mascot/WiseCat';
 import { KnowledgeMark } from '../components/brand/KnowledgeMark';
 import { fetchNotes, deleteNote, pinNote, type Note } from '../lib/api/notes';
+import { type Label, fetchLabels } from '../lib/api/labels';
 import { ConfirmDeleteDialog } from '../components/ui/ConfirmDeleteDialog';
+import { LabelsModal } from '../components/LabelsModal';
 
 function formatRelativeTime(dateStr: string): string {
   const date = new Date(dateStr);
@@ -26,6 +28,9 @@ export const NotesWorkspacePage: React.FC = () => {
   const { user, preference, logout, updatePreference } = useAuth();
   const navigate = useNavigate();
   const [notes, setNotes] = useState<Note[]>([]);
+  const [labels, setLabels] = useState<Label[]>([]);
+  const [selectedLabelIds, setSelectedLabelIds] = useState<number[]>([]);
+  const [isLabelsModalOpen, setIsLabelsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,9 +45,19 @@ export const NotesWorkspacePage: React.FC = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const searchReqIdRef = useRef<number>(0);
 
+  const selectedLabelIdsRef = useRef<number[]>(selectedLabelIds);
+  useEffect(() => {
+    selectedLabelIdsRef.current = selectedLabelIds;
+  }, [selectedLabelIds]);
+
+  const searchQueryRef = useRef<string>(searchQuery);
+  useEffect(() => {
+    searchQueryRef.current = searchQuery;
+  }, [searchQuery]);
+
   const viewMode = preference?.default_note_view || 'grid';
 
-  const executeSearch = useCallback(async (query: string) => {
+  const executeSearch = useCallback(async (query: string, labelIds: number[]) => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -52,7 +67,9 @@ export const NotesWorkspacePage: React.FC = () => {
 
     setIsSearching(true);
     try {
-      const data = await fetchNotes(query, controller.signal);
+      const data = labelIds && labelIds.length > 0
+        ? await fetchNotes(query, labelIds, controller.signal)
+        : await fetchNotes(query, controller.signal);
       if (reqId === searchReqIdRef.current) {
         setNotes(data);
         setIsSearching(false);
@@ -69,12 +86,13 @@ export const NotesWorkspacePage: React.FC = () => {
 
   const handleSearchChange = (val: string) => {
     setSearchQuery(val);
+    searchQueryRef.current = val;
     if (searchTimerRef.current) {
       clearTimeout(searchTimerRef.current);
     }
     setIsSearching(true);
     searchTimerRef.current = setTimeout(() => {
-      void executeSearch(val);
+      void executeSearch(val, selectedLabelIdsRef.current);
     }, 300);
   };
 
@@ -83,7 +101,41 @@ export const NotesWorkspacePage: React.FC = () => {
       clearTimeout(searchTimerRef.current);
     }
     setSearchQuery('');
-    void executeSearch('');
+    searchQueryRef.current = '';
+    void executeSearch('', selectedLabelIdsRef.current);
+  };
+
+  const handleToggleLabelFilter = (labelId: number) => {
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+    const nextIds = selectedLabelIds.includes(labelId)
+      ? selectedLabelIds.filter((id) => id !== labelId)
+      : [...selectedLabelIds, labelId];
+
+    setSelectedLabelIds(nextIds);
+    selectedLabelIdsRef.current = nextIds;
+    void executeSearch(searchQueryRef.current, nextIds);
+  };
+
+  const handleClearLabelFilters = () => {
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+    setSelectedLabelIds([]);
+    selectedLabelIdsRef.current = [];
+    void executeSearch(searchQueryRef.current, []);
+  };
+
+  const handleClearAllFilters = () => {
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+    setSearchQuery('');
+    searchQueryRef.current = '';
+    setSelectedLabelIds([]);
+    selectedLabelIdsRef.current = [];
+    void executeSearch('', []);
   };
 
   const handleOpenDelete = (note: Note) => {
@@ -145,11 +197,15 @@ export const NotesWorkspacePage: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
 
-    async function loadNotes() {
+    async function loadInitialData() {
       try {
-        const data = await fetchNotes();
+        const [notesData, labelsData] = await Promise.all([
+          fetchNotes(),
+          fetchLabels().catch(() => []),
+        ]);
         if (isMounted) {
-          setNotes(data);
+          setNotes(notesData);
+          setLabels(labelsData);
         }
       } catch {
         // Silently handle
@@ -160,7 +216,7 @@ export const NotesWorkspacePage: React.FC = () => {
       }
     }
 
-    void loadNotes();
+    void loadInitialData();
 
     return () => {
       isMounted = false;
@@ -172,6 +228,40 @@ export const NotesWorkspacePage: React.FC = () => {
       }
     };
   }, []);
+
+  const handleLabelCreated = (created: Label) => {
+    setLabels((prev) =>
+      [...prev, created].sort((a, b) => a.name.localeCompare(b.name))
+    );
+  };
+
+  const handleLabelUpdated = (updated: Label) => {
+    setLabels((prev) =>
+      prev.map((l) => (l.id === updated.id ? updated : l)).sort((a, b) => a.name.localeCompare(b.name))
+    );
+    setNotes((prev) =>
+      prev.map((n) => ({
+        ...n,
+        labels: n.labels?.map((l) => (l.id === updated.id ? updated : l)),
+      }))
+    );
+  };
+
+  const handleLabelDeleted = (deletedId: number) => {
+    setLabels((prev) => prev.filter((l) => l.id !== deletedId));
+    setNotes((prev) =>
+      prev.map((n) => ({
+        ...n,
+        labels: n.labels?.filter((l) => l.id !== deletedId),
+      }))
+    );
+    if (selectedLabelIdsRef.current.includes(deletedId)) {
+      const nextIds = selectedLabelIdsRef.current.filter((id) => id !== deletedId);
+      setSelectedLabelIds(nextIds);
+      selectedLabelIdsRef.current = nextIds;
+      void executeSearch(searchQueryRef.current, nextIds);
+    }
+  };
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -263,6 +353,27 @@ export const NotesWorkspacePage: React.FC = () => {
           </div>
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-3 mb-3">{note.content}</p>
+        {note.labels && note.labels.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3" data-testid="note-card-labels">
+            {note.labels.slice(0, 3).map((l) => (
+              <span
+                key={l.id}
+                className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60"
+                data-testid="note-card-label"
+              >
+                {l.name}
+              </span>
+            ))}
+            {note.labels.length > 3 && (
+              <span
+                className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium text-slate-400 dark:text-slate-500"
+                data-testid="note-card-label-overflow"
+              >
+                +{note.labels.length - 3}
+              </span>
+            )}
+          </div>
+        )}
       </div>
       <p className="text-[11px] text-slate-400 dark:text-slate-500">{formatRelativeTime(note.updated_at)}</p>
     </div>
@@ -295,7 +406,27 @@ export const NotesWorkspacePage: React.FC = () => {
           </span>
         )}
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-medium text-slate-900 dark:text-white truncate">{note.title}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium text-slate-900 dark:text-white truncate">{note.title}</h3>
+            {note.labels && note.labels.length > 0 && (
+              <div className="hidden sm:flex items-center gap-1 shrink-0" data-testid="note-row-labels">
+                {note.labels.slice(0, 3).map((l) => (
+                  <span
+                    key={l.id}
+                    className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60"
+                    data-testid="note-row-label"
+                  >
+                    {l.name}
+                  </span>
+                ))}
+                {note.labels.length > 3 && (
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                    +{note.labels.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{note.content}</p>
         </div>
       </div>
@@ -366,6 +497,18 @@ export const NotesWorkspacePage: React.FC = () => {
             Notes
           </Link>
 
+          <button
+            type="button"
+            onClick={() => setIsLabelsModalOpen(true)}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
+            data-testid="labels-nav-link"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            Labels
+          </button>
+
           <Link
             to="/settings/profile"
             className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
@@ -412,6 +555,14 @@ export const NotesWorkspacePage: React.FC = () => {
               data-testid="mobile-new-note"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsLabelsModalOpen(true)}
+              className="text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+              data-testid="mobile-labels-button"
+            >
+              Labels
             </button>
             <Link to="/settings/profile" className="text-xs font-medium text-slate-600 dark:text-slate-300">Settings</Link>
             <Button variant="secondary" size="sm" onClick={handleLogout} isLoading={isLoggingOut} data-testid="logout-button" className="text-xs">Sign out</Button>
@@ -492,13 +643,77 @@ export const NotesWorkspacePage: React.FC = () => {
             )}
           </div>
 
+          {/* Label Filter Chips Bar */}
+          {labels.length > 0 && (
+            <div className="flex items-center flex-wrap gap-1.5 mb-6" data-testid="label-filters-bar" role="group" aria-label="Filter by label">
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 mr-1 hidden sm:inline">
+                Labels:
+              </span>
+              {labels.map((lbl) => {
+                const isSelected = selectedLabelIds.includes(lbl.id);
+                return (
+                  <button
+                    key={lbl.id}
+                    type="button"
+                    role="button"
+                    aria-pressed={isSelected}
+                    onClick={() => handleToggleLabelFilter(lbl.id)}
+                    data-testid="label-filter-chip"
+                    data-label-id={lbl.id}
+                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-colors border ${
+                      isSelected
+                        ? 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-700 font-semibold'
+                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                    }`}
+                  >
+                    <span>{lbl.name}</span>
+                    {isSelected && (
+                      <svg className="w-3 h-3 ml-1 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
+              {selectedLabelIds.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearLabelFilters}
+                  data-testid="clear-label-filters-button"
+                  className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 ml-1.5 underline decoration-dotted transition-colors"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Notes Content */}
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : notes.length === 0 ? (
-            searchQuery.trim() !== '' ? (
+            selectedLabelIds.length > 0 ? (
+              /* Filtered Empty State */
+              <div className="flex flex-col items-center justify-center py-16 text-center" data-testid="empty-filtered-state">
+                <div className="mb-4">
+                  <WiseCat state="reading" size="md" />
+                </div>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No notes match your current filters.</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm">
+                  Try removing some label filters or clearing your search to see more notes.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleClearAllFilters}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-white transition-colors"
+                  data-testid="empty-filter-clear-button"
+                >
+                  Clear filters
+                </button>
+              </div>
+            ) : searchQuery.trim() !== '' ? (
               /* Search Empty State */
               <div className="flex flex-col items-center justify-center py-16 text-center" data-testid="empty-search-state">
                 <div className="mb-4">
@@ -591,6 +806,15 @@ export const NotesWorkspacePage: React.FC = () => {
         error={deleteError}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+
+      <LabelsModal
+        isOpen={isLabelsModalOpen}
+        onClose={() => setIsLabelsModalOpen(false)}
+        labels={labels}
+        onLabelCreated={handleLabelCreated}
+        onLabelUpdated={handleLabelUpdated}
+        onLabelDeleted={handleLabelDeleted}
       />
     </div>
   );
