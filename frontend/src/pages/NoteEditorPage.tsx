@@ -46,28 +46,37 @@ export const NoteEditorPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isLoadingNote, setIsLoadingNote] = useState(!isNewNote);
-  const [noteDbId, setNoteDbId] = useState<number | null>(noteId ? Number(noteId) : null);
+  const persistedNoteIdRef = useRef<number | null>(noteId ? Number(noteId) : null);
   const titleRef = useRef<HTMLInputElement>(null);
+  const titleValRef = useRef(title);
+  const contentValRef = useRef(content);
+
+  useEffect(() => {
+    persistedNoteIdRef.current = noteId ? Number(noteId) : null;
+  }, [noteId]);
 
   const validate = useCallback((data: { title: string; content: string }) => {
     return data.title.trim().length > 0 && data.content.trim().length > 0;
   }, []);
 
   const handleSave = useCallback(async (data: { title: string; content: string }) => {
-    if (noteDbId) {
-      await updateNote(noteDbId, data);
+    const currentId = persistedNoteIdRef.current;
+    if (currentId !== null) {
+      await updateNote(currentId, data);
     } else {
       const created = await createNote(data);
-      setNoteDbId(created.id);
+      persistedNoteIdRef.current = created.id;
       navigate(`/notes/${created.id}`, { replace: true });
     }
-  }, [noteDbId, navigate]);
+  }, [navigate]);
 
   const { status, markDirty } = useAutosave({ onSave: handleSave, validate });
 
   useEffect(() => {
     if (!isNewNote && noteId) {
       void fetchNote(Number(noteId)).then((note) => {
+        titleValRef.current = note.title;
+        contentValRef.current = note.content;
         setTitle(note.title);
         setContent(note.content);
         setIsLoadingNote(false);
@@ -79,14 +88,16 @@ export const NoteEditorPage: React.FC = () => {
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
+    titleValRef.current = val;
     setTitle(val);
-    markDirty({ title: val, content });
+    markDirty({ title: val, content: contentValRef.current });
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
+    contentValRef.current = val;
     setContent(val);
-    markDirty({ title, content: val });
+    markDirty({ title: titleValRef.current, content: val });
   };
 
   if (isLoadingNote) {
