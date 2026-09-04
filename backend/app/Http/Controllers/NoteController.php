@@ -1,0 +1,63 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\Note\StoreNoteRequest;
+use App\Http\Requests\Note\UpdateNoteRequest;
+use App\Http\Resources\NoteResource;
+use App\Models\Note;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Gate;
+
+class NoteController extends Controller
+{
+    /**
+     * Display a listing of the authenticated user's notes.
+     */
+    public function index(Request $request): AnonymousResourceCollection
+    {
+        $notes = $request->user()
+            ->notes()
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get();
+
+        return NoteResource::collection($notes);
+    }
+
+    /**
+     * Store a newly created note for the authenticated user.
+     */
+    public function store(StoreNoteRequest $request): JsonResponse
+    {
+        $note = $request->user()->notes()->create($request->validated());
+
+        return (new NoteResource($note))
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    /**
+     * Display the specified note.
+     */
+    public function show(Request $request, Note $note): NoteResource
+    {
+        Gate::authorize('view', $note);
+
+        return new NoteResource($note);
+    }
+
+    /**
+     * Update the specified note.
+     */
+    public function update(UpdateNoteRequest $request, Note $note): NoteResource
+    {
+        Gate::authorize('update', $note);
+
+        $note->update($request->validated());
+
+        return new NoteResource($note->fresh());
+    }
+}
