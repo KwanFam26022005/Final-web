@@ -2,10 +2,11 @@
 
 This document establishes the multi-phase engineering delivery plan for the Collaborative Intelligent Note Management Web Application. Each phase defines discrete objectives, assigned requirement IDs, technical deliverables, and strict exit criteria.
 
-> **Current Completed Phase:** Phase 1 — Repository and Runtime Foundation<br>
+> **Current Completed Phases:** Phase 1 — Repository and Runtime Foundation; Phase 2 — Authentication and Account Management<br>
 > **Phase 1 Status:** COMPLETED / FROZEN<br>
-> **Next Authorized Phase:** Phase 2 — Authentication and Account Management (PLANNED / NOT STARTED)<br>
-> **Rule:** No feature may be promoted or implemented ahead of its designated phase without explicit authorization. Phase 2 implementation has NOT started.
+> **Phase 2 Status:** COMPLETED / VERIFIED / FROZEN (Academic Light V2 visual direction accepted)<br>
+> **Current Authorized Phase:** Phase 3 — Core Note CRUD, Views, and Autosave (IN PROGRESS)<br>
+> **Rule:** No feature may be promoted or implemented ahead of its designated phase without explicit authorization.
 
 ---
 
@@ -65,6 +66,7 @@ flowchart LR
 ---
 
 ### Phase 2: Authentication and Account Management
+- **Status:** COMPLETED / VERIFIED / FROZEN
 - **Target Requirements:** `ACC-01` through `ACC-09`, `SEC-01`, `SEC-02`, `SEC-06`
 - **Objective:** Implement secure user registration (name, email, password, confirmation), auto-login, bcrypt hashing, session persistence via Laravel Sanctum, email activation, and profile management.
 - **Deliverables:** Registration with auto-login; bcrypt password hashing; activation email with grace period UI banner; profile/avatar update; password change/recovery (requiring manual login post-reset); Sanctum cookie auth.
@@ -73,6 +75,7 @@ flowchart LR
 ---
 
 ### Phase 3: Core Note CRUD, Views, and Autosave
+- **Status:** AUTHORIZED / IN PROGRESS
 - **Target Requirements:** `NOTE-01` through `NOTE-05`
 - **Objective:** Build foundational note management capabilities on frontend and backend.
 - **Deliverables:** Grid and List views with toggle; unified note creation/editing interaction model; debounced autosave with visual status; safe delete requiring explicit confirmation dialog; backend REST endpoints with FormRequest validation.

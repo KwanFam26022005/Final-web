@@ -2,7 +2,7 @@
 
 This catalog serves as the authoritative, stable reference for all functional, non-functional, security, and operational requirements. Requirements are grouped into distinct families with persistent alphanumeric identifiers.
 
-Initial status of all application features is **PLANNED**. Repository governance baselines established in Phase 1 Step 1 and Step 2 are **VERIFIED**. Remediation alignment is active under Step 2R.
+Initial status of all application features is **PLANNED**. Repository governance baselines established in Phase 1 are **VERIFIED**. Phase 2 Authentication and Account Management (`ACC-01` through `ACC-09`, `SEC-06`) is **VERIFIED** and frozen. Phase 3 Core Notes Management (`NOTE-01` through `NOTE-04`) is authorized and **IN PROGRESS**.
 
 ---
 
@@ -28,15 +28,15 @@ Initial status of all application features is **PLANNED**. Repository governance
 
 | ID | Requirement | Acceptance Intent | Target Phase | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **ACC-01** | Mandatory Authentication | Application access to private data requires authenticated session; unauthenticated requests redirect to login. | Phase 2 | PLANNED |
-| **ACC-02** | User Registration | Registration UI accepts strictly email, display name, password, and password confirmation; user is automatically logged in upon successful registration. | Phase 2 | PLANNED |
-| **ACC-03** | Secure Password Hashing | Passwords MUST be hashed with bcrypt through Laravel's secure hashing facility; plaintext is never stored or logged, bcrypt verification succeeds, and hashes are never exposed. | Phase 2 | PLANNED |
-| **ACC-04** | Activation Email & Grace Period | System dispatches an account activation email; unverified users can use the app but display a persistent verification warning banner. | Phase 2 | PLANNED |
-| **ACC-05** | Profile Management | Authenticated user can view and edit profile details, including display name and custom avatar image upload. | Phase 2 | PLANNED |
-| **ACC-06** | Change Password | Authenticated user can change password after providing and validating their current password. | Phase 2 | PLANNED |
-| **ACC-07** | User Preferences | User can select and persist UI preferences (e.g., default view mode, dark/light theme) across sessions. | Phase 2 | PLANNED |
-| **ACC-08** | Password Recovery | User can request password reset via email reset link OR secure OTP flow. After successful reset, user MUST NOT be automatically authenticated and must log in manually. | Phase 2 | PLANNED |
-| **ACC-09** | SPA Session Auth (Sanctum) | Secure first-party cookie/session authentication with CSRF protection, avoiding unencrypted token storage in localStorage. | Phase 2 | PLANNED |
+| **ACC-01** | Mandatory Authentication | Application access to private data requires authenticated session; unauthenticated requests redirect to login. | Phase 2 | **VERIFIED** |
+| **ACC-02** | User Registration | Registration UI accepts strictly email, display name, password, and password confirmation; user is automatically logged in upon successful registration. | Phase 2 | **VERIFIED** |
+| **ACC-03** | Secure Password Hashing | Passwords MUST be hashed with bcrypt through Laravel's secure hashing facility; plaintext is never stored or logged, bcrypt verification succeeds, and hashes are never exposed. | Phase 2 | **VERIFIED** |
+| **ACC-04** | Activation Email & Grace Period | System dispatches an account activation email; unverified users can use the app but display a persistent verification warning banner. | Phase 2 | **VERIFIED** |
+| **ACC-05** | Profile Management | Authenticated user can view and edit profile details, including display name and custom avatar image upload. | Phase 2 | **VERIFIED** |
+| **ACC-06** | Change Password | Authenticated user can change password after providing and validating their current password. | Phase 2 | **VERIFIED** |
+| **ACC-07** | User Preferences | User can select and persist UI preferences (e.g., default view mode, dark/light theme) across sessions. | Phase 2 | **VERIFIED** |
+| **ACC-08** | Password Recovery | User can request password reset via email reset link OR secure OTP flow. After successful reset, user MUST NOT be automatically authenticated and must log in manually. | Phase 2 | **VERIFIED** |
+| **ACC-09** | SPA Session Auth (Sanctum) | Secure first-party cookie/session authentication with CSRF protection, avoiding unencrypted token storage in localStorage. | Phase 2 | **VERIFIED** |
 
 ---
 
@@ -120,7 +120,7 @@ Initial status of all application features is **PLANNED**. Repository governance
 | **SEC-03** | Input Validation & Sanitization | All request inputs are validated via Laravel FormRequests; HTML/Markdown content is sanitized to prevent XSS. | Phase 2–9 | PLANNED |
 | **SEC-04** | Secure File Uploads | Uploaded attachments are strictly validated for MIME type, extension, and size, and stored outside public web roots. | Phase 4 | PLANNED |
 | **SEC-05** | Secret Hygiene | No API keys, passwords, or production secrets exist in Git; `.env.example` provides documentation templates only. | Phase 1 | **VERIFIED** |
-| **SEC-06** | CORS & CSRF Hardening | Explicit CORS domain restrictions and Sanctum CSRF protection enabled across all state-changing endpoints. | Phase 2 | PLANNED |
+| **SEC-06** | CORS & CSRF Hardening | Explicit CORS domain restrictions and Sanctum CSRF protection enabled across all state-changing endpoints. | Phase 2 | **VERIFIED** |
 
 ---
 

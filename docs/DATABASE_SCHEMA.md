@@ -2,7 +2,7 @@
 
 This document defines the authoritative database runtime standards, environment isolation boundaries, physical migration baseline, and planned conceptual entity relationships for the Collaborative Intelligent Note Management Web Application.
 
-> **Status Notice:** This document records the **Foundation Baseline** established in **Phase 1 Step 4 / 4R**. At this stage, only Laravel's migration repository infrastructure (`migrations` table) exists physically in the database. Domain entities documented below represent conceptual architectural intent; concrete physical columns, indexes, and constraints will be authored and frozen in their respective implementation phases.
+> **Status Notice:** This document records the **Phase 3 Core Notes Baseline**. The physical persistence foundation includes the framework migration repository, Phase 2 authentication and user account tables (`users`, `password_reset_tokens`, `user_preferences`), and the Phase 3 Core Notes persistence table (`notes`). Subsequent domain entities documented below represent conceptual architectural intent and will be frozen in their respective phases.
 
 ---
 
@@ -40,9 +40,9 @@ To prevent accidental test mutation under the governed test hierarchy:
 
 ---
 
-## 3. Current Physical Schema Baseline (Phase 1 Step 4 / 4R)
+## 3. Current Physical Schema Baseline (Phase 3 Core Notes)
 
-In accordance with Phase 1 boundary rules, generic Laravel scaffold migrations (`users`, `cache`, `jobs`) were audited and removed before initialization. The physical database contains only the framework migration repository table:
+The physical database schema contains the framework migration repository and the domain tables established through Phase 2 and Phase 3:
 
 ### Table: `migrations`
 Established via `php artisan migrate:install`.
@@ -53,10 +53,62 @@ Established via `php artisan migrate:install`.
 | `migration` | `VARCHAR(255)` | Not Null | Migration file name identifier |
 | `batch` | `INT` | Not Null | Execution batch grouping number |
 
+### Table: `users`
+Established via Phase 2 (`2026_09_03_000001_create_users_table.php`, `2026_09_03_000003_add_avatar_path_to_users_table.php`).
+
+| Column | Type | Attributes | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `BIGINT UNSIGNED` | Primary Key, Auto Increment | Unique user identifier |
+| `display_name` | `VARCHAR(255)` | Not Null | User profile display name |
+| `email` | `VARCHAR(255)` | Unique, Not Null | User login & verification email |
+| `email_verified_at` | `TIMESTAMP` | Nullable | Email verification timestamp |
+| `password` | `VARCHAR(255)` | Not Null | Bcrypt-hashed password |
+| `avatar_path` | `VARCHAR(255)` | Nullable | Internal avatar storage path |
+| `remember_token` | `VARCHAR(100)` | Nullable | Sanctum / session remember token |
+| `created_at` | `TIMESTAMP` | Nullable | Record creation timestamp |
+| `updated_at` | `TIMESTAMP` | Nullable | Record update timestamp |
+
+### Table: `password_reset_tokens`
+Established via Phase 2 (`2026_09_03_000002_create_password_reset_tokens_table.php`).
+
+| Column | Type | Attributes | Description |
+| :--- | :--- | :--- | :--- |
+| `email` | `VARCHAR(255)` | Primary Key | Reset recipient email address |
+| `token` | `VARCHAR(255)` | Not Null | Hashed password reset token |
+| `created_at` | `TIMESTAMP` | Nullable | Token creation timestamp |
+
+### Table: `user_preferences`
+Established via Phase 2 (`2026_09_03_000004_create_user_preferences_table.php`).
+
+| Column | Type | Attributes | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `BIGINT UNSIGNED` | Primary Key, Auto Increment | Unique preference record ID |
+| `user_id` | `BIGINT UNSIGNED` | Unique, Foreign Key (`users.id` ON DELETE CASCADE) | Owner user identifier |
+| `theme` | `VARCHAR(20)` | Default `'system'` | UI color scheme (`system`, `light`, `dark`) |
+| `default_note_view` | `VARCHAR(20)` | Default `'grid'` | Default layout mode (`grid`, `list`) |
+| `created_at` | `TIMESTAMP` | Nullable | Record creation timestamp |
+| `updated_at` | `TIMESTAMP` | Nullable | Record update timestamp |
+
+### Table: `notes`
+Established via Phase 3 (`2026_09_04_000001_create_notes_table.php`).
+
+| Column | Type | Attributes | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `BIGINT UNSIGNED` | Primary Key, Auto Increment | Unique note identifier |
+| `user_id` | `BIGINT UNSIGNED` | Foreign Key (`users.id` ON DELETE CASCADE) | Owner user identifier |
+| `title` | `VARCHAR(255)` | Not Null | Note title (1-255 characters) |
+| `content` | `TEXT` | Not Null | Note plain-text content body |
+| `created_at` | `TIMESTAMP` | Nullable | Record creation timestamp |
+| `updated_at` | `TIMESTAMP` | Nullable | Record update timestamp |
+
+**Indexes on `notes`:**
+- Primary Key: `(`id`)`
+- Composite Index: `(`user_id`, `updated_at`)` (Optimizes personal note list queries ordered by recent activity)
+- Foreign Key: `(`user_id`)` referencing `users(`id`)` ON DELETE CASCADE
+
 **Current Physical Table Inventory:**
-- `final_web`: `migrations` (1 table)
-- `final_web_test`: `migrations` (1 table)
-- **Domain Tables Present:** None
+- `final_web` / `final_web_test`: `migrations`, `users`, `password_reset_tokens`, `user_preferences`, `notes` (5 tables)
+- **Domain Tables Present:** `users`, `password_reset_tokens`, `user_preferences`, `notes`
 
 ---
 

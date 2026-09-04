@@ -302,7 +302,7 @@ jobs:
           echo "MySQL charset:collation = $RESULT"
           [ "$RESULT" = "utf8mb4:utf8mb4_unicode_ci" ] || (echo "FAIL: unexpected collation $RESULT" && exit 1)
 
-      - name: Verify Phase 2 database schema contract in final_web
+      - name: Verify Phase 3 database schema contract in final_web
         run: |
           USERS_COUNT=$(docker compose --env-file .env.docker exec -T mysql \
             mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
@@ -328,9 +328,15 @@ jobs:
           echo "Users avatar_path column count: $AVATAR_COL_COUNT"
           [ "$AVATAR_COL_COUNT" = "1" ] || (echo "FAIL: avatar_path column missing in users table" && exit 1)
 
+          NOTES_COUNT=$(docker compose --env-file .env.docker exec -T mysql \
+            mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
+            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME = 'notes';")
+          echo "Notes table count: $NOTES_COUNT"
+          [ "$NOTES_COUNT" = "1" ] || (echo "FAIL: notes table missing" && exit 1)
+
           UNEXPECTED=$(docker compose --env-file .env.docker exec -T mysql \
             mysql -u root -p"$(grep MYSQL_ROOT_PASSWORD .env.docker | cut -d= -f2)" \
-            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME IN ('notes', 'labels', 'note_label', 'attachments', 'note_shares', 'personal_access_tokens');")
+            -N -s -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='final_web' AND TABLE_NAME IN ('labels', 'note_label', 'attachments', 'note_shares', 'personal_access_tokens');")
           echo "Unexpected future tables count: $UNEXPECTED"
           [ "$UNEXPECTED" = "0" ] || (echo "FAIL: unexpected future tables found" && exit 1)
 
