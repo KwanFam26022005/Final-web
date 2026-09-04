@@ -22,4 +22,12 @@ class NotePolicy
     {
         return $user->id === $note->user_id;
     }
+
+    /**
+     * Determine whether the user can delete the note.
+     */
+    public function delete(User $user, Note $note): bool
+    {
+        return $user->id === $note->user_id;
+    }
 }

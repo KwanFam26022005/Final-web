@@ -244,6 +244,60 @@ class NoteTest extends TestCase
     {
         $this->getJson('/api/notes')->assertUnauthorized();
         $this->postJson('/api/notes', ['title' => 'T', 'content' => 'C'])->assertUnauthorized();
+        $this->deleteJson('/api/notes/1')->assertUnauthorized();
+    }
+
+    // --- DESTROY ---
+
+    public function test_authenticated_user_can_delete_own_note(): void
+    {
+        $user = $this->authenticatedUser();
+        $note = Note::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->deleteJson("/api/notes/{$note->id}");
+
+        $response->assertNoContent();
+        $this->assertDatabaseMissing('notes', ['id' => $note->id]);
+    }
+
+    public function test_delete_returns_204_no_content_with_empty_body(): void
+    {
+        $user = $this->authenticatedUser();
+        $note = Note::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->deleteJson("/api/notes/{$note->id}");
+
+        $response->assertStatus(204);
+        $this->assertEmpty($response->getContent());
+    }
+
+    public function test_user_cannot_delete_another_users_note(): void
+    {
+        $this->authenticatedUser();
+        $other = User::factory()->create();
+        $note = Note::factory()->create([
+            'user_id' => $other->id,
+            'title' => 'Secret Note',
+            'content' => 'Secret Content',
+        ]);
+
+        $response = $this->deleteJson("/api/notes/{$note->id}");
+
+        $response->assertForbidden();
+        $this->assertDatabaseHas('notes', [
+            'id' => $note->id,
+            'title' => 'Secret Note',
+            'content' => 'Secret Content',
+        ]);
+    }
+
+    public function test_delete_nonexistent_note_returns_404(): void
+    {
+        $this->authenticatedUser();
+
+        $response = $this->deleteJson('/api/notes/999999');
+
+        $response->assertNotFound();
     }
 
     // --- RESOURCE SHAPE ---

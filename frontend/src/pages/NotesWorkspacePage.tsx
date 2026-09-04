@@ -5,7 +5,8 @@ import { Button } from '../components/ui/Button';
 import { EmailVerificationBanner } from '../components/auth/EmailVerificationBanner';
 import { WiseCat } from '../components/mascot/WiseCat';
 import { KnowledgeMark } from '../components/brand/KnowledgeMark';
-import { fetchNotes, type Note } from '../lib/api/notes';
+import { fetchNotes, deleteNote, type Note } from '../lib/api/notes';
+import { ConfirmDeleteDialog } from '../components/ui/ConfirmDeleteDialog';
 
 function formatRelativeTime(dateStr: string): string {
   const date = new Date(dateStr);
@@ -27,7 +28,38 @@ export const NotesWorkspacePage: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
+  const [isDeletingNote, setIsDeletingNote] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const viewMode = preference?.default_note_view || 'grid';
+
+  const handleOpenDelete = (note: Note) => {
+    setNoteToDelete(note);
+    setDeleteError(null);
+  };
+
+  const handleCancelDelete = () => {
+    if (!isDeletingNote) {
+      setNoteToDelete(null);
+      setDeleteError(null);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!noteToDelete || isDeletingNote) return;
+    setIsDeletingNote(true);
+    setDeleteError(null);
+    try {
+      await deleteNote(noteToDelete.id);
+      setNotes((prev) => prev.filter((n) => n.id !== noteToDelete.id));
+      setNoteToDelete(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete note. Please try again.';
+      setDeleteError(message);
+    } finally {
+      setIsDeletingNote(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -59,9 +91,10 @@ export const NotesWorkspacePage: React.FC = () => {
     try { await logout(); } finally { setIsLoggingOut(false); }
   };
 
-  const toggleView = async () => {
-    const next = viewMode === 'grid' ? 'list' : 'grid';
-    await updatePreference(undefined, next);
+  const setViewMode = async (mode: 'grid' | 'list') => {
+    if (viewMode !== mode) {
+      await updatePreference(undefined, mode);
+    }
   };
 
   const getInitials = (name: string): string => {
@@ -164,7 +197,7 @@ export const NotesWorkspacePage: React.FC = () => {
                   role="radio"
                   aria-checked={viewMode === 'grid'}
                   aria-label="Grid view"
-                  onClick={() => { if (viewMode !== 'grid') void toggleView(); }}
+                  onClick={() => { void setViewMode('grid'); }}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
                   data-testid="grid-view-button"
                 >
@@ -174,7 +207,7 @@ export const NotesWorkspacePage: React.FC = () => {
                   role="radio"
                   aria-checked={viewMode === 'list'}
                   aria-label="List view"
-                  onClick={() => { if (viewMode !== 'list') void toggleView(); }}
+                  onClick={() => { void setViewMode('list'); }}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
                   data-testid="list-view-button"
                 >
@@ -212,39 +245,105 @@ export const NotesWorkspacePage: React.FC = () => {
             /* Grid View */
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="notes-grid">
               {notes.map((note) => (
-                <button
+                <div
                   key={note.id}
                   onClick={() => navigate(`/notes/${note.id}`)}
-                  className="group text-left bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 hover:shadow-md hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 transition-all duration-150 motion-reduce:hover:translate-y-0"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/notes/${note.id}`);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Open note: ${note.title}`}
+                  className="group text-left bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 hover:shadow-md hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 transition-all duration-150 motion-reduce:hover:translate-y-0 cursor-pointer flex flex-col justify-between"
                   data-testid="note-card"
                 >
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1.5 line-clamp-2">{note.title}</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-3 mb-3">{note.content}</p>
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <h3 className="text-sm font-semibold text-slate-900 dark:text-white line-clamp-2">{note.title}</h3>
+                      <button
+                        type="button"
+                        aria-label={`Delete ${note.title}`}
+                        data-testid="delete-note-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDelete(note);
+                        }}
+                        className="opacity-80 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 p-1.5 -mr-1.5 -mt-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none shrink-0"
+                        title="Delete note"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-3 mb-3">{note.content}</p>
+                  </div>
                   <p className="text-[11px] text-slate-400 dark:text-slate-500">{formatRelativeTime(note.updated_at)}</p>
-                </button>
+                </div>
               ))}
             </div>
           ) : (
             /* List View */
             <div className="space-y-1" data-testid="notes-list">
               {notes.map((note) => (
-                <button
+                <div
                   key={note.id}
                   onClick={() => navigate(`/notes/${note.id}`)}
-                  className="w-full text-left flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/60 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/notes/${note.id}`);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Open note: ${note.title}`}
+                  className="group w-full text-left flex items-center justify-between gap-4 px-4 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/60 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 transition-colors cursor-pointer"
                   data-testid="note-row"
                 >
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-medium text-slate-900 dark:text-white truncate">{note.title}</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{note.content}</p>
                   </div>
-                  <span className="text-[11px] text-slate-400 dark:text-slate-500 flex-shrink-0">{formatRelativeTime(note.updated_at)}</span>
-                </button>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500">{formatRelativeTime(note.updated_at)}</span>
+                    <button
+                      type="button"
+                      aria-label={`Delete ${note.title}`}
+                      data-testid="delete-note-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenDelete(note);
+                      }}
+                      className="opacity-80 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 p-1.5 -mr-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none"
+                      title="Delete note"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
         </main>
       </div>
+
+      <ConfirmDeleteDialog
+        isOpen={noteToDelete !== null}
+        title="Delete this note?"
+        description="This action permanently deletes the note and cannot be undone."
+        confirmLabel="Delete note"
+        cancelLabel="Cancel"
+        isDeleting={isDeletingNote}
+        error={deleteError}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

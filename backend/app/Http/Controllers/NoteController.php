@@ -9,6 +9,7 @@ use App\Models\Note;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 
 class NoteController extends Controller
@@ -59,5 +60,17 @@ class NoteController extends Controller
         $note->update($request->validated());
 
         return new NoteResource($note->fresh());
+    }
+
+    /**
+     * Remove the specified note from storage.
+     */
+    public function destroy(Request $request, Note $note): Response
+    {
+        Gate::authorize('delete', $note);
+
+        $note->delete();
+
+        return response()->noContent();
     }
 }

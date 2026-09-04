@@ -112,6 +112,15 @@ export function useAutosave({ onSave, isValid = true, validate }: UseAutosaveOpt
     }, DEBOUNCE_MS);
   }, []);
 
+  const cancelAutosave = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    pendingRef.current = null;
+    latestRef.current = null;
+  }, []);
+
   useEffect(() => {
     return () => {
       if (timerRef.current) {
@@ -121,5 +130,5 @@ export function useAutosave({ onSave, isValid = true, validate }: UseAutosaveOpt
     };
   }, []);
 
-  return { status, markDirty, DEBOUNCE_MS };
+  return { status, markDirty, cancelAutosave, DEBOUNCE_MS };
 }

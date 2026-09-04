@@ -43,3 +43,10 @@ export async function updateNote(id: number, data: { title?: string; content?: s
   });
   return res.data;
 }
+
+export async function deleteNote(id: number): Promise<void> {
+  await ensureCsrfCookie();
+  await apiClient<void>(`/api/notes/${id}`, {
+    method: 'DELETE',
+  });
+}
