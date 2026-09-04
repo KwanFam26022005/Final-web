@@ -418,19 +418,11 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
   });
 
   test('14. NOTE-06 & NOTE-07: Note pinning, server-backed live search, debounce, and section organization', async ({ page }) => {
-    const user = {
-      displayName: 'Search & Pin Scholar',
-      email: `searchpin_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@example.com`,
-      password: 'Password123!',
-    };
-
-    // Register test user
-    await page.goto('/register');
-    await page.getByLabel(/display name/i).fill(user.displayName);
-    await page.getByLabel(/email address/i).fill(user.email);
-    await page.getByLabel(/^password/i).fill(user.password);
-    await page.getByLabel(/confirm password/i).fill(user.password);
-    await page.getByRole('button', { name: /create account/i }).click();
+    // Log in existing user A (has empty workspace from test 13, avoiding throttle:registration limit)
+    await page.goto('/login');
+    await page.getByLabel(/email address/i).fill(sharedUserA.email);
+    await page.getByLabel(/^password/i).fill(sharedUserA.password);
+    await page.getByRole('button', { name: /sign in/i }).click();
     await expect(page).toHaveURL('/');
 
     // Empty workspace initially
@@ -455,6 +447,10 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     await page.getByTestId('back-to-notes').click();
     await expect(page).toHaveURL('/');
     await expect(page.getByText('Database Systems')).toBeVisible();
+
+    // Ensure grid view is active for subsequent note-card checks
+    await page.getByTestId('grid-view-button').click();
+    await expect(page.getByTestId('notes-grid')).toBeVisible();
 
     // 3. Initially, neither note is pinned -> pinned-section is absent, both in notes-section
     await expect(page.getByTestId('pinned-section')).not.toBeVisible();
