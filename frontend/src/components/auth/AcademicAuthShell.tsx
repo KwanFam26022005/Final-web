@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { WiseCat, type WiseCatState } from '../mascot/WiseCat';
+import { KnowledgeMark } from '../brand/KnowledgeMark';
+import { AcademicCampusScene } from '../illustrations/AcademicCampusScene';
+import { KnowledgeParticles } from '../illustrations/KnowledgeParticles';
 
 export interface AcademicAuthShellProps {
   title: string;
@@ -18,32 +21,28 @@ export const AcademicAuthShell: React.FC<AcademicAuthShellProps> = ({
   footer,
 }) => {
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-academic-light text-slate-900 dark:text-slate-100 selection:bg-blue-100 selection:text-blue-900">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-academic-light text-slate-900 dark:text-slate-100 selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
       {/* -------------------------------------------------------------------- */}
-      {/* Desktop Left Brand & Atmosphere Column                               */}
+      {/* Desktop Left Brand, Editorial Atmosphere & Illustration Canvas (56%) */}
       {/* -------------------------------------------------------------------- */}
-      <aside className="hidden lg:flex lg:w-5/12 xl:w-1/2 flex-col justify-between p-10 xl:p-14 border-r border-slate-200/80 dark:border-slate-800/80 relative overflow-hidden bg-white/40 dark:bg-slate-900/40 backdrop-blur-[2px]">
-        {/* Ambient Radial Illumination */}
+      <aside className="hidden lg:flex lg:w-[56%] flex-col justify-between p-10 xl:p-14 border-r border-slate-200/70 dark:border-slate-800/70 relative overflow-hidden bg-white/30 dark:bg-slate-950/30">
+        {/* Layered Ambient Illumination Glows */}
         <div
-          className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-blue-400/10 dark:bg-blue-600/10 blur-3xl pointer-events-none animate-ambient-glow"
+          className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-blue-500/8 dark:bg-blue-500/12 blur-3xl pointer-events-none animate-ambient-glow"
           aria-hidden="true"
         />
         <div
-          className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-rose-400/10 dark:bg-rose-600/10 blur-3xl pointer-events-none animate-ambient-glow"
-          style={{ animationDelay: '4s' }}
+          className="absolute bottom-16 right-10 w-80 h-80 rounded-full bg-amber-400/5 dark:bg-amber-400/8 blur-3xl pointer-events-none animate-ambient-glow"
+          style={{ animationDelay: '5s' }}
           aria-hidden="true"
         />
 
-        {/* Top Brand Identity */}
+        {/* Floating Restrained Knowledge Particles */}
+        <KnowledgeParticles />
+
+        {/* Top Product Identity & Mark */}
         <div className="flex items-center gap-3.5 z-10 animate-entrance">
-          <div className="w-10 h-10 rounded-xl bg-blue-900 dark:bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm relative">
-            N
-            {/* Subtle TDTU-inspired lotus-pink accent dot */}
-            <span
-              className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-500 border-2 border-white dark:border-slate-900"
-              title="Academic Light Accent"
-            />
-          </div>
+          <KnowledgeMark size="md" />
           <div>
             <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white block">
               Final-web
@@ -54,61 +53,57 @@ export const AcademicAuthShell: React.FC<AcademicAuthShellProps> = ({
           </div>
         </div>
 
-        {/* Center Mascot & Knowledge Philosophy */}
-        <div className="my-auto py-10 z-10 max-w-md animate-entrance stagger-1">
-          <div className="mb-6 flex items-center gap-4">
+        {/* Center Hero Visual Storytelling (Editorial + Wise Cat Hero) */}
+        <div className="my-auto py-6 z-10 max-w-lg">
+          {/* Editorial Hero Statement with Serif Typography */}
+          <div className="animate-entrance stagger-1 mb-8">
+            <h2 className="font-editorial text-3xl xl:text-4xl text-slate-900 dark:text-white font-normal tracking-tight leading-snug">
+              Where ideas become <span className="italic font-medium text-blue-900 dark:text-blue-300">living knowledge</span>.
+            </h2>
+            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-md">
+              A focused student sanctuary for deep reflection, structured research, and lasting personal notes.
+            </p>
+          </div>
+
+          {/* Wise Cat Hero Mascot (240px - 256px Desktop Scale) */}
+          <div className="flex items-center justify-center my-6 animate-entrance stagger-2">
             <div className="animate-mascot-float">
-              <WiseCat state={mascotState} size="lg" />
-            </div>
-            <div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300 mb-1.5">
-                Student Productivity Shell
-              </span>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                Quiet Mind. Sharp Notes.
-              </h2>
+              <WiseCat state={mascotState} size="hero" />
             </div>
           </div>
 
-          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-            A high-performance workspace crafted for structured reflection, peer study, and grounded research without cognitive clutter.
-          </p>
-
-          <ul className="space-y-3 text-xs text-slate-600 dark:text-slate-400">
-            <li className="flex items-center gap-2.5">
-              <span className="text-blue-600 dark:text-blue-400 font-bold">&#10022;</span>
-              <span><strong>Living Knowledge:</strong> Fast notes, disciplined organization, and distraction-free writing.</span>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <span className="text-blue-600 dark:text-blue-400 font-bold">&#10022;</span>
-              <span><strong>Peer Study:</strong> First-party session security with granular collaboration boundaries.</span>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <span className="text-rose-600 dark:text-rose-400 font-bold">&#10022;</span>
-              <span><strong>Academic Integrity:</strong> Built for personal ownership, rigorous accessibility, and privacy.</span>
-            </li>
-          </ul>
+          {/* Subtle Concept Chips */}
+          <div className="flex items-center justify-center gap-3 animate-entrance stagger-3 mt-4">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
+              Think clearly
+            </span>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
+              Write freely
+            </span>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
+              Build knowledge
+            </span>
+          </div>
         </div>
 
-        {/* Bottom Homage & Independence Statement */}
-        <div className="z-10 text-xs text-slate-500 dark:text-slate-500 border-t border-slate-200/60 dark:border-slate-800/60 pt-4">
-          <p>
-            TDTU student-inspired academic theme &bull; Independent project workspace &bull; Not affiliated with official university portals.
-          </p>
+        {/* Lower Atmospheric Campus Line Art */}
+        <div className="z-10 animate-entrance stagger-1 mt-auto">
+          <AcademicCampusScene />
+          {/* Subtle Student Attribution Statement */}
+          <div className="text-[11px] text-slate-500 dark:text-slate-500 border-t border-slate-200/60 dark:border-slate-800/60 pt-3 text-center">
+            Student-crafted personal workspace &bull; Academic Light Edition &bull; Independent project
+          </div>
         </div>
       </aside>
 
       {/* -------------------------------------------------------------------- */}
-      {/* Right Form Column (Full width on Mobile / Split on Desktop)          */}
+      {/* Right Task & Form Surface Column (44% Desktop / 100% Mobile)         */}
       {/* -------------------------------------------------------------------- */}
-      <main className="flex-1 flex flex-col justify-center items-center p-6 sm:p-10 lg:p-12 xl:p-16 relative">
-        {/* Mobile Header (Hidden on lg+) */}
+      <main className="flex-1 lg:w-[44%] flex flex-col justify-center items-center p-6 sm:p-10 lg:p-12 xl:p-16 relative">
+        {/* Mobile Header (Shown on < lg only) */}
         <div className="lg:hidden w-full max-w-md mb-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-900 dark:bg-blue-600 flex items-center justify-center text-white font-bold text-sm relative">
-              N
-              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-rose-500 border-2 border-white dark:border-slate-900" />
-            </div>
+            <KnowledgeMark size="sm" />
             <span className="font-semibold text-slate-900 dark:text-white text-sm">
               Final-web
             </span>
@@ -116,8 +111,8 @@ export const AcademicAuthShell: React.FC<AcademicAuthShellProps> = ({
           <WiseCat state={mascotState} size="sm" />
         </div>
 
-        {/* Form Container Card with Staged Entrance Animation */}
-        <div className="w-full max-w-md animate-entrance stagger-2">
+        {/* Form Container Card with Signature Staged Entrance */}
+        <div className="w-full max-w-md animate-entrance stagger-4">
           <div className="mb-6 text-center lg:text-left">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               {title}
@@ -127,8 +122,8 @@ export const AcademicAuthShell: React.FC<AcademicAuthShellProps> = ({
             </p>
           </div>
 
-          {/* Form Surface */}
-          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
+          {/* Form Surface V2 (Hairline border, subtle elevation, top signature highlight) */}
+          <div className="bg-white/95 dark:bg-slate-900/95 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 p-7 sm:p-9 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)] relative before:absolute before:top-0 before:left-8 before:right-8 before:h-[2px] before:bg-gradient-to-r before:from-transparent before:via-blue-500/40 before:to-transparent">
             {children}
           </div>
 

@@ -1,8 +1,9 @@
 # Final-web UI/UX Design System Specification
 
-> **Status:** Accepted & Frozen Baseline (Phase 2 M3 Acceptance)<br>
+> **Status:** Implemented Candidate — Pending User Visual Acceptance (Academic Light V2 Visual Acceptance Hold)<br>
 > **Authority:** Subordinate to repository governance and rubric; authoritative source of truth for UI/UX implementation.<br>
-> **Approved Direction:** **Concept A — Academic Light** (`Academic Light — Living Knowledge`).
+> **Functional Status:** Phase 2 functional acceptance is complete & verified. Visual integration is candidate pending user acceptance.<br>
+> **Approved Direction:** **Concept A — Academic Light V2** (`Editorial Academic + Living Illustration + Modern Productivity`).
 
 ---
 
@@ -20,10 +21,12 @@
 > **Cultural Homage & Student Identity Boundary:**
 > This application is an independent personal productivity platform created by students. It is **NOT** an official university website or portal. It does **NOT** use the official university logo, and makes no claim of official university sponsorship or affiliation.
 
-### Visual Character Blend
-- **70% Academic Light:** Clean, bright, calm, light-first canvas (~80% light/neutral surfaces) evoking study halls, libraries, and open notebooks.
-- **20% Tech Scholar Precision:** 1px hairline border hierarchy, monospace code accents, crisp alignment, and high-contrast typography.
-- **10% Scholar Cat Warmth:** Minimalist geometric Wise Cat vector mascot expressing friendly academic states without kawaii overload or emoji clutter.
+### Visual Character Composition (Academic Light V2)
+- **40% Editorial Academic Atmosphere:** System editorial serif pairing (`Charter`, `Iowan Old Style`, `Cambria`, `Georgia`), layered paper-white background (`#FCFCFA`), and cool blue ambient illumination.
+- **25% Original Illustration:** Hero desktop Wise Cat companion (256px scale), abstract campus line-art scene (`AcademicCampusScene`), and floating knowledge particles.
+- **20% Modern Productivity Interface:** 56/44 desktop layout split, hairline borders (`border-slate-200/90`), subtle elevation, and accessible form controls.
+- **10% Motion:** Staged 500ms entrance sequence, subtle mascot internal group animations (blink, ear perk, tassel, prop breathing), and strict `prefers-reduced-motion: reduce`.
+- **5% Subtle Cultural Cues:** Tiny lotus-red accents (`#E11D48` / `#F43F5E`) on KnowledgeMark apex, mascot inner ears, and concept status dots.
 
 ### Design Dial Settings
 - **Variance:** `4 / 10` (Disciplined, clean, structured; avoiding chaotic novelty or rigid enterprise stagnation)

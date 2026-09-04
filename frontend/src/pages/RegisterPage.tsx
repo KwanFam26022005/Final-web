@@ -101,8 +101,8 @@ export const RegisterPage: React.FC = () => {
   return (
     <AcademicAuthShell
       title="Create your account"
-      subtitle="Collaborative Intelligent Note Management"
-      mascotState="reading"
+      subtitle="Begin your personal knowledge journal."
+      mascotState={isLoading ? 'loading' : 'reading'}
       footer={
         <p>
           Already have an account?{' '}

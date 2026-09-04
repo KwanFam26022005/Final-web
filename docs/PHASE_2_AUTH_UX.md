@@ -1,9 +1,10 @@
 # Phase 2 Authentication & Account Management UX Specification
 
 > **Phase:** Phase 2 — Authentication and Account Management<br>
-> **Status:** Implemented & Accepted (Phase 2 M3 Final Acceptance)<br>
-> **Approved Visual Direction:** Concept A — Academic Light (`Academic Light — Living Knowledge`)<br>
-> **Mascot Integration:** Original Wise Cat (`<WiseCat />`) with 6 active academic states
+> **Status:** Implemented Candidate — Pending User Visual Acceptance (Academic Light V2 Visual Acceptance Hold)<br>
+> **Functional Status:** Phase 2 functional acceptance complete & verified. Visual integration is candidate pending user acceptance.<br>
+> **Approved Visual Direction:** Concept A — Academic Light V2 (`Editorial Academic + Living Illustration + Modern Productivity`)<br>
+> **Mascot Integration:** Original Wise Cat (`<WiseCat />`) with 6 active academic states and hero desktop companion scale (256px)
 
 This document defines the authoritative UX, interaction contracts, and security behaviors for all screens, dialogs, and workflows implemented in Phase 2.
 
@@ -12,8 +13,8 @@ This document defines the authoritative UX, interaction contracts, and security 
 ## 1. Global Authentication UX Standards
 
 1. **Academic Split Layout (Desktop `lg`+):**
-   - Left Pane (45%): Brand statement, Academic Light atmospheric illumination, original Wise Cat mascot, knowledge pillars, and independent student project disclaimer.
-   - Right Pane (55%): High-contrast card (`max-w-md`) containing title, subtitle, form fields, and secondary action links.
+   - Left Pane (56%): KnowledgeMark product mark, editorial serif headline, hero Wise Cat mascot companion (256px), concept chips, atmospheric campus line art, and student project attribution.
+   - Right Pane (44%): Refined hairline-bordered form surface with top gradient signature highlight, clean whitespace, and accessible form controls.
    - Reusable container: `<AcademicAuthShell />`.
 2. **Mobile Adaptation (`< 1024px`):**
    - Single-column, form-first layout.

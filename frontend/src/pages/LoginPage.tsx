@@ -66,8 +66,8 @@ export const LoginPage: React.FC = () => {
   return (
     <AcademicAuthShell
       title="Sign in to your account"
-      subtitle="Collaborative Intelligent Note Management"
-      mascotState="welcome"
+      subtitle="Enter your academic credentials to continue."
+      mascotState={isLoading ? 'loading' : 'welcome'}
       footer={
         <p>
           Don't have an account?{' '}

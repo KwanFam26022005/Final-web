@@ -92,7 +92,7 @@ export const ResetPasswordPage: React.FC = () => {
     <AcademicAuthShell
       title="Create a new password"
       subtitle="Set a new strong password for your account."
-      mascotState={isSuccess ? 'success' : 'verification'}
+      mascotState={isLoading ? 'loading' : isSuccess ? 'success' : 'verification'}
       footer={
         <Link
           to="/login"

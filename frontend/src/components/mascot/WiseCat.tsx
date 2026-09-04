@@ -4,7 +4,7 @@ export type WiseCatState = 'welcome' | 'reading' | 'loading' | 'success' | 'veri
 
 export interface WiseCatProps {
   state?: WiseCatState;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'hero';
   className?: string;
 }
 
@@ -18,11 +18,12 @@ export const WiseCat: React.FC<WiseCatProps> = ({
     md: 'w-16 h-16',
     lg: 'w-28 h-28',
     xl: 'w-44 h-44',
+    hero: 'w-56 h-56 sm:w-64 sm:h-64',
   };
 
   const stateLabels: Record<WiseCatState, string> = {
-    welcome: 'Wise Cat greeting student warmly',
-    reading: 'Wise Cat focused on academic reading',
+    welcome: 'Wise Cat academic companion greeting student warmly',
+    reading: 'Wise Cat focused on academic reading and research',
     loading: 'Wise Cat thinking and processing knowledge',
     success: 'Wise Cat celebrating successful action',
     verification: 'Wise Cat holding verification credential',
@@ -61,32 +62,34 @@ export const WiseCat: React.FC<WiseCatProps> = ({
           className="text-blue-200 dark:text-blue-800"
         />
 
-        {/* Cat Ears */}
-        {/* Left Ear */}
-        <path
-          d="M32 44L22 18C28 17 38 23 44 32"
-          className="fill-slate-800 dark:fill-slate-100 stroke-slate-900 dark:stroke-white"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-        />
-        {/* Left Inner Ear (Lotus Accent) */}
-        <path
-          d="M30 38L25 24C29 23 34 26 38 31"
-          className="fill-rose-400 dark:fill-rose-500"
-        />
+        {/* Cat Ears (Grouped for subtle occasional ear perk) */}
+        <g className="animate-cat-ear-perk origin-[60px_44px]">
+          {/* Left Ear */}
+          <path
+            d="M32 44L22 18C28 17 38 23 44 32"
+            className="fill-slate-800 dark:fill-slate-100 stroke-slate-900 dark:stroke-white"
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+          />
+          {/* Left Inner Ear (Lotus Accent) */}
+          <path
+            d="M30 38L25 24C29 23 34 26 38 31"
+            className="fill-rose-400 dark:fill-rose-500"
+          />
 
-        {/* Right Ear */}
-        <path
-          d="M88 44L98 18C92 17 82 23 76 32"
-          className="fill-slate-800 dark:fill-slate-100 stroke-slate-900 dark:stroke-white"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-        />
-        {/* Right Inner Ear (Lotus Accent) */}
-        <path
-          d="M90 38L95 24C91 23 86 26 82 31"
-          className="fill-rose-400 dark:fill-rose-500"
-        />
+          {/* Right Ear */}
+          <path
+            d="M88 44L98 18C92 17 82 23 76 32"
+            className="fill-slate-800 dark:fill-slate-100 stroke-slate-900 dark:stroke-white"
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+          />
+          {/* Right Inner Ear (Lotus Accent) */}
+          <path
+            d="M90 38L95 24C91 23 86 26 82 31"
+            className="fill-rose-400 dark:fill-rose-500"
+          />
+        </g>
 
         {/* Cat Head Body Contour */}
         <path
@@ -107,14 +110,16 @@ export const WiseCat: React.FC<WiseCatProps> = ({
             points="60,36 60,40 52,38 52,34"
             className="fill-blue-950 dark:fill-blue-800"
           />
-          {/* Tassel */}
-          <path
-            d="M60 28C70 28 80 34 82 40"
-            stroke="#F59E0B"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <circle cx="82" cy="42" r="2.5" fill="#F59E0B" />
+          {/* Tassel with subtle occasional sway */}
+          <g className="animate-cat-tassel origin-[60px_28px]">
+            <path
+              d="M60 28C70 28 80 34 82 40"
+              stroke="#F59E0B"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <circle cx="82" cy="42" r="2.5" fill="#F59E0B" />
+          </g>
         </g>
 
         {/* Academic Spectacles / Intelligent Glasses */}
@@ -148,10 +153,10 @@ export const WiseCat: React.FC<WiseCatProps> = ({
           />
         </g>
 
-        {/* Eyes (Per State) */}
+        {/* Eyes (Per State with subtle natural blink animation) */}
         {state === 'reading' ? (
           // Reading eyes looking down at book
-          <g className="stroke-slate-900 dark:stroke-slate-950" strokeWidth="2" strokeLinecap="round">
+          <g className="stroke-slate-900 dark:stroke-slate-950 animate-cat-blink origin-[60px_62px]" strokeWidth="2" strokeLinecap="round">
             <path d="M41 62C43 64 47 64 49 62" />
             <path d="M71 62C73 64 77 64 79 62" />
           </g>
@@ -163,13 +168,13 @@ export const WiseCat: React.FC<WiseCatProps> = ({
           </g>
         ) : state === 'loading' ? (
           // Curious thinking eyes
-          <g className="fill-slate-900 dark:fill-slate-950">
+          <g className="fill-slate-900 dark:fill-slate-950 animate-cat-blink origin-[60px_61px]">
             <circle cx="45" cy="61" r="3" />
             <circle cx="75" cy="61" r="3" />
           </g>
         ) : (
-          // Standard alert, friendly student eyes
-          <g className="fill-slate-900 dark:fill-slate-950">
+          // Standard alert, friendly student eyes with occasional natural blink
+          <g className="fill-slate-900 dark:fill-slate-950 animate-cat-blink origin-[60px_61.5px]">
             <circle cx="45" cy="61.5" r="3" />
             <circle cx="75" cy="61.5" r="3" />
             {/* Catchlight */}
@@ -198,10 +203,10 @@ export const WiseCat: React.FC<WiseCatProps> = ({
           <line x1="88" y1="70" x2="99" y2="70" />
         </g>
 
-        {/* State-Specific Accessories / Props */}
+        {/* State-Specific Accessories / Props with subtle gentle breathing motion */}
         {state === 'reading' && (
-          // Open Academic Book
-          <g className="transition-transform duration-200">
+          // Open Academic Book with gentle breathing tilt
+          <g className="animate-cat-prop-tilt origin-[60px_98px]">
             <path
               d="M42 94L58 88V104L42 108V94Z"
               className="fill-blue-100 dark:fill-blue-900 stroke-blue-900 dark:stroke-blue-400"
@@ -230,7 +235,7 @@ export const WiseCat: React.FC<WiseCatProps> = ({
 
         {state === 'success' && (
           // Academic Star / Sparkle
-          <g className="animate-pulse">
+          <g className="animate-cat-sparkle origin-[60px_95px]">
             <path
               d="M60 88L62 93L67 95L62 97L60 102L58 97L53 95L58 93L60 88Z"
               fill="#F59E0B"
@@ -242,7 +247,7 @@ export const WiseCat: React.FC<WiseCatProps> = ({
 
         {state === 'verification' && (
           // Academic Verification Badge / Envelope
-          <g>
+          <g className="animate-cat-prop-tilt origin-[60px_96px]">
             <rect
               x="46"
               y="86"
@@ -264,7 +269,7 @@ export const WiseCat: React.FC<WiseCatProps> = ({
 
         {state === 'settings' && (
           // Engineering Compass / Drafting Gear Badge
-          <g>
+          <g className="animate-cat-prop-tilt origin-[60px_96px]">
             <circle
               cx="60"
               cy="96"
@@ -282,7 +287,7 @@ export const WiseCat: React.FC<WiseCatProps> = ({
 
         {state === 'welcome' && (
           // Academic Notebook / Student ID Badge
-          <g>
+          <g className="animate-cat-prop-tilt origin-[60px_97px]">
             <rect
               x="48"
               y="88"

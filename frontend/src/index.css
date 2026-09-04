@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
 /* -------------------------------------------------------------------------- */
-/* Final-web Design System: Academic Light — Living Knowledge                 */
+/* Final-web Design System: Academic Light V2 — Editorial & Living Knowledge  */
 /* -------------------------------------------------------------------------- */
 
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-editorial-serif: 'Charter', 'Iowan Old Style', 'Palatino Linotype', 'Cambria', 'Georgia', serif;
 
   /* Motion Tokens */
   --duration-instant: 100ms;
@@ -18,8 +19,9 @@
   --ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Academic Light Color Tokens */
-  --color-canvas-light: #F8FAFC;
+  /* Academic Light V2 Color Tokens */
+  --color-canvas-light: #FCFCFA;
+  --color-canvas-dark: #080C14;
   --color-academic-navy: #1E3A8A;
   --color-academic-blue: #2563EB;
   --color-lotus-accent: #E11D48;
@@ -33,6 +35,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Editorial Typography Stack */
+.font-editorial {
+  font-family: var(--font-editorial-serif);
+}
+
 /* -------------------------------------------------------------------------- */
 /* Motion Keyframes (GPU-friendly transform & opacity only)                  */
 /* -------------------------------------------------------------------------- */
@@ -40,7 +47,7 @@ body {
 @keyframes academicFadeSlideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -59,12 +66,12 @@ body {
 
 @keyframes academicGlowPulse {
   0%, 100% {
-    opacity: 0.65;
+    opacity: 0.55;
     transform: scale(1);
   }
   50% {
-    opacity: 0.95;
-    transform: scale(1.05);
+    opacity: 0.85;
+    transform: scale(1.03);
   }
 }
 
@@ -73,7 +80,7 @@ body {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
   }
 }
 
@@ -86,6 +93,80 @@ body {
   }
   40%, 80% {
     transform: translateX(3px);
+  }
+}
+
+/* Mascot Internal Micro-Motions */
+@keyframes catEarPerk {
+  0%, 88%, 100% {
+    transform: rotate(0deg);
+  }
+  92% {
+    transform: rotate(-3deg);
+  }
+  95% {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes catBlink {
+  0%, 93%, 97%, 100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.12);
+  }
+}
+
+@keyframes catTasselSway {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes catPropTilt {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(0.8deg);
+  }
+}
+
+@keyframes catSparkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.15) rotate(12deg);
+    opacity: 1;
+  }
+}
+
+/* Knowledge Particle Drifts */
+@keyframes particleDrift1 {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(-8px) translateX(4px);
+    opacity: 0.85;
+  }
+}
+
+@keyframes particleDrift2 {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(6px) translateX(-5px);
+    opacity: 0.8;
   }
 }
 
@@ -113,39 +194,71 @@ body {
   animation: subtleInputShake 260ms ease-in-out;
 }
 
-/* Stagger Sequence Delays */
+/* Mascot internal animations */
+.animate-cat-ear-perk {
+  animation: catEarPerk 8s ease-in-out infinite;
+}
+
+.animate-cat-blink {
+  animation: catBlink 6.5s ease-in-out infinite;
+}
+
+.animate-cat-tassel {
+  animation: catTasselSway 5s ease-in-out infinite;
+}
+
+.animate-cat-prop-tilt {
+  animation: catPropTilt 5s ease-in-out infinite;
+}
+
+.animate-cat-sparkle {
+  animation: catSparkle 4s ease-in-out infinite;
+}
+
+/* Particle animations */
+.animate-particle-float-1 {
+  animation: particleDrift1 14s ease-in-out infinite;
+}
+
+.animate-particle-float-2 {
+  animation: particleDrift2 18s ease-in-out infinite;
+}
+
+/* Signature Staged Entrance Sequence Delays (Total ~500ms max) */
 .stagger-1 {
-  animation-delay: 60ms;
+  animation-delay: 80ms;
 }
 
 .stagger-2 {
-  animation-delay: 120ms;
+  animation-delay: 160ms;
 }
 
 .stagger-3 {
-  animation-delay: 180ms;
-}
-
-.stagger-4 {
   animation-delay: 240ms;
 }
 
+.stagger-4 {
+  animation-delay: 320ms;
+}
+
 /* -------------------------------------------------------------------------- */
-/* Academic Light Atmosphere Background                                       */
+/* Academic Light V2 Atmosphere Background (Paper white + layered light)      */
 /* -------------------------------------------------------------------------- */
 
 .bg-academic-light {
-  background-color: #F8FAFC;
+  background-color: #FCFCFA;
   background-image:
-    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(225, 29, 72, 0.05) 0px, transparent 50%);
+    radial-gradient(at 10% 15%, rgba(37, 99, 235, 0.07) 0px, transparent 48%),
+    radial-gradient(at 85% 80%, rgba(245, 158, 11, 0.035) 0px, transparent 45%),
+    radial-gradient(at 45% 95%, rgba(244, 63, 94, 0.025) 0px, transparent 40%);
 }
 
 .dark .bg-academic-light {
-  background-color: #090D16;
+  background-color: #080C14;
   background-image:
-    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(225, 29, 72, 0.08) 0px, transparent 50%);
+    radial-gradient(at 10% 15%, rgba(37, 99, 235, 0.12) 0px, transparent 48%),
+    radial-gradient(at 85% 80%, rgba(245, 158, 11, 0.05) 0px, transparent 45%),
+    radial-gradient(at 45% 95%, rgba(244, 63, 94, 0.04) 0px, transparent 40%);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -165,7 +278,14 @@ body {
   .animate-ambient-glow,
   .animate-mascot-float,
   .animate-subtle-shake,
-  .animate-entrance {
+  .animate-entrance,
+  .animate-cat-ear-perk,
+  .animate-cat-blink,
+  .animate-cat-tassel,
+  .animate-cat-prop-tilt,
+  .animate-cat-sparkle,
+  .animate-particle-float-1,
+  .animate-particle-float-2 {
     animation: none !important;
     transform: none !important;
     opacity: 1 !important;

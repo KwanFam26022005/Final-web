@@ -56,7 +56,7 @@ export const ForgotPasswordPage: React.FC = () => {
     <AcademicAuthShell
       title="Reset your password"
       subtitle="Enter your registered email address and we'll send you a password recovery link."
-      mascotState={isSuccess ? 'success' : 'verification'}
+      mascotState={isLoading ? 'loading' : isSuccess ? 'success' : 'verification'}
       footer={
         <Link
           to="/login"

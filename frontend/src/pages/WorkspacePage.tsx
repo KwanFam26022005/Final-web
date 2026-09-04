@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { EmailVerificationBanner } from '../components/auth/EmailVerificationBanner';
 import { WiseCat } from '../components/mascot/WiseCat';
+import { KnowledgeMark } from '../components/brand/KnowledgeMark';
 import { apiClient } from '../lib/api/client';
 
 interface HealthResponse {
@@ -68,10 +69,7 @@ export const WorkspacePage: React.FC = () => {
       <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200/80 dark:border-slate-800/80 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-lg bg-blue-900 dark:bg-blue-600 flex items-center justify-center text-white font-bold text-sm relative shadow-sm transition-transform group-hover:scale-105">
-              N
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 border border-white dark:border-slate-900" />
-            </div>
+            <KnowledgeMark size="md" className="transition-transform group-hover:scale-105" />
             <span className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base tracking-tight hidden sm:inline">
               Collaborative Intelligent Note Management
             </span>
