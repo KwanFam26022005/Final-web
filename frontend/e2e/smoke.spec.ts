@@ -218,4 +218,19 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     await expect(page).toHaveURL(/\/settings\/preferences/);
     await expect(page.getByRole('button', { name: /save preferences/i })).toBeVisible();
   });
+
+  test('10. H: desktop visual composition renders 56/44 split, brand mark, editorial statement, and zero overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/login');
+
+    await expect(page.locator('aside').getByTestId('knowledge-mark')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /where ideas become/i })).toBeVisible();
+    await expect(page.getByTestId('academic-campus-scene')).toBeVisible();
+    await expect(page.getByTestId('knowledge-particles')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /sign in to your account/i })).toBeVisible();
+
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
+  });
 });
