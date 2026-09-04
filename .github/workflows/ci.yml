@@ -184,11 +184,13 @@ jobs:
         working-directory: frontend
         run: |
           npx playwright test --reporter=list || {
-            echo "::error::Playwright E2E Smoke Tests Failed"
+            echo "## Playwright E2E Failures" >> $GITHUB_STEP_SUMMARY
             for f in test-results/*/error-context.md; do
               if [ -f "$f" ]; then
-                echo "=== $f ==="
-                cat "$f"
+                echo "### $f" >> $GITHUB_STEP_SUMMARY
+                head -n 40 "$f" >> $GITHUB_STEP_SUMMARY
+                ERR_MSG=$(head -n 25 "$f" | tr '\r\n' ' ' | sed 's/%/%25/g')
+                echo "::error title=Playwright Failure::$ERR_MSG"
               fi
             done
             exit 1
@@ -386,11 +388,13 @@ jobs:
           CI: ''
         run: |
           npx playwright test --reporter=list || {
-            echo "::error::Playwright Smoke Test against Docker stack Failed"
+            echo "## Playwright Docker Stack Failures" >> $GITHUB_STEP_SUMMARY
             for f in test-results/*/error-context.md; do
               if [ -f "$f" ]; then
-                echo "=== $f ==="
-                cat "$f"
+                echo "### $f" >> $GITHUB_STEP_SUMMARY
+                head -n 40 "$f" >> $GITHUB_STEP_SUMMARY
+                ERR_MSG=$(head -n 25 "$f" | tr '\r\n' ' ' | sed 's/%/%25/g')
+                echo "::error title=Docker Playwright Failure::$ERR_MSG"
               fi
             done
             exit 1
