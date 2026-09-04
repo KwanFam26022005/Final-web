@@ -447,7 +447,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     await expect(page.getByText('Algorithms Lecture')).toBeVisible();
 
     // 2. Create Note 2: "Database Systems"
-    await page.getByTestId('new-note-button').click();
+    await page.getByTestId('new-note-button').or(page.getByTestId('mobile-new-note')).first().click();
     await expect(page).toHaveURL('/notes/new');
     await page.getByTestId('note-title-input').fill('Database Systems');
     await page.getByTestId('note-content-input').fill('Relational algebra and SQL indexing techniques.');
@@ -463,10 +463,11 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     // 4. Pin "Algorithms Lecture"
     const algoCard = page.getByTestId('note-card').filter({ hasText: 'Algorithms Lecture' });
     const pinPromise = page.waitForResponse(
-      (res) => res.url().includes('/pin') && res.request().method() === 'PATCH' && res.status() === 200
+      (res) => res.url().includes('/pin') && res.request().method() === 'PATCH'
     );
     await algoCard.getByTestId('pin-note-button').click();
-    await pinPromise;
+    const pinResponse = await pinPromise;
+    expect(pinResponse.status()).toBe(200);
 
     // 5. Verify "Algorithms Lecture" in pinned-section and "Database Systems" in notes-section
     const pinnedSection = page.getByTestId('pinned-section');
@@ -526,10 +527,11 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     // 12. Unpin "Algorithms Lecture" -> returns to regular section
     const pinnedAlgoCard = page.getByTestId('note-card').filter({ hasText: 'Algorithms Lecture' });
     const unpinPromise = page.waitForResponse(
-      (res) => res.url().includes('/pin') && res.request().method() === 'PATCH' && res.status() === 200
+      (res) => res.url().includes('/pin') && res.request().method() === 'PATCH'
     );
     await pinnedAlgoCard.getByTestId('pin-note-button').click();
-    await unpinPromise;
+    const unpinResponse = await unpinPromise;
+    expect(unpinResponse.status()).toBe(200);
     await expect(page.getByTestId('pinned-section')).not.toBeVisible();
     await expect(page.getByTestId('notes-section').getByText('Algorithms Lecture')).toBeVisible();
     await expect(page.getByTestId('notes-section').getByText('Database Systems')).toBeVisible();

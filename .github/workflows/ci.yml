@@ -182,7 +182,17 @@ jobs:
 
       - name: Run Playwright E2E smoke tests
         working-directory: frontend
-        run: npx playwright test
+        run: |
+          npx playwright test --reporter=list || {
+            echo "::error::Playwright E2E Smoke Tests Failed"
+            for f in test-results/*/error-context.md; do
+              if [ -f "$f" ]; then
+                echo "=== $f ==="
+                cat "$f"
+              fi
+            done
+            exit 1
+          }
 
   docker-runtime:
     name: Docker Runtime Reproducibility
@@ -374,7 +384,17 @@ jobs:
         working-directory: frontend
         env:
           CI: ''
-        run: npx playwright test
+        run: |
+          npx playwright test --reporter=list || {
+            echo "::error::Playwright Smoke Test against Docker stack Failed"
+            for f in test-results/*/error-context.md; do
+              if [ -f "$f" ]; then
+                echo "=== $f ==="
+                cat "$f"
+              fi
+            done
+            exit 1
+          }
 
       - name: Cleanup — tear down Docker Compose stack and volumes
         if: always()
