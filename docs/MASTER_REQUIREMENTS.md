@@ -2,7 +2,7 @@
 
 This catalog serves as the authoritative, stable reference for all functional, non-functional, security, and operational requirements. Requirements are grouped into distinct families with persistent alphanumeric identifiers.
 
-Initial status of all application features is **PLANNED**. Repository governance baselines established in Phase 1 are **VERIFIED**. Phase 2 Authentication and Account Management (`ACC-01` through `ACC-09`, `SEC-06`) is **VERIFIED** and frozen. Phase 3 Core Notes Management (`NOTE-01` through `NOTE-04`) is authorized and **IN PROGRESS**.
+Initial status of all application features is **PLANNED**. Repository governance baselines established in Phase 1 are **VERIFIED**. Phase 2 Authentication and Account Management (`ACC-01` through `ACC-09`, `SEC-06`) is **VERIFIED** and frozen. Phase 3 Core Notes Management (`NOTE-01` through `NOTE-05`) is **IMPLEMENTATION COMPLETE** and **PENDING MAIN INTEGRATION**.
 
 ---
 
@@ -44,11 +44,11 @@ Initial status of all application features is **PLANNED**. Repository governance
 
 | ID | Requirement | Acceptance Intent | Target Phase | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **NOTE-01** | Dual View Layouts | Notes dashboard renders in a responsive Grid view by default, with an instant toggle to List view. | Phase 3 | PLANNED |
-| **NOTE-02** | Shared Interaction Model | Note creation and note editing share an intuitive, unified modal or inline workspace interface. | Phase 3 | PLANNED |
-| **NOTE-03** | Title & Content Fields | Every note requires a title and body content as initial user-facing fields; changes validate correctly on save. | Phase 3 | PLANNED |
-| **NOTE-04** | Debounced Autosave | Active edits to title and content are automatically persisted to backend with debounce, showing visual sync status. | Phase 3 | PLANNED |
-| **NOTE-05** | Safe Deletion | Deleting a note requires explicit user confirmation before the deletion action is executed. (Trash / soft delete is not a mandatory product requirement). | Phase 3 | PLANNED |
+| **NOTE-01** | Dual View Layouts | Notes dashboard renders in a responsive Grid view by default, with an instant toggle to List view. | Phase 3 | **VERIFIED** |
+| **NOTE-02** | Shared Interaction Model | Note creation and note editing share an intuitive, unified modal or inline workspace interface. | Phase 3 | **VERIFIED** |
+| **NOTE-03** | Title & Content Fields | Every note requires a title and body content as initial user-facing fields; changes validate correctly on save. | Phase 3 | **VERIFIED** |
+| **NOTE-04** | Debounced Autosave | Active edits to title and content are automatically persisted to backend with debounce, showing visual sync status. | Phase 3 | **VERIFIED** |
+| **NOTE-05** | Safe Deletion | Deleting a note requires explicit user confirmation before the deletion action is executed. (Trash / soft delete is not a mandatory product requirement). | Phase 3 | **VERIFIED** |
 | **NOTE-06** | Note Pinning | User can toggle pin status on notes; pinned notes always appear in a dedicated top section with a visual pin indicator. | Phase 4 | PLANNED |
 | **NOTE-07** | Live Search | Live debounced search (~300 ms guidance) filtering by note title and note content without full-page reloads. | Phase 4 | PLANNED |
 | **NOTE-08** | File Attachments | User can attach permitted file types (images, PDFs) to notes with backend size and MIME-type validation. | Phase 4 | PLANNED |

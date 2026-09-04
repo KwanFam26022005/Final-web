@@ -328,4 +328,92 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
       await contextB.close();
     }
   });
+
+  test('13. NOTE-05: Safe note deletion with explicit confirmation dialog and irreversibility verification', async ({ page }) => {
+    // User A logs in
+    await page.goto('/login');
+    await page.getByLabel(/email address/i).fill(sharedUserA.email);
+    await page.getByLabel(/^password/i).fill(sharedUserA.password);
+    await page.getByRole('button', { name: /sign in/i }).click();
+    await expect(page).toHaveURL('/');
+
+    // User preference was set to list view in test 11: wait for list view to load
+    await expect(page.getByTestId('notes-list')).toBeVisible();
+
+    // Switch to grid view to test grid delete
+    await page.getByTestId('grid-view-button').click();
+    await expect(page.getByTestId('notes-grid')).toBeVisible();
+
+    // Existing note from test 11 is visible in Grid view
+    const noteCard = page.getByTestId('note-card');
+    await expect(noteCard).toBeVisible();
+    await expect(page.getByText('Algorithms & Data Structures Notes')).toBeVisible();
+
+    // 1. Click delete on note card -> confirmation dialog opens
+    const deleteBtn = page.getByTestId('delete-note-button');
+    await deleteBtn.click();
+
+    const dialog = page.getByTestId('confirm-delete-dialog');
+    await expect(dialog).toBeVisible();
+    await expect(page.getByTestId('confirm-dialog-title')).toHaveText('Delete this note?');
+    await expect(page.getByTestId('confirm-dialog-desc')).toHaveText(/permanently deletes/i);
+
+    // 2. Click Cancel -> dialog closes, note is NOT deleted
+    await page.getByTestId('confirm-dialog-cancel').click();
+    await expect(dialog).not.toBeVisible();
+    await expect(page.getByText('Algorithms & Data Structures Notes')).toBeVisible();
+
+    // 3. Test delete in List view
+    await page.getByTestId('list-view-button').click();
+    await expect(page.getByTestId('notes-list')).toBeVisible();
+    const listDeleteBtn = page.getByTestId('delete-note-button');
+    await listDeleteBtn.click();
+    await expect(dialog).toBeVisible();
+
+    // 4. Confirm deletion
+    await page.getByTestId('confirm-dialog-confirm').click();
+    await expect(dialog).not.toBeVisible();
+
+    // Note is immediately removed from workspace
+    await expect(page.getByText('Algorithms & Data Structures Notes')).not.toBeVisible();
+    // Empty state appears because it was the last note
+    await expect(page.getByTestId('empty-notes-state')).toBeVisible();
+
+    // 5. Reload page -> deleted note remains absent
+    await page.reload();
+    await expect(page.getByTestId('empty-notes-state')).toBeVisible();
+    await expect(page.getByText('Algorithms & Data Structures Notes')).not.toBeVisible();
+
+    // 6. Test editor delete flow & new draft safety
+    await page.getByTestId('empty-new-note').click();
+    await expect(page).toHaveURL('/notes/new');
+
+    // New unpersisted draft MUST NOT expose Delete button
+    await expect(page.getByTestId('editor-delete-button')).not.toBeVisible();
+
+    // Type to trigger create autosave
+    await page.getByTestId('note-title-input').fill('Temporary Note to Delete');
+    await page.getByTestId('note-content-input').fill('This note will be deleted from editor.');
+    await expect(page.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+
+    // After persist, editor delete button appears
+    await expect(page.getByTestId('editor-delete-button')).toBeVisible();
+
+    // Click editor delete -> dialog opens
+    await page.getByTestId('editor-delete-button').click();
+    await expect(dialog).toBeVisible();
+
+    // Responsive check on mobile viewport: dialog fits without overflow
+    await page.setViewportSize({ width: 375, height: 667 });
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
+
+    // Confirm deletion from editor
+    await page.getByTestId('confirm-dialog-confirm').click();
+
+    // Navigates back to workspace /
+    await expect(page).toHaveURL('/');
+    await expect(page.getByTestId('empty-notes-state')).toBeVisible();
+  });
 });
