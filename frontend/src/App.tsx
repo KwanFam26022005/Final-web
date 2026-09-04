@@ -6,7 +6,8 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
-import { WorkspacePage } from './pages/WorkspacePage';
+import { NotesWorkspacePage } from './pages/NotesWorkspacePage';
+import { NoteEditorPage } from './pages/NoteEditorPage';
 import { SettingsLayout } from './pages/settings/SettingsLayout';
 import { ProfileSettingsPage } from './pages/settings/ProfileSettingsPage';
 import { SecuritySettingsPage } from './pages/settings/SecuritySettingsPage';
@@ -27,7 +28,9 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<WorkspacePage />} />
+            <Route path="/" element={<NotesWorkspacePage />} />
+            <Route path="/notes/new" element={<NoteEditorPage />} />
+            <Route path="/notes/:noteId" element={<NoteEditorPage />} />
             <Route path="/settings" element={<SettingsLayout />}>
               <Route index element={<Navigate to="/settings/profile" replace />} />
               <Route path="profile" element={<ProfileSettingsPage />} />
