@@ -84,6 +84,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the labels owned by the user.
+     */
+    public function labels(): HasMany
+    {
+        return $this->hasMany(Label::class);
+    }
+
+    /**
      * Get or lazy-create the user's preferences.
      */
     public function getOrCreatePreference(): UserPreference

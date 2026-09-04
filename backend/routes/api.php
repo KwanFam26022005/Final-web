@@ -7,6 +7,7 @@ use App\Http\Controllers\Account\ProfileController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\LabelController;
 use App\Http\Controllers\NoteController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -72,4 +73,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/notes/{note}', [NoteController::class, 'update']);
     Route::delete('/notes/{note}', [NoteController::class, 'destroy']);
     Route::patch('/notes/{note}/pin', [NoteController::class, 'pin']);
+    Route::put('/notes/{note}/labels', [NoteController::class, 'syncLabels']);
+
+    Route::get('/labels', [LabelController::class, 'index']);
+    Route::post('/labels', [LabelController::class, 'store']);
+    Route::patch('/labels/{label}', [LabelController::class, 'update']);
+    Route::delete('/labels/{label}', [LabelController::class, 'destroy']);
 });

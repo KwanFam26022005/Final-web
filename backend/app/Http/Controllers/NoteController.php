@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Note\PinNoteRequest;
 use App\Http\Requests\Note\StoreNoteRequest;
+use App\Http\Requests\Note\SyncNoteLabelsRequest;
 use App\Http\Requests\Note\UpdateNoteRequest;
 use App\Http\Resources\NoteResource;
 use App\Models\Note;
@@ -22,10 +23,13 @@ class NoteController extends Controller
     {
         $request->validate([
             'q' => ['nullable', 'string', 'max:200'],
+            'label_ids' => ['nullable'],
         ]);
 
-        $notesQuery = $request->user()->notes();
+        $user = $request->user();
+        $notesQuery = $user->notes()->with('labels');
 
+        // Optional text search
         $q = $request->query('q');
         if (is_string($q) && trim($q) !== '') {
             $escaped = addcslashes(trim($q), '%_\\');
@@ -35,6 +39,35 @@ class NoteController extends Controller
                 $sub->where('title', 'LIKE', $pattern)
                     ->orWhere('content', 'LIKE', $pattern);
             });
+        }
+
+        // Optional multi-label filtering with ALL-match (AND) semantics
+        $rawLabelIds = $request->input('label_ids');
+        if ($rawLabelIds !== null) {
+            if (is_string($rawLabelIds)) {
+                $rawLabelIds = explode(',', $rawLabelIds);
+            }
+            $labelIds = array_filter(
+                array_map('intval', (array) $rawLabelIds),
+                fn ($id) => $id > 0
+            );
+            $labelIds = array_values(array_unique($labelIds));
+
+            if (! empty($labelIds)) {
+                // Verify all requested label IDs belong to the authenticated user
+                $ownedCount = $user->labels()->whereIn('id', $labelIds)->count();
+                if ($ownedCount !== count($labelIds)) {
+                    // Foreign label ID must not reveal existence or leak notes
+                    $notesQuery->whereRaw('1 = 0');
+                } else {
+                    foreach ($labelIds as $labelId) {
+                        $notesQuery->whereHas('labels', function ($sub) use ($labelId, $user) {
+                            $sub->where('labels.id', $labelId)
+                                ->where('labels.user_id', $user->id);
+                        });
+                    }
+                }
+            }
         }
 
         $notes = $notesQuery
@@ -53,7 +86,7 @@ class NoteController extends Controller
     {
         $note = $request->user()->notes()->create($request->validated());
 
-        return (new NoteResource($note))
+        return (new NoteResource($note->load('labels')))
             ->response()
             ->setStatusCode(201);
     }
@@ -65,7 +98,7 @@ class NoteController extends Controller
     {
         Gate::authorize('view', $note);
 
-        return new NoteResource($note);
+        return new NoteResource($note->load('labels'));
     }
 
     /**
@@ -77,7 +110,7 @@ class NoteController extends Controller
 
         $note->update($request->validated());
 
-        return new NoteResource($note->fresh());
+        return new NoteResource($note->fresh('labels'));
     }
 
     /**
@@ -103,6 +136,19 @@ class NoteController extends Controller
             'is_pinned' => $request->boolean('is_pinned'),
         ]);
 
-        return new NoteResource($note->fresh());
+        return new NoteResource($note->fresh('labels'));
+    }
+
+    /**
+     * Synchronize the complete label set for the note.
+     */
+    public function syncLabels(SyncNoteLabelsRequest $request, Note $note): NoteResource
+    {
+        Gate::authorize('update', $note);
+
+        $labelIds = $request->input('label_ids', []);
+        $note->labels()->sync($labelIds);
+
+        return new NoteResource($note->fresh('labels'));
     }
 }
