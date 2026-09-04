@@ -49,8 +49,8 @@ Initial status of all application features is **PLANNED**. Repository governance
 | **NOTE-03** | Title & Content Fields | Every note requires a title and body content as initial user-facing fields; changes validate correctly on save. | Phase 3 | **VERIFIED** |
 | **NOTE-04** | Debounced Autosave | Active edits to title and content are automatically persisted to backend with debounce, showing visual sync status. | Phase 3 | **VERIFIED** |
 | **NOTE-05** | Safe Deletion | Deleting a note requires explicit user confirmation before the deletion action is executed. (Trash / soft delete is not a mandatory product requirement). | Phase 3 | **VERIFIED** |
-| **NOTE-06** | Note Pinning | User can toggle pin status on notes; pinned notes always appear in a dedicated top section with a visual pin indicator. | Phase 4 | PLANNED |
-| **NOTE-07** | Live Search | Live debounced search (~300 ms guidance) filtering by note title and note content without full-page reloads. | Phase 4 | PLANNED |
+| **NOTE-06** | Note Pinning | User can toggle pin status on notes; pinned notes always appear in a dedicated top section with a visual pin indicator. | Phase 4 | **VERIFIED** |
+| **NOTE-07** | Live Search | Live debounced search (~300 ms guidance) filtering by note title and note content without full-page reloads. | Phase 4 | **VERIFIED** |
 | **NOTE-08** | File Attachments | User can attach permitted file types (images, PDFs) to notes with backend size and MIME-type validation. | Phase 4 | PLANNED |
 
 ---

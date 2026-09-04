@@ -43,6 +43,7 @@ describe('NoteEditorPage (NOTE-02 & NOTE-03 unified editor)', () => {
       id: 42,
       title: 'Existing Note Title',
       content: 'Existing note body content.',
+      is_pinned: false,
       created_at: '2026-09-04T08:00:00Z',
       updated_at: '2026-09-04T09:00:00Z',
     });
@@ -97,6 +98,7 @@ describe('NoteEditorPage (NOTE-02 & NOTE-03 unified editor)', () => {
       id: 42,
       title: 'Draft B',
       content: 'Content B',
+      is_pinned: false,
       created_at: '2026-09-04T00:00:00Z',
       updated_at: '2026-09-04T00:00:00Z',
     });
@@ -171,6 +173,7 @@ describe('NoteEditorPage (NOTE-02 & NOTE-03 unified editor)', () => {
       id: 42,
       title: 'Draft C',
       content: 'Content C',
+      is_pinned: false,
       created_at: '2026-09-04T00:00:00Z',
       updated_at: '2026-09-04T00:00:00Z',
     });

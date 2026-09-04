@@ -416,4 +416,133 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     await expect(page).toHaveURL('/');
     await expect(page.getByTestId('empty-notes-state')).toBeVisible();
   });
+
+  test('14. NOTE-06 & NOTE-07: Note pinning, server-backed live search, debounce, and section organization', async ({ page }) => {
+    const user = {
+      displayName: 'Search & Pin Scholar',
+      email: `searchpin_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@example.com`,
+      password: 'Password123!',
+    };
+
+    // Register test user
+    await page.goto('/register');
+    await page.getByLabel(/display name/i).fill(user.displayName);
+    await page.getByLabel(/email address/i).fill(user.email);
+    await page.getByLabel(/^password/i).fill(user.password);
+    await page.getByLabel(/confirm password/i).fill(user.password);
+    await page.getByRole('button', { name: /create account/i }).click();
+    await expect(page).toHaveURL('/');
+
+    // Empty workspace initially
+    await expect(page.getByTestId('empty-notes-state')).toBeVisible();
+
+    // 1. Create Note 1: "Algorithms Lecture"
+    await page.getByTestId('empty-new-note').click();
+    await expect(page).toHaveURL('/notes/new');
+    await page.getByTestId('note-title-input').fill('Algorithms Lecture');
+    await page.getByTestId('note-content-input').fill('Binary search trees and AVL rotations graph theory.');
+    await expect(page.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+    await page.getByTestId('back-to-notes').click();
+    await expect(page).toHaveURL('/');
+    await expect(page.getByText('Algorithms Lecture')).toBeVisible();
+
+    // 2. Create Note 2: "Database Systems"
+    await page.getByTestId('new-note-button').click();
+    await expect(page).toHaveURL('/notes/new');
+    await page.getByTestId('note-title-input').fill('Database Systems');
+    await page.getByTestId('note-content-input').fill('Relational algebra and SQL indexing techniques.');
+    await expect(page.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+    await page.getByTestId('back-to-notes').click();
+    await expect(page).toHaveURL('/');
+    await expect(page.getByText('Database Systems')).toBeVisible();
+
+    // 3. Initially, neither note is pinned -> pinned-section is absent, both in notes-section
+    await expect(page.getByTestId('pinned-section')).not.toBeVisible();
+    await expect(page.getByTestId('notes-section')).toBeVisible();
+
+    // 4. Pin "Algorithms Lecture"
+    const algoCard = page.getByTestId('note-card').filter({ hasText: 'Algorithms Lecture' });
+    const pinPromise = page.waitForResponse(
+      (res) => res.url().includes('/pin') && res.request().method() === 'PATCH' && res.status() === 200
+    );
+    await algoCard.getByTestId('pin-note-button').click();
+    await pinPromise;
+
+    // 5. Verify "Algorithms Lecture" in pinned-section and "Database Systems" in notes-section
+    const pinnedSection = page.getByTestId('pinned-section');
+    const regularSection = page.getByTestId('notes-section');
+    await expect(pinnedSection).toBeVisible();
+    await expect(pinnedSection.getByText('Algorithms Lecture')).toBeVisible();
+    await expect(pinnedSection.getByText('Database Systems')).not.toBeVisible();
+
+    await expect(regularSection.getByText('Database Systems')).toBeVisible();
+    await expect(regularSection.getByText('Algorithms Lecture')).not.toBeVisible();
+
+    // 6. Reload page -> verify pin state persists
+    await page.reload();
+    await expect(pinnedSection).toBeVisible();
+    await expect(pinnedSection.getByText('Algorithms Lecture')).toBeVisible();
+    await expect(regularSection.getByText('Database Systems')).toBeVisible();
+
+    // 7. Type "database" into search input -> debounced live search shows only "Database Systems"
+    const searchInput = page.getByTestId('search-input');
+    await searchInput.fill('database');
+    await expect(page.getByText('Database Systems')).toBeVisible();
+    await expect(page.getByText('Algorithms Lecture')).not.toBeVisible();
+    await expect(page.getByTestId('pinned-section')).not.toBeVisible();
+
+    // 8. Clear search via clear-search-button -> both notes reappear
+    await expect(page.getByTestId('clear-search-button')).toBeVisible();
+    await page.getByTestId('clear-search-button').click();
+    await expect(searchInput).toHaveValue('');
+    await expect(pinnedSection.getByText('Algorithms Lecture')).toBeVisible();
+    await expect(regularSection.getByText('Database Systems')).toBeVisible();
+
+    // 9. Search unique body content ("graph theory") -> shows only "Algorithms Lecture"
+    await searchInput.fill('graph theory');
+    await expect(page.getByText('Algorithms Lecture')).toBeVisible();
+    await expect(page.getByText('Database Systems')).not.toBeVisible();
+
+    // 10. Switch between Grid and List views while search is active -> query and results persist
+    await page.getByTestId('list-view-button').click();
+    await expect(page.getByTestId('pinned-notes-list')).toBeVisible();
+    await expect(searchInput).toHaveValue('graph theory');
+    await expect(page.getByText('Algorithms Lecture')).toBeVisible();
+    await expect(page.getByText('Database Systems')).not.toBeVisible();
+
+    // Switch back to Grid view
+    await page.getByTestId('grid-view-button').click();
+    await expect(page.getByTestId('pinned-notes-grid')).toBeVisible();
+    await expect(searchInput).toHaveValue('graph theory');
+    await expect(page.getByText('Algorithms Lecture')).toBeVisible();
+    await expect(page.getByText('Database Systems')).not.toBeVisible();
+
+    // 11. Clear search again
+    await page.getByTestId('clear-search-button').click();
+    await expect(searchInput).toHaveValue('');
+    await expect(page.getByText('Algorithms Lecture')).toBeVisible();
+    await expect(page.getByText('Database Systems')).toBeVisible();
+
+    // 12. Unpin "Algorithms Lecture" -> returns to regular section
+    const pinnedAlgoCard = page.getByTestId('note-card').filter({ hasText: 'Algorithms Lecture' });
+    const unpinPromise = page.waitForResponse(
+      (res) => res.url().includes('/pin') && res.request().method() === 'PATCH' && res.status() === 200
+    );
+    await pinnedAlgoCard.getByTestId('pin-note-button').click();
+    await unpinPromise;
+    await expect(page.getByTestId('pinned-section')).not.toBeVisible();
+    await expect(page.getByTestId('notes-section').getByText('Algorithms Lecture')).toBeVisible();
+    await expect(page.getByTestId('notes-section').getByText('Database Systems')).toBeVisible();
+
+    // 13. Mobile smoke: search input at 390px viewport width without horizontal overflow
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(searchInput).toBeVisible();
+    await searchInput.fill('SQL');
+    await expect(page.getByText('Database Systems')).toBeVisible();
+    await expect(page.getByText('Algorithms Lecture')).not.toBeVisible();
+
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
+  });
 });
