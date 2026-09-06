@@ -85,6 +85,14 @@ class Note extends Model
     }
 
     /**
+     * Get the shares associated with the note.
+     */
+    public function shares(): HasMany
+    {
+        return $this->hasMany(NoteShare::class);
+    }
+
+    /**
      * Determine if the note is password protected.
      */
     public function isProtected(): bool

@@ -123,7 +123,7 @@ class NoteController extends Controller
         Note $note,
         NoteProtectionService $protectionService
     ): NoteResource|JsonResponse {
-        Gate::authorize('update', $note);
+        Gate::authorize('editContent', $note);
 
         if ($protectionService->isProtected($note) && ! $protectionService->isUnlocked($request->session(), $note)) {
             return response()->json([
@@ -167,7 +167,7 @@ class NoteController extends Controller
      */
     public function syncLabels(SyncNoteLabelsRequest $request, Note $note): NoteResource
     {
-        Gate::authorize('update', $note);
+        Gate::authorize('manageLabels', $note);
 
         $labelIds = $request->input('label_ids', []);
         $note->labels()->sync($labelIds);

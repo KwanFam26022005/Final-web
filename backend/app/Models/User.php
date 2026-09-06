@@ -92,6 +92,22 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the note shares created by the user (as owner).
+     */
+    public function createdShares(): HasMany
+    {
+        return $this->hasMany(NoteShare::class, 'shared_by_user_id');
+    }
+
+    /**
+     * Get the note shares received by the user (as recipient).
+     */
+    public function receivedShares(): HasMany
+    {
+        return $this->hasMany(NoteShare::class, 'shared_with_user_id');
+    }
+
+    /**
      * Get or lazy-create the user's preferences.
      */
     public function getOrCreatePreference(): UserPreference

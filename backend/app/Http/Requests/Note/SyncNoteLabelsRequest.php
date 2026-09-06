@@ -13,7 +13,7 @@ class SyncNoteLabelsRequest extends FormRequest
     {
         $note = $this->route('note');
 
-        return $note && $this->user() && $this->user()->can('update', $note);
+        return $note && $this->user() && $this->user()->can('manageLabels', $note);
     }
 
     /**

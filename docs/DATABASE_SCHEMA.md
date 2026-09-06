@@ -2,7 +2,7 @@
 
 This document defines the authoritative database runtime standards, environment isolation boundaries, physical migration baseline, and planned conceptual entity relationships for the Collaborative Intelligent Note Management Web Application.
 
-> **Status Notice:** This document records the **Phase 5 Protection & Collaboration Baseline** (in progress). The physical persistence foundation includes the framework migration repository, Phase 2 authentication and user account tables (`users`, `password_reset_tokens`, `user_preferences`), Phase 3 Core Notes persistence table (`notes`), Phase 4 organizational extensions (`labels`, `note_label`, `attachments`), and Phase 5 per-note password protection. Subsequent domain entities documented below represent conceptual architectural intent and will be frozen in their respective phases.
+> **Status Notice:** This document records the **Phase 5 Sharing & Granular Permissions Baseline** (in progress). The physical persistence foundation includes the framework migration repository, Phase 2 authentication and user account tables (`users`, `password_reset_tokens`, `user_preferences`), Phase 3 Core Notes persistence table (`notes`), Phase 4 organizational extensions (`labels`, `note_label`, `attachments`), Phase 5 per-note password protection, and Phase 5 Milestone 2 sharing table (`note_shares`). Subsequent domain entities documented below represent conceptual architectural intent and will be frozen in their respective phases.
 
 ---
 
@@ -40,7 +40,7 @@ To prevent accidental test mutation under the governed test hierarchy:
 
 ---
 
-## 3. Current Physical Schema Baseline (Phase 5 M1 Protected Notes)
+## 3. Current Physical Schema Baseline (Phase 5 M2 Sharing & Permissions)
 
 The physical database schema contains the framework migration repository and the domain tables established through Phase 2, Phase 3, Phase 4, and Phase 5 Milestone 1:
 
@@ -157,9 +157,30 @@ Established via Phase 4 M3 (`2026_09_04_000005_create_attachments_table.php`).
 - Primary Key: `(id)`
 - Foreign Key: `(note_id)` referencing `notes(id)` ON DELETE CASCADE
 
+### Table: `note_shares`
+Established via Phase 5 M2 (`2026_09_06_000002_create_note_shares_table.php`).
+
+| Column | Type | Attributes | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `BIGINT UNSIGNED` | Primary Key, Auto Increment | Unique share identifier |
+| `note_id` | `BIGINT UNSIGNED` | Foreign Key (`notes.id` ON DELETE CASCADE) | Target note being shared |
+| `shared_by_user_id` | `BIGINT UNSIGNED` | Foreign Key (`users.id` ON DELETE CASCADE) | Owner user who granted the share |
+| `shared_with_user_id` | `BIGINT UNSIGNED` | Foreign Key (`users.id` ON DELETE CASCADE) | Recipient user receiving access |
+| `permission` | `VARCHAR(20)` | Not Null, CHECK in (`read`, `edit`) | Access tier granted to recipient |
+| `created_at` | `TIMESTAMP` | Nullable | Record creation timestamp |
+| `updated_at` | `TIMESTAMP` | Nullable | Record update timestamp |
+
+**Indexes & Constraints on `note_shares`:**
+- Primary Key: `(id)`
+- Unique Key: `(note_id, shared_with_user_id)` (`note_shares_note_id_shared_with_user_id_unique`)
+- Foreign Key: `(note_id)` referencing `notes(id)` ON DELETE CASCADE
+- Foreign Key: `(shared_by_user_id)` referencing `users(id)` ON DELETE CASCADE
+- Foreign Key: `(shared_with_user_id)` referencing `users(id)` ON DELETE CASCADE
+- Check Constraint: `chk_note_shares_permission` (`permission IN ('read', 'edit')`)
+
 **Current Physical Table Inventory:**
-- `final_web` / `final_web_test`: `migrations`, `users`, `password_reset_tokens`, `user_preferences`, `notes`, `labels`, `note_label`, `attachments` (8 tables)
-- **Domain Tables Present:** `users`, `password_reset_tokens`, `user_preferences`, `notes`, `labels`, `note_label`, `attachments`
+- `final_web` / `final_web_test`: `migrations`, `users`, `password_reset_tokens`, `user_preferences`, `notes`, `labels`, `note_label`, `attachments`, `note_shares` (9 tables)
+- **Domain Tables Present:** `users`, `password_reset_tokens`, `user_preferences`, `notes`, `labels`, `note_label`, `attachments`, `note_shares`
 
 ---
 

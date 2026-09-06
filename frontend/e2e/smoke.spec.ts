@@ -996,4 +996,185 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     await page.getByTestId('confirm-dialog-confirm').click();
     await expect(page).toHaveURL('/');
   });
+
+  test('18. User-to-user sharing and granular permissions lifecycle (SHARE-03, SHARE-04)', async ({ browser }) => {
+    test.setTimeout(90000);
+    const timestamp = Date.now();
+    const userA = {
+      displayName: 'Owner Alice',
+      email: `owner_alice_${timestamp}@example.com`,
+      password: 'Password123!',
+    };
+    const userB = {
+      displayName: 'Collaborator Bob',
+      email: `collab_bob_${timestamp}@example.com`,
+      password: 'Password123!',
+    };
+
+    const contextA = await browser.newContext();
+    const pageA = await contextA.newPage();
+    const contextB = await browser.newContext();
+    const pageB = await contextB.newPage();
+
+    try {
+      // 1. Register User A (Owner)
+      await pageA.goto('/register');
+      await pageA.getByLabel(/display name/i).fill(userA.displayName);
+      await pageA.getByLabel(/email address/i).fill(userA.email);
+      await pageA.getByLabel(/^password/i).fill(userA.password);
+      await pageA.getByLabel(/confirm password/i).fill(userA.password);
+      await pageA.getByRole('button', { name: /create account/i }).click();
+      await expect(pageA).toHaveURL('/');
+
+      // 2. Register User B (Collaborator)
+      await pageB.goto('/register');
+      await pageB.getByLabel(/display name/i).fill(userB.displayName);
+      await pageB.getByLabel(/email address/i).fill(userB.email);
+      await pageB.getByLabel(/^password/i).fill(userB.password);
+      await pageB.getByLabel(/confirm password/i).fill(userB.password);
+      await pageB.getByRole('button', { name: /create account/i }).click();
+      await expect(pageB).toHaveURL('/');
+
+      // 3. User A creates a note
+      await pageA.getByTestId('new-note-button').click();
+      await expect(pageA).toHaveURL('/notes/new');
+
+      const noteTitle = `Collaborative Strategic Plan ${timestamp}`;
+      const noteContent = `Initial strategic plan draft by Alice ${timestamp}`;
+
+      await pageA.getByTestId('note-title-input').fill(noteTitle);
+      await pageA.getByTestId('note-content-input').fill(noteContent);
+      await expect(pageA.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+      await expect(pageA).toHaveURL(/\/notes\/\d+/);
+
+      const noteUrl = pageA.url();
+      const noteIdMatch = noteUrl.match(/\/notes\/(\d+)/);
+      expect(noteIdMatch).not.toBeNull();
+      const noteId = noteIdMatch![1];
+
+      // 4. User B attempts unauthorized direct navigation before being shared
+      await pageB.goto(`/notes/${noteId}`);
+      await expect(pageB.getByTestId('note-not-found-state')).toBeVisible();
+
+      // 5. User A shares note with User B with "read" permission
+      await pageA.getByTestId('share-note-button').click();
+      await expect(pageA.getByTestId('share-modal')).toBeVisible();
+
+      await pageA.getByTestId('share-email-input').fill(userB.email);
+      await pageA.getByTestId('share-perm-read').check();
+
+      const shareResponse = pageA.waitForResponse(
+        (res) => res.url().includes(`/notes/${noteId}/shares`) && res.request().method() === 'POST'
+      );
+      await pageA.getByTestId('confirm-share-button').click();
+      const shareRes = await shareResponse;
+      expect(shareRes.status()).toBe(201);
+
+      await expect(pageA.getByTestId('share-success')).toBeVisible();
+      await expect(pageA.getByTestId('shares-list')).toContainText(userB.email);
+
+      // Close share modal
+      await pageA.getByTestId('close-share-modal').click();
+      await expect(pageA.getByTestId('share-modal')).not.toBeVisible();
+
+      // 6. User B navigates to shared note: verifies read-only enforcement
+      await pageB.goto(`/notes/${noteId}`);
+      await expect(pageB.getByTestId('note-title-input')).toBeVisible();
+      await expect(pageB.getByTestId('note-title-input')).toHaveValue(noteTitle);
+      await expect(pageB.getByTestId('note-content-input')).toHaveValue(noteContent);
+
+      // Verify read-only badge and controls
+      await expect(pageB.getByTestId('permission-badge')).toHaveText(/read only/i);
+      await expect(pageB.getByTestId('note-title-input')).toBeDisabled();
+      await expect(pageB.getByTestId('note-content-input')).toHaveAttribute('readonly');
+
+      // Verify owner-only controls are hidden
+      await expect(pageB.getByTestId('share-note-button')).not.toBeVisible();
+      await expect(pageB.getByTestId('editor-pin-button')).not.toBeVisible();
+      await expect(pageB.getByTestId('editor-delete-button')).not.toBeVisible();
+      await expect(pageB.getByTestId('protect-note-button')).not.toBeVisible();
+      await expect(pageB.getByTestId('note-labels-section')).not.toBeVisible();
+
+      // 7. User A upgrades User B to "edit" permission
+      await pageA.getByTestId('share-note-button').click();
+      await expect(pageA.getByTestId('share-modal')).toBeVisible();
+
+      const updateResponse = pageA.waitForResponse(
+        (res) => res.url().includes('/note-shares/') && res.request().method() === 'PATCH'
+      );
+      const bobSelect = pageA.getByLabel(`Change permission for ${userB.email}`);
+      await bobSelect.selectOption('edit');
+      const updateRes = await updateResponse;
+      expect(updateRes.status()).toBe(200);
+
+      await pageA.getByTestId('close-share-modal').click();
+
+      // 8. User B reloads: verifies edit capability & autosave
+      await pageB.reload();
+      await expect(pageB.getByTestId('permission-badge')).toHaveText(/can edit/i);
+      await expect(pageB.getByTestId('note-title-input')).not.toBeDisabled();
+      await expect(pageB.getByTestId('note-content-input')).not.toHaveAttribute('readonly');
+
+      // User B makes an edit
+      await pageB.getByTestId('note-content-input').fill(`${noteContent} — Bob contribution`);
+      await expect(pageB.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+
+      // User A sees Bob's edits
+      await pageA.reload();
+      await expect(pageA.getByTestId('note-content-input')).toHaveValue(`${noteContent} — Bob contribution`);
+
+      // 9. User A protects note with a password
+      await pageA.getByTestId('protect-note-button').click();
+      const protectPassword = 'SharePass2026!';
+      await pageA.getByTestId('protect-password-input').fill(protectPassword);
+      await pageA.getByTestId('protect-password-confirm-input').fill(protectPassword);
+      await pageA.getByTestId('confirm-protect-button').click();
+      await expect(pageA.getByTestId('protect-modal')).not.toBeVisible();
+
+      // User A locks note locally
+      await pageA.getByTestId('lock-now-button').click();
+      await expect(pageA.getByTestId('locked-note-view')).toBeVisible();
+
+      // User B reloads note: note is protected and locked!
+      await pageB.reload();
+      await expect(pageB.getByTestId('locked-note-view')).toBeVisible();
+      await expect(pageB.getByTestId('note-content-input')).not.toBeVisible();
+
+      // User B unlocks note with correct password
+      await pageB.getByTestId('unlock-password-input').fill(protectPassword);
+      await pageB.getByTestId('unlock-note-button').click();
+      await expect(pageB.getByTestId('locked-note-view')).not.toBeVisible();
+      await expect(pageB.getByTestId('note-content-input')).toBeVisible();
+
+      // 10. User A revokes User B's share
+      // User A unlocks note to access sharing modal
+      await pageA.getByTestId('unlock-password-input').fill(protectPassword);
+      await pageA.getByTestId('unlock-note-button').click();
+      await expect(pageA.getByTestId('locked-note-view')).not.toBeVisible();
+
+      await pageA.getByTestId('share-note-button').click();
+      await expect(pageA.getByTestId('share-modal')).toBeVisible();
+
+      await pageA.getByTestId('revoke-share-button').click();
+      await expect(pageA.getByTestId('confirm-revoke-dialog')).toBeVisible();
+
+      const revokeResponse = pageA.waitForResponse(
+        (res) => res.url().includes('/note-shares/') && res.request().method() === 'DELETE'
+      );
+      await pageA.getByTestId('confirm-revoke-button').click();
+      const revokeRes = await revokeResponse;
+      expect(revokeRes.status()).toBe(204);
+
+      await expect(pageA.getByTestId('confirm-revoke-dialog')).not.toBeVisible();
+      await expect(pageA.getByTestId('no-shares-message')).toBeVisible();
+      await expect(pageA.getByText(userB.email)).not.toBeVisible();
+
+      // 11. User B reloads note and is immediately denied access
+      await pageB.reload();
+      await expect(pageB.getByTestId('note-not-found-state')).toBeVisible();
+    } finally {
+      await contextA.close();
+      await contextB.close();
+    }
+  });
 });

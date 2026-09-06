@@ -26,6 +26,17 @@ class NoteResource extends JsonResource
                 : false;
         }
 
+        $user = $request->user();
+        $isOwner = $user && $user->id === $this->user_id;
+
+        $accessType = $isOwner ? 'owner' : 'shared';
+        if ($isOwner) {
+            $permission = 'owner';
+        } else {
+            $share = $user ? $this->shares()->where('shared_with_user_id', $user->id)->first() : null;
+            $permission = $share ? $share->permission : null;
+        }
+
         return [
             'id' => $this->id,
             'title' => $this->title,
@@ -33,7 +44,11 @@ class NoteResource extends JsonResource
             'is_pinned' => (bool) $this->is_pinned,
             'is_protected' => $isProtected,
             'is_unlocked' => $isUnlocked,
-            'labels' => LabelResource::collection($this->whenLoaded('labels')),
+            'access_type' => $accessType,
+            'permission' => $permission,
+            'labels' => $isOwner
+                ? LabelResource::collection($this->whenLoaded('labels'))
+                : [],
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

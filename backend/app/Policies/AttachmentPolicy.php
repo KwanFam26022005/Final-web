@@ -13,7 +13,7 @@ class AttachmentPolicy
      */
     public function viewAny(User $user, Note $note): bool
     {
-        return $user->id === $note->user_id;
+        return $user->can('view', $note);
     }
 
     /**
@@ -21,7 +21,7 @@ class AttachmentPolicy
      */
     public function create(User $user, Note $note): bool
     {
-        return $user->id === $note->user_id;
+        return $user->can('editContent', $note);
     }
 
     /**
@@ -29,7 +29,7 @@ class AttachmentPolicy
      */
     public function view(User $user, Attachment $attachment): bool
     {
-        return $user->id === $attachment->note->user_id;
+        return $user->can('view', $attachment->note);
     }
 
     /**
@@ -37,7 +37,7 @@ class AttachmentPolicy
      */
     public function download(User $user, Attachment $attachment): bool
     {
-        return $user->id === $attachment->note->user_id;
+        return $user->can('view', $attachment->note);
     }
 
     /**
@@ -45,6 +45,6 @@ class AttachmentPolicy
      */
     public function delete(User $user, Attachment $attachment): bool
     {
-        return $user->id === $attachment->note->user_id;
+        return $user->can('editContent', $attachment->note);
     }
 }

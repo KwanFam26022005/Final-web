@@ -15,7 +15,7 @@ class RemoveProtectionRequest extends FormRequest
     {
         $note = $this->route('note');
 
-        return $note instanceof Note && $this->user()?->can('update', $note);
+        return $note instanceof Note && $this->user()?->can('manageProtection', $note);
     }
 
     /**

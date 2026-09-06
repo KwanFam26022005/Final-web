@@ -8,7 +8,27 @@ export interface Note {
   is_pinned: boolean;
   is_protected?: boolean;
   is_unlocked?: boolean;
+  access_type?: 'owner' | 'shared';
+  permission?: 'owner' | 'read' | 'edit' | null;
   labels?: Label[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NoteShare {
+  id: number;
+  note_id: number;
+  recipient: {
+    id: number;
+    display_name: string;
+    email: string;
+  };
+  user?: {
+    id: number;
+    display_name: string;
+    email: string;
+  };
+  permission: 'read' | 'edit';
   created_at: string;
   updated_at: string;
 }
@@ -19,6 +39,14 @@ interface NoteListResponse {
 
 interface NoteResponse {
   data: Note;
+}
+
+interface NoteShareListResponse {
+  data: NoteShare[];
+}
+
+interface NoteShareResponse {
+  data: NoteShare;
 }
 
 export async function fetchNotes(
@@ -141,3 +169,38 @@ export async function removeNoteProtection(
   return res.data;
 }
 
+export async function fetchNoteShares(noteId: number): Promise<NoteShare[]> {
+  const res = await apiClient<NoteShareListResponse>(`/api/notes/${noteId}/shares`);
+  return res.data;
+}
+
+export async function createNoteShare(
+  noteId: number,
+  data: { email: string; permission: 'read' | 'edit' }
+): Promise<NoteShare> {
+  await ensureCsrfCookie();
+  const res = await apiClient<NoteShareResponse>(`/api/notes/${noteId}/shares`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  return res.data;
+}
+
+export async function updateNoteShare(
+  shareId: number,
+  data: { permission: 'read' | 'edit' }
+): Promise<NoteShare> {
+  await ensureCsrfCookie();
+  const res = await apiClient<NoteShareResponse>(`/api/note-shares/${shareId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+  return res.data;
+}
+
+export async function deleteNoteShare(shareId: number): Promise<void> {
+  await ensureCsrfCookie();
+  await apiClient<void>(`/api/note-shares/${shareId}`, {
+    method: 'DELETE',
+  });
+}

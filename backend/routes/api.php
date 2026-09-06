@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NoteProtectionController;
+use App\Http\Controllers\NoteShareController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -81,6 +82,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notes/{note}/unlock', [NoteProtectionController::class, 'unlock'])->middleware('throttle:note-unlock');
     Route::post('/notes/{note}/lock', [NoteProtectionController::class, 'lock']);
     Route::delete('/notes/{note}/protection', [NoteProtectionController::class, 'remove']);
+
+    Route::get('/notes/{note}/shares', [NoteShareController::class, 'index']);
+    Route::post('/notes/{note}/shares', [NoteShareController::class, 'store']);
+    Route::patch('/note-shares/{share}', [NoteShareController::class, 'update']);
+    Route::delete('/note-shares/{share}', [NoteShareController::class, 'destroy']);
 
     Route::get('/labels', [LabelController::class, 'index']);
     Route::post('/labels', [LabelController::class, 'store']);

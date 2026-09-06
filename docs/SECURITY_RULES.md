@@ -2,7 +2,7 @@
 
 This document establishes the binding security standards and vulnerability defense principles for the Collaborative Intelligent Note Management Web Application.
 
-> **Status Notice:** This policy governs all repository phases. The Phase 1 infrastructure baseline exists, Phase 2 authentication and account lifecycle implementation is complete and verified, Phase 3 Core Notes Management is complete and verified, Phase 4 Organization, Discovery & Media is authorized and active, and this policy continues to bind all implementation steps.
+> **Status Notice:** This policy governs all repository phases. The Phase 1 infrastructure baseline exists, Phase 2 authentication and account lifecycle implementation is complete and verified, Phase 3 Core Notes Management is complete and verified, Phase 4 Organization, Discovery & Media is complete and verified, and Phase 5 Protected Notes & Sharing is authorized and active, binding all implementation steps.
 
 ---
 
@@ -21,14 +21,20 @@ This document establishes the binding security standards and vulnerability defen
 - **Mandatory Server Authorization:** Every API endpoint handling private resources must evaluate authorization policies (`Gate` / `Policy`).
 - **Client Hiding is NOT Security:** Hiding buttons, links, or navigation options in the React UI is strictly a UX affordance. The backend must independently reject unauthorized requests with HTTP `403 Forbidden`.
 - **IDOR (Insecure Direct Object Reference) Defense:** When accessing resources by ID (e.g., `GET /api/notes/{id}`), the backend must explicitly verify that the authenticated user is either the resource owner or an authorized collaborator.
-- **Sharing Permissions Enforcement:** The backend must differentiate and strictly enforce read (`read`) versus read-write (`edit`) permissions for shared notes. Read-only collaborators attempting `PUT`, `PATCH`, or `DELETE` mutations must be rejected.
+- **Sharing Permissions & Authoritative Capability Matrix (SHARE-03 & SHARE-04):**
+  - The backend strictly enforces authorization boundaries via `NotePolicy` and `AttachmentPolicy`.
+  - **Owner Capabilities:** Full CRUD, note deletion, pinning, label synchronization, protection management (setting/removing password), and share management (listing, creating, updating, and revoking shares).
+  - **Read Collaborator (`read`):** Can view title/content, view attachment metadata, and open/download attachments. Cannot mutate title/content, upload/delete attachments, delete notes, pin, manage labels, manage protection, or manage shares.
+  - **Edit Collaborator (`edit`):** Can view and mutate title/content (`editContent`), and upload/delete attachments. Cannot delete notes, pin, manage labels, manage protection, or manage shares.
+  - **Label Privacy Contract:** Labels remain strictly private to the note owner. Collaborators receive empty label sets and cannot inspect or mutate the owner's organizational labels.
+  - **Unique Sharing Integrity:** The database enforces a composite unique constraint on `(note_id, shared_with_user_id)` preventing duplicate share grants. Self-sharing (`shared_with_user_id === user_id`) is strictly rejected.
 - **Protected Notes Enforcement (SHARE-01 & SHARE-02):** For password-protected notes, the backend must verify the note-specific password before returning or permitting mutation of the note content.
   - Plaintext protection passwords are never stored; they are hashed with native `bcrypt` (`Hash::make()`) into `notes.protection_password_hash`.
   - Protection state derives strictly from `protection_password_hash !== null` (no redundant `is_locked` column).
   - Unlocked state is ephemeral and managed in server-side session, keyed by note ID and validated via SHA-256 fingerprint of the current password hash.
   - Locked notes return `content: null` in both list (`/api/notes`) and detail (`/api/notes/{id}`) responses.
   - Content oracle defense: search queries matching text within a locked note's body never return the note; only title queries match locked notes. Once unlocked in the user's session, the body becomes searchable.
-  - Password protection mutations (`PUT /api/notes/{id}/protection`, `DELETE /api/notes/{id}/protection`) require current note ownership and password verification.
+  - Password protection mutations (`PUT /api/notes/{id}/protection`, `DELETE /api/notes/{id}/protection`) require current note ownership and password verification. Collaborators (even with `edit` permission) are strictly forbidden from modifying or removing note protection.
 
 ---
 
