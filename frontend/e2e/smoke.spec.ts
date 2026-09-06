@@ -23,6 +23,13 @@ const sharedUserC = {
   password: 'Password123!',
 };
 
+const sharedUserD = {
+  displayName: 'Original Profile Name',
+  email: `profile_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@example.com`,
+  password: 'Password123!',
+  updatedDisplayName: 'Updated Profile Name',
+};
+
 test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
   test('1. anonymous visit to / redirects to /login', async ({ page }) => {
     await page.goto('/');
@@ -56,12 +63,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
   });
 
   test('3. B: profile display name update -> reflected in authenticated workspace/account UI', async ({ page }) => {
-    const user = {
-      displayName: 'Original Profile Name',
-      email: `profile_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@example.com`,
-      password: 'Password123!',
-      updatedDisplayName: 'Updated Profile Name',
-    };
+    const user = sharedUserD;
 
     // Register new user
     await page.goto('/register');
@@ -1166,6 +1168,239 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
       await pageA.getByTestId('editor-delete-button').click();
       await pageA.getByTestId('confirm-dialog-confirm').click();
       await expect(pageA).toHaveURL('/');
+    } finally {
+      await contextA.close();
+      await contextB.close();
+    }
+  });
+
+  test('19. Recipient shared workspace lifecycle and metadata verification (SHARE-05)', async ({ browser }) => {
+    test.setTimeout(180000);
+    const timestamp = Date.now();
+
+    const contextA = await browser.newContext();
+    const pageA = await contextA.newPage();
+    const contextB = await browser.newContext();
+    const pageB = await contextB.newPage();
+
+    try {
+      // 1. Log in User A (Owner: sharedUserC) and User B (Collaborator: sharedUserD)
+      await pageA.goto('/login');
+      await pageA.getByLabel(/email address/i).fill(sharedUserC.email);
+      await pageA.getByLabel(/^password/i).fill(sharedUserC.password);
+      await pageA.getByRole('button', { name: /sign in/i }).click();
+      await expect(pageA).toHaveURL('/');
+      await expect(pageA.getByTestId('user-display-name')).toBeVisible();
+
+      await pageB.goto('/login');
+      await pageB.getByLabel(/email address/i).fill(sharedUserD.email);
+      await pageB.getByLabel(/^password/i).fill(sharedUserD.password);
+      await pageB.getByRole('button', { name: /sign in/i }).click();
+      await expect(pageB).toHaveURL('/');
+      await expect(pageB.getByTestId('user-display-name')).toBeVisible();
+
+      // 2. User B navigates to /shared before any shares exist: verifies empty state and navigation links
+      await pageB.goto('/shared');
+      await expect(pageB).toHaveURL('/shared');
+      await expect(pageB.getByTestId('shared-workspace-heading')).toBeVisible();
+      await expect(pageB.getByTestId('shared-loading-state')).not.toBeVisible({ timeout: 15000 });
+      await expect(pageB.getByTestId('shared-empty-state')).toBeVisible();
+      await expect(pageB.getByText('No notes have been shared with you yet.')).toBeVisible();
+
+      // Verify sidebar navigation links
+      await expect(pageB.getByTestId('shared-nav-link')).toBeVisible();
+      await expect(pageB.getByTestId('notes-nav-link')).toBeVisible();
+
+      // 3. User A creates Note A (read-only target)
+      await pageA.getByTestId('new-note-button').click();
+      await expect(pageA).toHaveURL('/notes/new');
+
+      const noteTitleA = `Research Paper Alpha ${timestamp}`;
+      const noteContentA = `Original research findings for Alpha ${timestamp}`;
+      await pageA.getByTestId('note-title-input').fill(noteTitleA);
+      await pageA.getByTestId('note-content-input').fill(noteContentA);
+      await expect(pageA.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+      await expect(pageA).toHaveURL(/\/notes\/\d+/);
+
+      const noteUrlA = pageA.url();
+      const noteIdMatchA = noteUrlA.match(/\/notes\/(\d+)/);
+      expect(noteIdMatchA).not.toBeNull();
+      const noteIdA = noteIdMatchA![1];
+
+      // 4. User A shares Note A with User B with "read" permission
+      await pageA.getByTestId('share-note-button').click();
+      await expect(pageA.getByTestId('share-modal')).toBeVisible();
+      await pageA.getByTestId('share-email-input').fill(sharedUserD.email);
+      await pageA.getByTestId('share-perm-read').check();
+
+      const shareResponseA = pageA.waitForResponse(
+        (res) => res.url().includes(`/notes/${noteIdA}/shares`) && res.request().method() === 'POST'
+      );
+      await pageA.getByTestId('confirm-share-button').click();
+      const shareResA = await shareResponseA;
+      expect(shareResA.status()).toBe(201);
+      await pageA.getByTestId('close-share-modal').click();
+
+      // 5. User A creates Note B (edit target)
+      await pageA.getByTestId('back-to-notes').click();
+      await expect(pageA).toHaveURL('/');
+      await pageA.getByTestId('new-note-button').click();
+      await expect(pageA).toHaveURL('/notes/new');
+
+      const noteTitleB = `Strategic Proposal Beta ${timestamp}`;
+      const noteContentB = `Proposal documentation for Beta ${timestamp}`;
+      await pageA.getByTestId('note-title-input').fill(noteTitleB);
+      await pageA.getByTestId('note-content-input').fill(noteContentB);
+      await expect(pageA.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+      await expect(pageA).toHaveURL(/\/notes\/\d+/);
+
+      const noteUrlB = pageA.url();
+      const noteIdMatchB = noteUrlB.match(/\/notes\/(\d+)/);
+      expect(noteIdMatchB).not.toBeNull();
+      const noteIdB = noteIdMatchB![1];
+
+      // 6. User A shares Note B with User B with "edit" permission
+      await pageA.getByTestId('share-note-button').click();
+      await expect(pageA.getByTestId('share-modal')).toBeVisible();
+      await pageA.getByTestId('share-email-input').fill(sharedUserD.email);
+      await pageA.getByTestId('share-perm-edit').check();
+
+      const shareResponseB = pageA.waitForResponse(
+        (res) => res.url().includes(`/notes/${noteIdB}/shares`) && res.request().method() === 'POST'
+      );
+      await pageA.getByTestId('confirm-share-button').click();
+      const shareResB = await shareResponseB;
+      expect(shareResB.status()).toBe(201);
+      await pageA.getByTestId('close-share-modal').click();
+
+      // 7. User B navigates to /shared workspace and validates cards, metadata, and badges
+      await pageB.goto('/shared');
+      await expect(pageB.getByTestId('shared-notes-grid')).toBeVisible();
+
+      const cardA = pageB.locator('[data-testid="shared-note-card"]').filter({ hasText: noteTitleA });
+      const cardB = pageB.locator('[data-testid="shared-note-card"]').filter({ hasText: noteTitleB });
+
+      await expect(cardA).toBeVisible();
+      await expect(cardB).toBeVisible();
+
+      // Metadata assertions for Note A
+      await expect(cardA.getByTestId('note-title')).toHaveText(noteTitleA);
+      await expect(cardA.getByTestId('shared-indicator')).toBeVisible();
+      await expect(cardA.getByTestId('permission-badge')).toHaveText(/read only/i);
+      await expect(cardA.getByTestId('sharer-name')).toContainText(sharedUserC.displayName);
+      await expect(cardA.getByTestId('shared-timestamp')).toBeVisible();
+      await expect(cardA.getByTestId('note-excerpt')).toHaveText(noteContentA);
+
+      // Metadata assertions for Note B
+      await expect(cardB.getByTestId('note-title')).toHaveText(noteTitleB);
+      await expect(cardB.getByTestId('shared-indicator')).toBeVisible();
+      await expect(cardB.getByTestId('permission-badge')).toHaveText(/can edit/i);
+      await expect(cardB.getByTestId('sharer-name')).toContainText(sharedUserC.displayName);
+      await expect(cardB.getByTestId('shared-timestamp')).toBeVisible();
+      await expect(cardB.getByTestId('note-excerpt')).toHaveText(noteContentB);
+
+      // Verify owner-only controls are absent from recipient cards
+      await expect(cardA.getByTestId('share-note-button')).not.toBeVisible();
+      await expect(cardA.getByTestId('editor-delete-button')).not.toBeVisible();
+
+      // 8. Test list view toggle and verify display in list layout
+      await pageB.getByTestId('list-view-button').click();
+      await expect(pageB.getByTestId('shared-notes-list')).toBeVisible();
+      await pageB.getByTestId('grid-view-button').click();
+      await expect(pageB.getByTestId('shared-notes-grid')).toBeVisible();
+
+      // 9. User B clicks Note A: opens read-only editor, verifies permission enforcement
+      await cardA.click();
+      await expect(pageB).toHaveURL(`/notes/${noteIdA}`);
+      await expect(pageB.getByTestId('note-title-input')).toBeVisible();
+      await expect(pageB.getByTestId('permission-badge')).toHaveText(/read only/i);
+      await expect(pageB.getByTestId('note-title-input')).toBeDisabled();
+      await expect(pageB.getByTestId('note-content-input')).toHaveAttribute('readonly');
+
+      // 10. User B returns to /shared and opens Note B: verifies edit permission and autosave
+      await pageB.goto('/shared');
+      const cardBToEdit = pageB.locator('[data-testid="shared-note-card"]').filter({ hasText: noteTitleB });
+      await cardBToEdit.click();
+      await expect(pageB).toHaveURL(`/notes/${noteIdB}`);
+      await expect(pageB.getByTestId('note-title-input')).toBeVisible();
+      await expect(pageB.getByTestId('permission-badge')).toHaveText(/can edit/i);
+      await expect(pageB.getByTestId('note-title-input')).not.toBeDisabled();
+      await expect(pageB.getByTestId('note-content-input')).not.toHaveAttribute('readonly');
+
+      // User B makes an edit in Note B
+      const appendedBeta = ' - Collaborator Edit Verified';
+      await pageB.getByTestId('note-content-input').fill(`${noteContentB}${appendedBeta}`);
+      await expect(pageB.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+
+      // 11. User A navigates to Note A, sets password protection, and locks it
+      await pageA.goto(`/notes/${noteIdA}`);
+      await pageA.getByTestId('protect-note-button').click();
+      const protectPassword = 'SharedWorkspacePass2026!';
+      await pageA.getByTestId('protect-password-input').fill(protectPassword);
+      await pageA.getByTestId('protect-password-confirm-input').fill(protectPassword);
+      await pageA.getByTestId('confirm-protect-button').click();
+      await expect(pageA.getByTestId('protect-modal')).not.toBeVisible();
+
+      await pageA.getByTestId('lock-now-button').click();
+      await expect(pageA.getByTestId('locked-note-view')).toBeVisible();
+
+      // 12. User B returns to /shared: Note A shows locked-indicator and redacted excerpt
+      await pageB.goto('/shared');
+      const lockedCardA = pageB.locator('[data-testid="shared-note-card"]').filter({ hasText: noteTitleA });
+      await expect(lockedCardA).toBeVisible();
+      await expect(lockedCardA.getByTestId('locked-indicator')).toBeVisible();
+      await expect(lockedCardA.getByTestId('locked-note-excerpt')).toContainText('Locked note · Unlock to view content');
+      await expect(lockedCardA.getByTestId('note-excerpt')).not.toBeVisible();
+
+      // 13. User B opens Note A from /shared, unlocks it, and verifies content
+      await lockedCardA.click();
+      await expect(pageB).toHaveURL(`/notes/${noteIdA}`);
+      await expect(pageB.getByTestId('locked-note-view')).toBeVisible();
+      await pageB.getByTestId('unlock-password-input').fill(protectPassword);
+      await pageB.getByTestId('unlock-note-button').click();
+      await expect(pageB.getByTestId('locked-note-view')).not.toBeVisible();
+      await expect(pageB.getByTestId('note-content-input')).toBeVisible();
+      await expect(pageB.getByTestId('note-content-input')).toHaveValue(noteContentA);
+      await expect(pageB.getByTestId('permission-badge')).toHaveText(/read only/i);
+
+      // 14. User A unlocks Note A and revokes User B's share
+      await pageA.getByTestId('unlock-password-input').fill(protectPassword);
+      await pageA.getByTestId('unlock-note-button').click();
+      await expect(pageA.getByTestId('locked-note-view')).not.toBeVisible();
+
+      await pageA.getByTestId('share-note-button').click();
+      await expect(pageA.getByTestId('share-modal')).toBeVisible();
+      await pageA.getByTestId('revoke-share-button').click();
+      await expect(pageA.getByTestId('confirm-revoke-dialog')).toBeVisible();
+
+      const revokeResponseA = pageA.waitForResponse(
+        (res) => res.url().includes('/note-shares/') && res.request().method() === 'DELETE'
+      );
+      await pageA.getByTestId('confirm-revoke-button').click();
+      const revokeResA = await revokeResponseA;
+      expect(revokeResA.status()).toBe(204);
+      await pageA.getByTestId('close-share-modal').click();
+
+      // 15. User B reloads /shared: Note A is gone, Note B remains
+      await pageB.goto('/shared');
+      await expect(pageB.getByTestId('shared-notes-grid')).toBeVisible();
+      await expect(pageB.locator('[data-testid="shared-note-card"]').filter({ hasText: noteTitleA })).not.toBeVisible();
+      await expect(pageB.locator('[data-testid="shared-note-card"]').filter({ hasText: noteTitleB })).toBeVisible();
+
+      // 16. Owner cleans up both notes
+      await pageA.getByTestId('editor-delete-button').click();
+      await pageA.getByTestId('confirm-dialog-confirm').click();
+      await expect(pageA).toHaveURL('/');
+
+      await pageA.goto(`/notes/${noteIdB}`);
+      await pageA.getByTestId('editor-delete-button').click();
+      await pageA.getByTestId('confirm-dialog-confirm').click();
+      await expect(pageA).toHaveURL('/');
+
+      // 17. User B refreshes /shared: empty state is restored
+      await pageB.reload();
+      await expect(pageB.getByTestId('shared-empty-state')).toBeVisible();
+      await expect(pageB.getByText('No notes have been shared with you yet.')).toBeVisible();
     } finally {
       await contextA.close();
       await contextB.close();

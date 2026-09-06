@@ -12,6 +12,7 @@ use App\Http\Controllers\LabelController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NoteProtectionController;
 use App\Http\Controllers\NoteShareController;
+use App\Http\Controllers\SharedNoteController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -87,6 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notes/{note}/shares', [NoteShareController::class, 'store']);
     Route::patch('/note-shares/{share}', [NoteShareController::class, 'update']);
     Route::delete('/note-shares/{share}', [NoteShareController::class, 'destroy']);
+    Route::get('/shared-notes', [SharedNoteController::class, 'index']);
 
     Route::get('/labels', [LabelController::class, 'index']);
     Route::post('/labels', [LabelController::class, 'store']);

@@ -33,6 +33,30 @@ export interface NoteShare {
   updated_at: string;
 }
 
+export interface SharedBy {
+  id: number;
+  display_name: string;
+  email: string;
+}
+
+export interface SharedNoteData {
+  id: number;
+  title: string;
+  content: string | null;
+  is_protected: boolean;
+  is_unlocked: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SharedNoteItem {
+  share_id: number;
+  permission: 'read' | 'edit';
+  shared_at: string;
+  shared_by: SharedBy;
+  note: SharedNoteData;
+}
+
 interface NoteListResponse {
   data: Note[];
 }
@@ -47,6 +71,10 @@ interface NoteShareListResponse {
 
 interface NoteShareResponse {
   data: NoteShare;
+}
+
+interface SharedNoteListResponse {
+  data: SharedNoteItem[];
 }
 
 export async function fetchNotes(
@@ -203,4 +231,12 @@ export async function deleteNoteShare(shareId: number): Promise<void> {
   await apiClient<void>(`/api/note-shares/${shareId}`, {
     method: 'DELETE',
   });
+}
+
+export async function fetchSharedNotes(signal?: AbortSignal): Promise<SharedNoteItem[]> {
+  const res = await apiClient<SharedNoteListResponse>('/api/shared-notes', {
+    method: 'GET',
+    signal,
+  });
+  return res.data;
 }

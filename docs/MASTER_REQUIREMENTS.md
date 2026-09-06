@@ -73,7 +73,7 @@ Initial status of all application features is **PLANNED**. Repository governance
 | **SHARE-02** | Server-Side Unlock Verification | Unlocking a protected note validates password on backend before returning note body; client never holds unverified secrets. | Phase 5 | **VERIFIED** |
 | **SHARE-03** | User-to-User Sharing | Note owner can grant explicit access to other registered users identified by their email address. | Phase 5 | **VERIFIED** |
 | **SHARE-04** | Granular Permissions | Sharing supports read-only (`read`) and read-write (`edit`) permissions strictly enforced server-side. | Phase 5 | **VERIFIED** |
-| **SHARE-05** | Shared-Note Metadata | Recipient-facing shared-note section exposes permission level, identity of the user who shared the note, sharing timestamp, and visual shared indicator. | Phase 5 | PLANNED |
+| **SHARE-05** | Shared-Note Metadata | Recipient-facing shared-note section exposes permission level, identity of the user who shared the note, sharing timestamp, and visual shared indicator. | Phase 5 | **VERIFIED** |
 | **SHARE-06** | Access Revocation (Optional) | OPTIONAL / FUTURE ENHANCEMENT: Owner can view collaborator list and alter or revoke sharing permissions. Not required for Phase 5 PASS. | Phase 5 | OPTIONAL |
 
 ---

@@ -163,6 +163,7 @@ class NoteSharingTest extends DatabaseTestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['email']);
+        $response->assertJsonPath('errors.email.0', 'Unable to share with that email address.');
     }
 
     public function test_invalid_permission_string_is_rejected_with_422(): void
@@ -890,5 +891,280 @@ class NoteSharingTest extends DatabaseTestCase
         $collabRes->assertOk();
         $collabRes->assertJsonCount(0, 'data.labels');
         $collabRes->assertJsonPath('data.labels', []);
+    }
+
+    // =========================================================================
+    // 7. RECIPIENT SHARED WORKSPACE (SHARE-05)
+    // =========================================================================
+
+    public function test_anonymous_user_cannot_access_shared_notes(): void
+    {
+        $this->getJson('/api/shared-notes')->assertUnauthorized();
+    }
+
+    public function test_recipient_lists_own_received_shares_with_metadata(): void
+    {
+        $owner = $this->createUser();
+        $recipient = $this->createUser();
+        $note = Note::factory()->create([
+            'user_id' => $owner->id,
+            'title' => 'Quarterly Strategic Plan',
+            'content' => 'High level roadmap objectives.',
+        ]);
+
+        $share = NoteShare::create([
+            'note_id' => $note->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipient->id,
+            'permission' => 'read',
+        ]);
+
+        $response = $this->actingAs($recipient)->getJson('/api/shared-notes');
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.share_id', $share->id);
+        $response->assertJsonPath('data.0.permission', 'read');
+        $response->assertJsonPath('data.0.shared_by.id', $owner->id);
+        $response->assertJsonPath('data.0.shared_by.display_name', $owner->display_name);
+        $response->assertJsonPath('data.0.shared_by.email', $owner->email);
+        $response->assertJsonPath('data.0.note.id', $note->id);
+        $response->assertJsonPath('data.0.note.title', 'Quarterly Strategic Plan');
+        $response->assertJsonPath('data.0.note.content', 'High level roadmap objectives.');
+        $response->assertJsonPath('data.0.note.is_protected', false);
+        $response->assertJsonPath('data.0.note.is_unlocked', true);
+    }
+
+    public function test_owner_own_notes_not_returned_from_shared_notes(): void
+    {
+        $owner = $this->createUser();
+        $recipient = $this->createUser();
+        $note = Note::factory()->create(['user_id' => $owner->id]);
+
+        NoteShare::create([
+            'note_id' => $note->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipient->id,
+            'permission' => 'read',
+        ]);
+
+        // Owner gets empty list from /api/shared-notes
+        $response = $this->actingAs($owner)->getJson('/api/shared-notes');
+        $response->assertOk();
+        $response->assertJsonCount(0, 'data');
+    }
+
+    public function test_other_recipients_shares_excluded_from_shared_notes(): void
+    {
+        $owner = $this->createUser();
+        $recipientA = $this->createUser();
+        $recipientB = $this->createUser();
+        $note1 = Note::factory()->create(['user_id' => $owner->id, 'title' => 'For Recipient A']);
+        $note2 = Note::factory()->create(['user_id' => $owner->id, 'title' => 'For Recipient B']);
+
+        NoteShare::create([
+            'note_id' => $note1->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipientA->id,
+            'permission' => 'read',
+        ]);
+
+        NoteShare::create([
+            'note_id' => $note2->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipientB->id,
+            'permission' => 'edit',
+        ]);
+
+        $resA = $this->actingAs($recipientA)->getJson('/api/shared-notes');
+        $resA->assertOk();
+        $resA->assertJsonCount(1, 'data');
+        $resA->assertJsonPath('data.0.note.title', 'For Recipient A');
+
+        $resB = $this->actingAs($recipientB)->getJson('/api/shared-notes');
+        $resB->assertOk();
+        $resB->assertJsonCount(1, 'data');
+        $resB->assertJsonPath('data.0.note.title', 'For Recipient B');
+    }
+
+    public function test_revoked_share_disappears_from_shared_notes(): void
+    {
+        $owner = $this->createUser();
+        $recipient = $this->createUser();
+        $note = Note::factory()->create(['user_id' => $owner->id]);
+
+        $share = NoteShare::create([
+            'note_id' => $note->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipient->id,
+            'permission' => 'read',
+        ]);
+
+        $this->actingAs($recipient)->getJson('/api/shared-notes')
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+
+        // Owner revokes share
+        $this->actingAs($owner)->deleteJson("/api/note-shares/{$share->id}")
+            ->assertNoContent();
+
+        // Recipient no longer sees it in shared workspace
+        $this->actingAs($recipient)->getJson('/api/shared-notes')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    public function test_permission_update_reflected_in_shared_notes(): void
+    {
+        $owner = $this->createUser();
+        $recipient = $this->createUser();
+        $note = Note::factory()->create(['user_id' => $owner->id]);
+
+        $share = NoteShare::create([
+            'note_id' => $note->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipient->id,
+            'permission' => 'read',
+        ]);
+
+        $this->actingAs($recipient)->getJson('/api/shared-notes')
+            ->assertJsonPath('data.0.permission', 'read');
+
+        // Owner upgrades permission to edit
+        $this->actingAs($owner)->patchJson("/api/note-shares/{$share->id}", [
+            'permission' => 'edit',
+        ])->assertOk();
+
+        // Recipient immediately sees edit permission
+        $this->actingAs($recipient)->getJson('/api/shared-notes')
+            ->assertJsonPath('data.0.permission', 'edit');
+    }
+
+    public function test_protected_locked_shared_note_redacts_content_and_sets_unlocked_false(): void
+    {
+        $owner = $this->createUser();
+        $recipient = $this->createUser();
+        $note = Note::factory()->create([
+            'user_id' => $owner->id,
+            'title' => 'Secret Architecture Blueprint',
+            'content' => 'Top secret blueprint content that must be redacted.',
+            'protection_password_hash' => Hash::make('VaultKey2026!'),
+        ]);
+
+        NoteShare::create([
+            'note_id' => $note->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipient->id,
+            'permission' => 'read',
+        ]);
+
+        // Recipient has not unlocked in session
+        $res = $this->actingAs($recipient)->getJson('/api/shared-notes');
+        $res->assertOk();
+        $res->assertJsonPath('data.0.note.title', 'Secret Architecture Blueprint');
+        $res->assertJsonPath('data.0.note.is_protected', true);
+        $res->assertJsonPath('data.0.note.is_unlocked', false);
+        $res->assertJsonPath('data.0.note.content', null);
+    }
+
+    public function test_protected_unlocked_recipient_gets_content_in_shared_notes(): void
+    {
+        $owner = $this->createUser();
+        $recipient = $this->createUser();
+        $note = Note::factory()->create([
+            'user_id' => $owner->id,
+            'title' => 'Secret Architecture Blueprint',
+            'content' => 'Top secret blueprint content.',
+            'protection_password_hash' => Hash::make('VaultKey2026!'),
+        ]);
+
+        NoteShare::create([
+            'note_id' => $note->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipient->id,
+            'permission' => 'read',
+        ]);
+
+        // Recipient unlocks in session
+        $this->actingAs($recipient)->postJson("/api/notes/{$note->id}/unlock", [
+            'password' => 'VaultKey2026!',
+        ])->assertOk();
+
+        // Recipient now sees unlocked content
+        $res = $this->actingAs($recipient)->getJson('/api/shared-notes');
+        $res->assertOk();
+        $res->assertJsonPath('data.0.note.is_protected', true);
+        $res->assertJsonPath('data.0.note.is_unlocked', true);
+        $res->assertJsonPath('data.0.note.content', 'Top secret blueprint content.');
+    }
+
+    public function test_owner_labels_and_protection_hash_absent_from_shared_notes(): void
+    {
+        $owner = $this->createUser();
+        $recipient = $this->createUser();
+        $note = Note::factory()->create([
+            'user_id' => $owner->id,
+            'protection_password_hash' => Hash::make('VaultKey2026!'),
+        ]);
+
+        $label = $owner->labels()->create(['name' => 'Internal Tag', 'color' => '#3b82f6']);
+        $note->labels()->attach($label->id);
+
+        NoteShare::create([
+            'note_id' => $note->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipient->id,
+            'permission' => 'read',
+        ]);
+
+        $res = $this->actingAs($recipient)->getJson('/api/shared-notes');
+        $res->assertOk();
+
+        $rawContent = $res->getContent();
+        $this->assertStringNotContainsString('Internal Tag', $rawContent);
+        $this->assertStringNotContainsString('protection_password_hash', $rawContent);
+        $this->assertStringNotContainsString('VaultKey2026!', $rawContent);
+    }
+
+    public function test_multiple_shares_have_deterministic_descending_order(): void
+    {
+        $owner = $this->createUser();
+        $recipient = $this->createUser();
+
+        $note1 = Note::factory()->create(['user_id' => $owner->id, 'title' => 'First Note']);
+        $note2 = Note::factory()->create(['user_id' => $owner->id, 'title' => 'Second Note']);
+        $note3 = Note::factory()->create(['user_id' => $owner->id, 'title' => 'Third Note']);
+
+        $share1 = NoteShare::create([
+            'note_id' => $note1->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipient->id,
+            'permission' => 'read',
+            'created_at' => now()->subMinutes(10),
+        ]);
+
+        $share2 = NoteShare::create([
+            'note_id' => $note2->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipient->id,
+            'permission' => 'edit',
+            'created_at' => now()->subMinutes(5),
+        ]);
+
+        $share3 = NoteShare::create([
+            'note_id' => $note3->id,
+            'shared_by_user_id' => $owner->id,
+            'shared_with_user_id' => $recipient->id,
+            'permission' => 'read',
+            'created_at' => now(),
+        ]);
+
+        $res = $this->actingAs($recipient)->getJson('/api/shared-notes');
+        $res->assertOk();
+        $res->assertJsonCount(3, 'data');
+
+        // Order: newest share first (share3, share2, share1)
+        $res->assertJsonPath('data.0.share_id', $share3->id);
+        $res->assertJsonPath('data.1.share_id', $share2->id);
+        $res->assertJsonPath('data.2.share_id', $share1->id);
     }
 }

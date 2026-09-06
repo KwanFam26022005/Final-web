@@ -52,7 +52,7 @@ class NoteShareController extends Controller
         $recipient = User::where('email', $normalizedEmail)->first();
         if (! $recipient) {
             throw ValidationException::withMessages([
-                'email' => ['No account found with that email address.'],
+                'email' => ['Unable to share with that email address.'],
             ]);
         }
 

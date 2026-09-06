@@ -7,6 +7,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { NotesWorkspacePage } from './pages/NotesWorkspacePage';
+import { SharedWorkspacePage } from './pages/SharedWorkspacePage';
 import { NoteEditorPage } from './pages/NoteEditorPage';
 import { SettingsLayout } from './pages/settings/SettingsLayout';
 import { ProfileSettingsPage } from './pages/settings/ProfileSettingsPage';
@@ -29,6 +30,7 @@ export default function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<NotesWorkspacePage />} />
+            <Route path="/shared" element={<SharedWorkspacePage />} />
             <Route path="/notes/new" element={<NoteEditorPage />} />
             <Route path="/notes/:noteId" element={<NoteEditorPage />} />
             <Route path="/settings" element={<SettingsLayout />}>
