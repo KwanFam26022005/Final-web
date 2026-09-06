@@ -849,17 +849,12 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     page,
   }) => {
     const timestamp = Date.now();
-    const email = `p5_user_${timestamp}@example.com`;
-    const password = 'UserPassword123!';
 
-    // 1. Register fresh user
-    await page.goto('/register');
-    await expect(page.getByRole('heading', { name: /create your account/i })).toBeVisible();
-    await page.getByLabel(/display name/i).fill('Agent Cooper');
-    await page.getByLabel(/email address/i).fill(email);
-    await page.getByLabel(/^password/i).fill(password);
-    await page.getByLabel(/confirm password/i).fill(password);
-    await page.getByRole('button', { name: /create account/i }).click();
+    // 1. Log in existing sharedUserB (avoids throttle:registration rate limit)
+    await page.goto('/login');
+    await page.getByLabel(/email address/i).fill(sharedUserB.email);
+    await page.getByLabel(/^password/i).fill(sharedUserB.password);
+    await page.getByRole('button', { name: /sign in/i }).click();
 
     await expect(page).toHaveURL('/');
     await expect(page.getByTestId('empty-notes-state')).toBeVisible();
@@ -867,6 +862,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     // 2. Create note with secret phrase
     await page.getByTestId('empty-new-note').click();
     await expect(page).toHaveURL('/notes/new');
+    await expect(page.getByTestId('note-title-input')).toBeVisible();
 
     const secretTitle = `Top Secret Formula ${timestamp}`;
     const secretContent = `Super secret catalyst omega formula ${timestamp}`;
@@ -920,8 +916,9 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     await expect(page).toHaveURL('/');
 
     // Card shows locked indicator and excerpt
-    await expect(page.getByTestId('locked-indicator')).toBeVisible();
-    await expect(page.getByTestId('locked-note-excerpt')).toHaveText(
+    const lockedCard = page.getByTestId('note-card').filter({ hasText: secretTitle });
+    await expect(lockedCard.getByTestId('locked-indicator')).toBeVisible();
+    await expect(lockedCard.getByTestId('locked-note-excerpt')).toHaveText(
       /Locked note · Unlock to view content/i
     );
     await expect(page.locator(`text=${secretContent}`)).not.toBeVisible();
@@ -938,7 +935,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     await page.getByTestId('clear-search-button').click();
 
     // 7. Click card to open locked note
-    await page.getByTestId('note-card').click();
+    await lockedCard.click();
     await expect(page).toHaveURL(/\/notes\/\d+/);
     await expect(page.getByTestId('locked-note-view')).toBeVisible();
 
