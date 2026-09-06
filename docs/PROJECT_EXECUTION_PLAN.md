@@ -2,11 +2,12 @@
 
 This document establishes the multi-phase engineering delivery plan for the Collaborative Intelligent Note Management Web Application. Each phase defines discrete objectives, assigned requirement IDs, technical deliverables, and strict exit criteria.
 
-> **Current Completed Phases:** Phase 1 — Repository and Runtime Foundation; Phase 2 — Authentication and Account Management; Phase 3 — Core Note CRUD, Views, and Autosave<br>
+> **Current Completed Phases:** Phase 1 — Repository and Runtime Foundation; Phase 2 — Authentication and Account Management; Phase 3 — Core Note CRUD, Views, and Autosave; Phase 4 — Labels, Attachments, Search, and Pinning<br>
 > **Phase 1 Status:** COMPLETED / FROZEN<br>
 > **Phase 2 Status:** COMPLETED / VERIFIED / FROZEN (Academic Light V2 visual direction accepted)<br>
 > **Phase 3 Status:** COMPLETED / VERIFIED / FROZEN<br>
-> **Current Authorized Phase:** Phase 4 — Labels, Attachments, Search, and Pinning (IN PROGRESS)<br>
+> **Phase 4 Status:** COMPLETED / VERIFIED / FROZEN<br>
+> **Current Authorized Phase:** Phase 5 — Protected Notes and Sharing Authorization (IN PROGRESS)<br>
 > **Rule:** No feature may be promoted or implemented ahead of its designated phase without explicit authorization.
 
 ---
@@ -85,7 +86,7 @@ flowchart LR
 ---
 
 ### Phase 4: Labels, Attachments, Search, and Pinning
-- **Status:** IMPLEMENTATION COMPLETE (PENDING MAIN INTEGRATION)
+- **Status:** COMPLETED / VERIFIED / FROZEN
 - **Target Requirements:** `LABEL-01` to `LABEL-03`, `NOTE-06` to `NOTE-08`, `SEC-04` (ALL VERIFIED)
 - **Objective:** Extend notes with rich metadata, categorization, instant search, and file attachments.
 - **Deliverables:** Many-to-many labels with CRUD and filter pills; pinned notes section rendered at top with visual indicator; live debounced client search (~300 ms); validated secure file attachment uploads (JPEG, PNG, WebP, PDF max 10MB; private filesystem storage; random UUID filenames; owner authorization).
@@ -94,6 +95,7 @@ flowchart LR
 ---
 
 ### Phase 5: Protected Notes and Sharing Authorization
+- **Status:** IN PROGRESS
 - **Target Requirements:** `SHARE-01` through `SHARE-05`, `SEC-01`, `SEC-02` (`SHARE-06` Optional)
 - **Objective:** Implement per-note password locking and collaborative sharing with fine-grained access control.
 - **Deliverables:** Individual note password protection with backend verification; collaborator invitation by email; read-only (`read`) vs. read-write (`edit`) permissions; recipient-facing shared-note metadata (sharer identity, permission, timestamp); visual locked and shared indicators.
