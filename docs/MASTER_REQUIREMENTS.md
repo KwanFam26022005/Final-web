@@ -2,7 +2,7 @@
 
 This catalog serves as the authoritative, stable reference for all functional, non-functional, security, and operational requirements. Requirements are grouped into distinct families with persistent alphanumeric identifiers.
 
-Initial status of all application features is **PLANNED**. Repository governance baselines established in Phase 1 are **VERIFIED** and frozen. Phase 2 Authentication and Account Management (`ACC-01` through `ACC-09`, `SEC-06`) is **VERIFIED** and frozen. Phase 3 Core Notes Management (`NOTE-01` through `NOTE-05`) is **VERIFIED** and frozen. Phase 4 Organization, Discovery & Media (`NOTE-06`, `NOTE-07`, `LABEL-01` through `LABEL-03` are **VERIFIED**; `NOTE-08` is **PLANNED**) is **IN PROGRESS**.
+Initial status of all application features is **PLANNED**. Repository governance baselines established in Phase 1 are **VERIFIED** and frozen. Phase 2 Authentication and Account Management (`ACC-01` through `ACC-09`, `SEC-06`) is **VERIFIED** and frozen. Phase 3 Core Notes Management (`NOTE-01` through `NOTE-05`) is **VERIFIED** and frozen. Phase 4 Organization, Discovery & Media (`NOTE-06`, `NOTE-07`, `NOTE-08`, `LABEL-01` through `LABEL-03`, `SEC-04` are **VERIFIED**) is **IMPLEMENTATION COMPLETE (PENDING MAIN INTEGRATION)**.
 
 ---
 
@@ -51,7 +51,7 @@ Initial status of all application features is **PLANNED**. Repository governance
 | **NOTE-05** | Safe Deletion | Deleting a note requires explicit user confirmation before the deletion action is executed. (Trash / soft delete is not a mandatory product requirement). | Phase 3 | **VERIFIED** |
 | **NOTE-06** | Note Pinning | User can toggle pin status on notes; pinned notes always appear in a dedicated top section with a visual pin indicator. | Phase 4 | **VERIFIED** |
 | **NOTE-07** | Live Search | Live debounced search (~300 ms guidance) filtering by note title and note content without full-page reloads. | Phase 4 | **VERIFIED** |
-| **NOTE-08** | File Attachments | User can attach permitted file types (images, PDFs) to notes with backend size and MIME-type validation. | Phase 4 | PLANNED |
+| **NOTE-08** | File Attachments | User can attach permitted file types (images, PDFs) to notes with backend size and MIME-type validation. | Phase 4 | **VERIFIED** |
 
 ---
 
@@ -118,7 +118,7 @@ Initial status of all application features is **PLANNED**. Repository governance
 | **SEC-01** | Server-Side Authorization | Every API endpoint strictly validates user authorization via Laravel Policies/Gates; UI hiding is never deemed security. | Phase 2–9 | PLANNED |
 | **SEC-02** | IDOR Protection | Insecure Direct Object Reference vulnerabilities are prevented by validating ownership/membership on every resource ID. | Phase 2–9 | PLANNED |
 | **SEC-03** | Input Validation & Sanitization | All request inputs are validated via Laravel FormRequests; HTML/Markdown content is sanitized to prevent XSS. | Phase 2–9 | PLANNED |
-| **SEC-04** | Secure File Uploads | Uploaded attachments are strictly validated for MIME type, extension, and size, and stored outside public web roots. | Phase 4 | PLANNED |
+| **SEC-04** | Secure File Uploads | Uploaded attachments are strictly validated for MIME type, extension, and size, and stored outside public web roots. | Phase 4 | **VERIFIED** |
 | **SEC-05** | Secret Hygiene | No API keys, passwords, or production secrets exist in Git; `.env.example` provides documentation templates only. | Phase 1 | **VERIFIED** |
 | **SEC-06** | CORS & CSRF Hardening | Explicit CORS domain restrictions and Sanctum CSRF protection enabled across all state-changing endpoints. | Phase 2 | **VERIFIED** |
 

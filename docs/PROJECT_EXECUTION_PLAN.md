@@ -85,11 +85,11 @@ flowchart LR
 ---
 
 ### Phase 4: Labels, Attachments, Search, and Pinning
-- **Status:** IN PROGRESS
-- **Target Requirements:** `LABEL-01` to `LABEL-03`, `NOTE-06` to `NOTE-08`, `SEC-04`
+- **Status:** IMPLEMENTATION COMPLETE (PENDING MAIN INTEGRATION)
+- **Target Requirements:** `LABEL-01` to `LABEL-03`, `NOTE-06` to `NOTE-08`, `SEC-04` (ALL VERIFIED)
 - **Objective:** Extend notes with rich metadata, categorization, instant search, and file attachments.
-- **Deliverables:** Many-to-many labels with CRUD and filter pills; pinned notes section rendered at top with visual indicator; live debounced client search (~300 ms); validated secure file attachment uploads.
-- **Exit Criteria:** Filtering by label instant; attachments restricted by MIME/size; search queries return matching cards without full-page reloads.
+- **Deliverables:** Many-to-many labels with CRUD and filter pills; pinned notes section rendered at top with visual indicator; live debounced client search (~300 ms); validated secure file attachment uploads (JPEG, PNG, WebP, PDF max 10MB; private filesystem storage; random UUID filenames; owner authorization).
+- **Exit Criteria:** Filtering by label instant with ALL-match semantics; attachments restricted by MIME/size; search queries return matching cards without full-page reloads. All verification criteria met.
 
 ---
 

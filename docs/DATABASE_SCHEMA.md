@@ -40,9 +40,9 @@ To prevent accidental test mutation under the governed test hierarchy:
 
 ---
 
-## 3. Current Physical Schema Baseline (Phase 4 M2 Labels & Filtering)
+## 3. Current Physical Schema Baseline (Phase 4 M3 Secure Attachments)
 
-The physical database schema contains the framework migration repository and the domain tables established through Phase 2, Phase 3, and Phase 4 Milestones 1 & 2:
+The physical database schema contains the framework migration repository and the domain tables established through Phase 2, Phase 3, and Phase 4 Milestones 1, 2 & 3:
 
 ### Table: `migrations`
 Established via `php artisan migrate:install`.
@@ -138,9 +138,27 @@ Established via Phase 4 M2 (`2026_09_04_000004_create_note_label_table.php`).
 - Foreign Key: `(note_id)` referencing `notes(id)` ON DELETE CASCADE
 - Foreign Key: `(label_id)` referencing `labels(id)` ON DELETE CASCADE
 
+### Table: `attachments`
+Established via Phase 4 M3 (`2026_09_04_000005_create_attachments_table.php`).
+
+| Column | Type | Attributes | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `BIGINT UNSIGNED` | Primary Key, Auto Increment | Unique attachment identifier |
+| `note_id` | `BIGINT UNSIGNED` | Foreign Key (`notes.id` ON DELETE CASCADE) | Associated note identifier |
+| `original_name` | `VARCHAR(255)` | Not Null | Original client filename for display metadata |
+| `path` | `VARCHAR(255)` | Not Null | Server-generated random private storage path |
+| `mime_type` | `VARCHAR(100)` | Not Null | Content-validated MIME type |
+| `size_bytes` | `BIGINT UNSIGNED` | Not Null | File size in bytes (max 10 MiB) |
+| `created_at` | `TIMESTAMP` | Nullable | Record creation timestamp |
+| `updated_at` | `TIMESTAMP` | Nullable | Record update timestamp |
+
+**Indexes on `attachments`:**
+- Primary Key: `(id)`
+- Foreign Key: `(note_id)` referencing `notes(id)` ON DELETE CASCADE
+
 **Current Physical Table Inventory:**
-- `final_web` / `final_web_test`: `migrations`, `users`, `password_reset_tokens`, `user_preferences`, `notes`, `labels`, `note_label` (7 tables)
-- **Domain Tables Present:** `users`, `password_reset_tokens`, `user_preferences`, `notes`, `labels`, `note_label`
+- `final_web` / `final_web_test`: `migrations`, `users`, `password_reset_tokens`, `user_preferences`, `notes`, `labels`, `note_label`, `attachments` (8 tables)
+- **Domain Tables Present:** `users`, `password_reset_tokens`, `user_preferences`, `notes`, `labels`, `note_label`, `attachments`
 
 ---
 

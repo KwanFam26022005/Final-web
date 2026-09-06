@@ -1,4 +1,9 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { expect, test } from '@playwright/test';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const sharedUserA = {
   displayName: 'Verify Candidate',
@@ -721,5 +726,122 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
         await expect(card).not.toBeVisible();
       }
     }
+  });
+
+  test('16. NOTE-08 & SEC-04: Secure file attachments lifecycle, upload, stream, download, and confirmation delete', async ({ page }) => {
+    const samplePdfPath = path.resolve(__dirname, 'fixtures/sample.pdf');
+    const samplePngPath = path.resolve(__dirname, 'fixtures/sample.png');
+    const unsupportedShPath = path.resolve(__dirname, 'fixtures/unsupported.sh');
+
+    // 1. Log in existing sharedUserA
+    await page.goto('/login');
+    await page.getByLabel(/email address/i).fill(sharedUserA.email);
+    await page.getByLabel(/^password/i).fill(sharedUserA.password);
+    await page.getByRole('button', { name: /sign in/i }).click();
+    await expect(page).toHaveURL('/');
+    await expect(page.getByTestId('empty-notes-state')).toBeVisible();
+
+    // 2. Navigate to /notes/new
+    await page.getByTestId('empty-new-note').or(page.getByTestId('new-note-button')).first().click();
+    await expect(page).toHaveURL('/notes/new');
+
+    // Unpersisted draft hides attachment controls
+    await expect(page.getByTestId('attachments-section')).not.toBeVisible();
+
+    // Fill title and content to trigger debounced autosave
+    await page.getByTestId('note-title-input').fill('Thesis Methodology');
+    await page.getByTestId('note-content-input').fill('Detailed experimentation plan and diagrams.');
+
+    // Wait for autosave to persist note and replace URL to /notes/{id}
+    await expect(page.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/notes\/\d+/);
+
+    // Attachments section now visible
+    const attachmentsSection = page.getByTestId('attachments-section');
+    await expect(attachmentsSection).toBeVisible();
+    await expect(page.getByText(/max 10 MB/i)).toBeVisible();
+
+    // 3. Attempt rejected upload with unsupported.sh
+    const fileInput = page.getByTestId('attachment-file-input');
+    const uploadResBad = page.waitForResponse(
+      (res) => res.url().includes('/attachments') && res.request().method() === 'POST'
+    );
+    await fileInput.setInputFiles(unsupportedShPath);
+    const badResp = await uploadResBad;
+    expect(badResp.status()).toBe(422);
+
+    await expect(page.getByTestId('attachment-upload-error')).toBeVisible();
+
+    // 4. Upload valid PDF
+    const uploadResPdf = page.waitForResponse(
+      (res) => res.url().includes('/attachments') && res.request().method() === 'POST'
+    );
+    await fileInput.setInputFiles(samplePdfPath);
+    const pdfResp = await uploadResPdf;
+    expect(pdfResp.status()).toBe(201);
+
+    await expect(page.getByTestId('attachments-list')).toBeVisible();
+    await expect(page.getByText('sample.pdf')).toBeVisible();
+
+    // 5. Upload valid PNG
+    const uploadResPng = page.waitForResponse(
+      (res) => res.url().includes('/attachments') && res.request().method() === 'POST'
+    );
+    await fileInput.setInputFiles(samplePngPath);
+    const pngResp = await uploadResPng;
+    expect(pngResp.status()).toBe(201);
+
+    await expect(page.getByText('sample.png')).toBeVisible();
+    await expect(page.getByTestId('attachment-item')).toHaveCount(2);
+
+    // 6. Reload editor -> both attachments remain persisted
+    await page.reload();
+    await expect(page.getByTestId('attachments-section')).toBeVisible();
+    await expect(page.getByText('sample.pdf')).toBeVisible();
+    await expect(page.getByText('sample.png')).toBeVisible();
+
+    // 7. Verify Download endpoint succeeds
+    const pdfItem = page.getByTestId('attachment-item').filter({ hasText: 'sample.pdf' });
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      pdfItem.getByTestId('download-attachment-button').click(),
+    ]);
+    expect(download.suggestedFilename()).toBe('sample.pdf');
+
+    // 8. Test Delete confirmation flow
+    const pngItem = page.getByTestId('attachment-item').filter({ hasText: 'sample.png' });
+    await pngItem.getByTestId('delete-attachment-button').click();
+
+    // Confirmation dialog visible
+    const deleteModal = page.getByTestId('confirm-delete-dialog').filter({ hasText: /Delete attachment/i });
+    await expect(deleteModal).toBeVisible();
+    await expect(deleteModal.getByText('Delete attachment?')).toBeVisible();
+
+    // Cancel -> remains
+    await deleteModal.getByTestId('confirm-dialog-cancel').click();
+    await expect(deleteModal).not.toBeVisible();
+    await expect(page.getByText('sample.png')).toBeVisible();
+
+    // Reopen and confirm delete
+    await pngItem.getByTestId('delete-attachment-button').click();
+    const deleteRes = page.waitForResponse(
+      (res) => res.url().includes('/attachments/') && res.request().method() === 'DELETE'
+    );
+    await deleteModal.getByTestId('confirm-dialog-confirm').click();
+    const deleteResp = await deleteRes;
+    expect(deleteResp.status()).toBe(204);
+
+    await expect(page.getByText('sample.png')).not.toBeVisible();
+    await expect(page.getByText('sample.pdf')).toBeVisible();
+
+    // Reload -> sample.png remains absent
+    await page.reload();
+    await expect(page.getByText('sample.pdf')).toBeVisible();
+    await expect(page.getByText('sample.png')).not.toBeVisible();
+
+    // 9. Clean up created note
+    await page.getByTestId('editor-delete-button').click();
+    await page.getByTestId('confirm-dialog-confirm').click();
+    await expect(page).toHaveURL('/');
   });
 });
