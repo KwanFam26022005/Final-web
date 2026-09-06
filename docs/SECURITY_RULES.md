@@ -78,3 +78,14 @@ This document establishes the binding security standards and vulnerability defen
   - `User` model strictly restricts `$fillable` to `['display_name', 'email', 'password']`.
   - Sensitive and internal columns—including `avatar_path`, `email_verified_at`, and `remember_token`—are explicitly omitted from mass assignment and are only mutated through dedicated controller methods (`AvatarController`, `VerificationController`).
   - Passwords and tokens remain hidden in JSON serialization via `$hidden`. No personal access tokens table or API bearer tokens exist in the first-party SPA session architecture.
+
+---
+
+## 6. Real-Time Transport and WebSocket Security (RT-01)
+
+- **Minimal Invalidation Payload Principle:** WebSocket broadcast payloads (`NoteUpdated`) must never transmit sensitive note data, full content, titles, hashes, passwords, or model attributes over socket channels. Payloads are strictly restricted to minimal invalidation signals containing only `{ note_id: int, updated_at: string }`.
+- **Authoritative REST Perimeter:** Receipt of an invalidation signal only informs client subscribers that updated state exists. Actual note synchronization occurs strictly through authorized REST calls (`GET /api/notes/{id}`), where Laravel policies, ownership checks, collaborator permissions (`read`/`edit`), and per-note session unlock states are authoritatively enforced.
+- **Private Channel Authorization:** All real-time channels are strictly private (`private-notes.{noteId}`) and require authenticated session cookies (`sanctum`) through `/broadcasting/auth`. Sockets lacking authenticated access to the note are rejected with HTTP 403.
+- **Socket Origin Exclusion:** Transmitting clients attach an `X-Socket-ID` header to REST mutation requests (`PATCH /api/notes/{id}`). The backend instructs Reverb to exclude the originating socket (`$event->dontBroadcastToCurrentUser()`), preventing broadcast reflection loops and redundant local overwrites.
+- **Transport Failure Decoupling:** Failures in WebSocket transmission or Reverb server availability must never cause database mutation failures or HTTP 500 errors. Broadcast operations are wrapped in safe error boundaries (`NoteRealtimeBroadcastService`), ensuring REST persistence remains robust even if real-time services degrade.
+- **Stale Socket Defense & Content Revocation:** When a collaborator's access is revoked while viewing an open note editor, receiving an invalidation signal triggers a REST refetch that returns HTTP 403 Forbidden. The client immediately wipes sensitive title and content from memory and the DOM, halts background autosaving, and displays an access-revoked state.

@@ -1406,4 +1406,107 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
       await contextB.close();
     }
   });
+
+  test('20. Realtime bidirectional note synchronization across isolated browser contexts (RT-01)', async ({ browser }) => {
+    test.setTimeout(180000);
+    const timestamp = Date.now();
+
+    const contextA = await browser.newContext();
+    const pageA = await contextA.newPage();
+    const contextB = await browser.newContext();
+    const pageB = await contextB.newPage();
+
+    try {
+      const rtUserA = {
+        name: 'Realtime Owner',
+        email: `rt_owner_${timestamp}_${Math.random().toString(36).slice(2, 7)}@example.com`,
+        password: 'Password123!',
+      };
+      const rtUserB = {
+        name: 'Realtime Collab',
+        email: `rt_collab_${timestamp}_${Math.random().toString(36).slice(2, 7)}@example.com`,
+        password: 'Password123!',
+      };
+
+      // 1. Register User A (Owner) and User B (Collaborator)
+      await pageA.goto('/register');
+      await pageA.getByLabel(/display name/i).fill(rtUserA.name);
+      await pageA.getByLabel(/email address/i).fill(rtUserA.email);
+      await pageA.getByLabel(/^password/i).fill(rtUserA.password);
+      await pageA.getByLabel(/confirm password/i).fill(rtUserA.password);
+      await pageA.getByRole('button', { name: /create account/i }).click();
+      await expect(pageA).toHaveURL('/');
+      await expect(pageA.getByTestId('user-display-name')).toBeVisible();
+
+      await pageB.goto('/register');
+      await pageB.getByLabel(/display name/i).fill(rtUserB.name);
+      await pageB.getByLabel(/email address/i).fill(rtUserB.email);
+      await pageB.getByLabel(/^password/i).fill(rtUserB.password);
+      await pageB.getByLabel(/confirm password/i).fill(rtUserB.password);
+      await pageB.getByRole('button', { name: /create account/i }).click();
+      await expect(pageB).toHaveURL('/');
+      await expect(pageB.getByTestId('user-display-name')).toBeVisible();
+
+      // 2. User A creates a collaborative note
+      await pageA.getByTestId('new-note-button').click();
+      await expect(pageA).toHaveURL('/notes/new');
+
+      const initialTitle = `Realtime Collab Doc ${timestamp}`;
+      const initialContent = `Initial content written by Owner ${timestamp}`;
+      await pageA.getByTestId('note-title-input').fill(initialTitle);
+      await pageA.getByTestId('note-content-input').fill(initialContent);
+      await expect(pageA.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+      await expect(pageA).toHaveURL(/\/notes\/\d+/);
+
+      const noteUrl = pageA.url();
+      const noteIdMatch = noteUrl.match(/\/notes\/(\d+)/);
+      expect(noteIdMatch).not.toBeNull();
+      const noteId = noteIdMatch![1];
+
+      // 3. User A shares note with User B with "edit" permission
+      await pageA.getByTestId('share-note-button').click();
+      await expect(pageA.getByTestId('share-modal')).toBeVisible();
+      await pageA.getByTestId('share-email-input').fill(rtUserB.email);
+      await pageA.getByTestId('share-perm-edit').check();
+
+      const shareResponse = pageA.waitForResponse(
+        (res) => res.url().includes(`/notes/${noteId}/shares`) && res.request().method() === 'POST'
+      );
+      await pageA.getByTestId('confirm-share-button').click();
+      const shareRes = await shareResponse;
+      expect(shareRes.status()).toBe(201);
+      await pageA.getByTestId('close-share-modal').click();
+
+      // 4. User B navigates directly to the note and verifies initial state & collaborative edit permission
+      await pageB.goto(`/notes/${noteId}`);
+      await expect(pageB.getByTestId('note-title-input')).toHaveValue(initialTitle, { timeout: 15000 });
+      await expect(pageB.getByTestId('note-content-input')).toHaveValue(initialContent);
+      await expect(pageB.getByTestId('note-title-input')).not.toHaveAttribute('readonly');
+      await expect(pageB.getByTestId('note-content-input')).not.toHaveAttribute('readonly');
+
+      // 5. User A updates the content -> autosaves -> User B receives update automatically WITHOUT reload
+      const remoteContentUpdate = `Realtime content update from Owner ${timestamp}`;
+      await pageA.getByTestId('note-content-input').fill(remoteContentUpdate);
+      await expect(pageA.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+
+      // User B receives the content update via WebSocket invalidation signal + refetch
+      await expect(pageB.getByTestId('note-content-input')).toHaveValue(remoteContentUpdate, { timeout: 15000 });
+
+      // 6. User B updates the title -> autosaves -> User A receives update automatically WITHOUT reload
+      const remoteTitleUpdate = `Realtime Title By Collaborator ${timestamp}`;
+      await pageB.getByTestId('note-title-input').fill(remoteTitleUpdate);
+      await expect(pageB.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+
+      // User A receives the title update via WebSocket invalidation signal + refetch
+      await expect(pageA.getByTestId('note-title-input')).toHaveValue(remoteTitleUpdate, { timeout: 15000 });
+
+      // 7. Cleanup: User A deletes the note
+      await pageA.getByTestId('editor-delete-button').click();
+      await pageA.getByTestId('confirm-dialog-confirm').click();
+      await expect(pageA).toHaveURL('/');
+    } finally {
+      await contextA.close();
+      await contextB.close();
+    }
+  });
 });

@@ -2,7 +2,7 @@
 
 This catalog serves as the authoritative, stable reference for all functional, non-functional, security, and operational requirements. Requirements are grouped into distinct families with persistent alphanumeric identifiers.
 
-Initial status of all application features is **PLANNED**. Repository governance baselines established in Phase 1 are **VERIFIED** and frozen. Phase 2 Authentication and Account Management (`ACC-01` through `ACC-09`, `SEC-06`) is **VERIFIED** and frozen. Phase 3 Core Notes Management (`NOTE-01` through `NOTE-05`) is **VERIFIED** and frozen. Phase 4 Organization, Discovery & Media (`NOTE-06`, `NOTE-07`, `NOTE-08`, `LABEL-01` through `LABEL-03`, `SEC-04`) is **VERIFIED** and frozen. Phase 5 Protected Notes and Sharing Authorization (`SHARE-01` through `SHARE-05`, `SHARE-06`) is **VERIFIED** and frozen. Phase 6 Real-Time Collaboration (`RT-01` through `RT-03`) is **IN PROGRESS**.
+Initial status of all application features is **PLANNED**. Repository governance baselines established in Phase 1 are **VERIFIED** and frozen. Phase 2 Authentication and Account Management (`ACC-01` through `ACC-09`, `SEC-06`) is **VERIFIED** and frozen. Phase 3 Core Notes Management (`NOTE-01` through `NOTE-05`) is **VERIFIED** and frozen. Phase 4 Organization, Discovery & Media (`NOTE-06`, `NOTE-07`, `NOTE-08`, `LABEL-01` through `LABEL-03`, `SEC-04`) is **VERIFIED** and frozen. Phase 5 Protected Notes and Sharing Authorization (`SHARE-01` through `SHARE-05`, `SHARE-06`) is **VERIFIED** and frozen. Phase 6 Real-Time Collaboration (`RT-01` through `RT-03`) is **IN PROGRESS** (`RT-01` is **VERIFIED**; `RT-03` remains for Milestone M3; `RT-02` is **OPTIONAL**).
 
 ---
 
@@ -82,7 +82,7 @@ Initial status of all application features is **PLANNED**. Repository governance
 
 | ID | Requirement | Acceptance Intent | Target Phase | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **RT-01** | Real-Time Sync (Reverb) | Authorized collaborators editing the same shared note receive updates through Laravel Reverb WebSockets and Laravel Echo in real time. | Phase 6 | PLANNED |
+| **RT-01** | Real-Time Sync (Reverb) | Authorized collaborators editing the same shared note receive updates through Laravel Reverb WebSockets and Laravel Echo in real time without full page reload. | Phase 6 | **VERIFIED** |
 | **RT-02** | Active Collaborators (Optional) | OPTIONAL / FUTURE ENHANCEMENT: Visual collaborator presence pills or live cursors. (The rubric requires realtime editing updates, not presence indicators). | Phase 6 | OPTIONAL |
 | **RT-03** | Concurrent Edit Integrity | Implementation concern: Backend maintains data integrity during concurrent edits. | Phase 6 | PLANNED |
 

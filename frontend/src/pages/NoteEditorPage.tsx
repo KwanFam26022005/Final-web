@@ -17,7 +17,9 @@ import {
   updateNoteShare,
   deleteNoteShare,
   type NoteShare,
+  type Note,
 } from '../lib/api/notes';
+import { useNoteRealtime } from '../hooks/useNoteRealtime';
 import { type Label, fetchLabels } from '../lib/api/labels';
 import {
   type Attachment,
@@ -148,6 +150,8 @@ export const NoteEditorPage: React.FC = () => {
   const titleRef = useRef<HTMLInputElement>(null);
   const titleValRef = useRef(title);
   const contentValRef = useRef(content);
+  const remoteUpdatePendingRef = useRef(false);
+  const handleRemoteSignalRef = useRef<() => Promise<void>>(async () => {});
 
   useEffect(() => {
     persistedNoteIdRef.current = noteId ? Number(noteId) : createdNoteId;
@@ -192,6 +196,11 @@ export const NoteEditorPage: React.FC = () => {
     try {
       if (currentId !== null) {
         await updateNote(currentId, data);
+        if (remoteUpdatePendingRef.current) {
+          setTimeout(() => {
+            void handleRemoteSignalRef.current();
+          }, 50);
+        }
       } else {
         const created = await createNote(data);
         if (isDeletedRef.current) return;
@@ -255,6 +264,104 @@ export const NoteEditorPage: React.FC = () => {
       titleRef.current?.focus();
     }
   }, [noteId, isNewNote, cancelAutosave]);
+
+  const remoteFetchControllerRef = useRef<AbortController | null>(null);
+  const remoteFetchSeqRef = useRef<number>(0);
+  const [remoteUpdatePending, setRemoteUpdatePending] = useState(false);
+
+  const applyRemoteNote = useCallback(
+    (remoteNote: Note) => {
+      const protectedFlag = Boolean(remoteNote.is_protected);
+      const unlockedFlag = protectedFlag ? Boolean(remoteNote.is_unlocked) : true;
+      setIsProtected(protectedFlag);
+      setIsUnlocked(unlockedFlag);
+      setAccessType(remoteNote.access_type || 'owner');
+      setPermission(remoteNote.permission || 'owner');
+
+      if (remoteNote.permission === 'read' && (remoteNote.access_type === 'shared' || accessType === 'shared')) {
+        setPermissionDowngradeError('You no longer have permission to edit this note.');
+      } else {
+        setPermissionDowngradeError(null);
+      }
+
+      setIsPinned(Boolean(remoteNote.is_pinned));
+      setAssignedLabels(remoteNote.labels || []);
+
+      titleValRef.current = remoteNote.title;
+      setTitle(remoteNote.title);
+
+      if (protectedFlag && !unlockedFlag) {
+        contentValRef.current = '';
+        setContent('');
+        cancelAutosave();
+      } else {
+        contentValRef.current = remoteNote.content ?? '';
+        setContent(remoteNote.content ?? '');
+      }
+
+      cancelAutosave();
+    },
+    [accessType, cancelAutosave]
+  );
+
+  const handleRemoteSignal = useCallback(async () => {
+    const currentId = persistedNoteIdRef.current;
+    if (!currentId || isDeletedRef.current) return;
+
+    if (remoteFetchControllerRef.current) {
+      remoteFetchControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    remoteFetchControllerRef.current = controller;
+    const currentSeq = ++remoteFetchSeqRef.current;
+
+    try {
+      const remoteNote = await fetchNote(currentId, controller.signal);
+      if (currentSeq !== remoteFetchSeqRef.current) {
+        return;
+      }
+
+      if (status === 'dirty' || status === 'saving') {
+        remoteUpdatePendingRef.current = true;
+        setRemoteUpdatePending(true);
+        return;
+      }
+
+      applyRemoteNote(remoteNote);
+      remoteUpdatePendingRef.current = false;
+      setRemoteUpdatePending(false);
+    } catch (err: unknown) {
+      if (currentSeq !== remoteFetchSeqRef.current) return;
+      if (err instanceof Error && err.name === 'AbortError') return;
+
+      if (err instanceof ApiError && err.status === 403) {
+        cancelAutosave();
+        setTitle('');
+        setContent('');
+        titleValRef.current = '';
+        contentValRef.current = '';
+        setLoadError('You no longer have permission to view this note.');
+      }
+    }
+  }, [status, applyRemoteNote, cancelAutosave]);
+
+  useEffect(() => {
+    handleRemoteSignalRef.current = handleRemoteSignal;
+  }, [handleRemoteSignal]);
+
+  const activeNoteId = noteId ? Number(noteId) : createdNoteId;
+  const isRealtimeActive = Boolean(activeNoteId && !isLoadingNote && !loadError);
+
+  const { isConnected: isRealtimeConnected } = useNoteRealtime({
+    noteId: activeNoteId,
+    enabled: isRealtimeActive,
+    onRemoteUpdate: () => {
+      void handleRemoteSignal();
+    },
+    onReconnected: () => {
+      void handleRemoteSignal();
+    },
+  });
 
   const handleUnlockSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -647,7 +754,7 @@ export const NoteEditorPage: React.FC = () => {
           Note not found
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm">
-          This note may have been deleted or you do not have permission to view it.
+          {loadError === 'Note not found' ? 'This note may have been deleted or you do not have permission to view it.' : loadError}
         </p>
         <Link
           to="/"
@@ -704,7 +811,19 @@ export const NoteEditorPage: React.FC = () => {
               Locked
             </span>
           ) : !isReadOnly ? (
-            <StatusIndicator status={status} />
+            <div className="flex items-center gap-2">
+              {isPersisted && isRealtimeActive && isRealtimeConnected && (
+                <span
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400"
+                  title="Realtime sync connected"
+                  data-testid="realtime-status-indicator"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Live
+                </span>
+              )}
+              <StatusIndicator status={status} />
+            </div>
           ) : null}
 
           {isPersisted && (
@@ -840,6 +959,23 @@ export const NoteEditorPage: React.FC = () => {
                 aria-label="Dismiss banner"
               >
                 &times;
+              </button>
+            </div>
+          )}
+
+          {remoteUpdatePending && (
+            <div
+              role="status"
+              data-testid="remote-update-pending-banner"
+              className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 flex items-center justify-between"
+            >
+              <span>Remote changes are available. They will apply once your current edits are saved.</span>
+              <button
+                type="button"
+                onClick={() => void handleRemoteSignal()}
+                className="font-semibold underline hover:no-underline text-amber-900 dark:text-amber-200 cursor-pointer ml-3 shrink-0"
+              >
+                Update now
               </button>
             </div>
           )}

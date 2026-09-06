@@ -108,12 +108,12 @@ flowchart LR
 ---
 
 ### Phase 6: Realtime Collaboration
-- **Status:** IN PROGRESS (Milestone M1 Reverb / Echo Transport Foundation active)
+- **Status:** IN PROGRESS (Milestone M1 Reverb / Echo Transport Foundation VERIFIED; Milestone M2 Realtime Note Synchronization VERIFIED; Milestone M3 Concurrent Edit Integrity PLANNED)
 - **Target Requirements:**
-  - **Required:** `RT-01`, `RT-03` (PLANNED)
+  - **Required:** `RT-01` (VERIFIED), `RT-03` (PLANNED for M3)
   - **Optional:** `RT-02` (OPTIONAL)
 - **Objective:** Enable multi-user live editing through WebSockets and ensure concurrent data integrity.
-- **Deliverables:** Laravel Reverb WebSocket server integration; Laravel Echo client event listeners; real-time edit synchronization; backend data integrity during concurrent edits. (Presence indicators/cursors optional).
+- **Deliverables:** Laravel Reverb WebSocket server integration; Laravel Echo client event listeners; real-time edit synchronization via invalidation signals; socket-origin exclusion; race-safe refetching; backend data integrity during concurrent edits. (Presence indicators/cursors optional).
 - **Exit Criteria:** Concurrent edits across two browser sessions reflect instantly without manual refresh.
 
 ---

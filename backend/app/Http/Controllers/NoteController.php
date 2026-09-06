@@ -9,6 +9,7 @@ use App\Http\Requests\Note\UpdateNoteRequest;
 use App\Http\Resources\NoteResource;
 use App\Models\Note;
 use App\Services\NoteProtectionService;
+use App\Services\NoteRealtimeBroadcastService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -121,7 +122,8 @@ class NoteController extends Controller
     public function update(
         UpdateNoteRequest $request,
         Note $note,
-        NoteProtectionService $protectionService
+        NoteProtectionService $protectionService,
+        NoteRealtimeBroadcastService $broadcastService
     ): NoteResource|JsonResponse {
         Gate::authorize('editContent', $note);
 
@@ -133,7 +135,10 @@ class NoteController extends Controller
 
         $note->update($request->validated());
 
-        return new NoteResource($note->fresh('labels'));
+        $freshNote = $note->fresh('labels');
+        $broadcastService->broadcastUpdate($freshNote, $request->header('X-Socket-ID'));
+
+        return new NoteResource($freshNote);
     }
 
     /**

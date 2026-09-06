@@ -25,8 +25,20 @@ export interface ReverbConfig {
   enabledTransports: ('ws' | 'wss')[];
 }
 
-export function getReverbConfig(): ReverbConfig {
-  const key = import.meta.env.VITE_REVERB_APP_KEY || 'reverb_key_local';
+/**
+ * Resolve public Reverb WebSocket configuration.
+ *
+ * NOTE: Production hardening (Section 27): If VITE_REVERB_APP_KEY is missing or empty,
+ * this function returns null, allowing realtime features to gracefully disable themselves
+ * while REST capabilities continue working normally.
+ */
+export function getReverbConfig(): ReverbConfig | null {
+  const rawKey = import.meta.env.VITE_REVERB_APP_KEY;
+  if (!rawKey || typeof rawKey !== 'string' || rawKey.trim() === '') {
+    return null;
+  }
+
+  const key = rawKey.trim();
   const wsHost = import.meta.env.VITE_REVERB_HOST || (typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1') || '127.0.0.1';
   const wsPort = import.meta.env.VITE_REVERB_PORT ? parseInt(import.meta.env.VITE_REVERB_PORT, 10) : 8080;
   const wsScheme = import.meta.env.VITE_REVERB_SCHEME || 'http';
@@ -42,6 +54,10 @@ export function getReverbConfig(): ReverbConfig {
   };
 }
 
+/**
+ * Get or create the singleton Laravel Echo instance.
+ * Returns null if Reverb configuration is unavailable or initialization fails.
+ */
 export function getEchoInstance(): Echo<'reverb'> | null {
   if (echoInstance) {
     return echoInstance;
@@ -52,6 +68,10 @@ export function getEchoInstance(): Echo<'reverb'> | null {
   }
 
   const config = getReverbConfig();
+  if (!config) {
+    return null;
+  }
+
   const apiBaseUrl = getApiBaseUrl();
 
   try {
@@ -79,7 +99,7 @@ export function getEchoInstance(): Echo<'reverb'> | null {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                     ...(token ? { 'X-XSRF-TOKEN': token } : {}),
                   },
                   credentials: 'include',
@@ -114,6 +134,79 @@ export function getEchoInstance(): Echo<'reverb'> | null {
   }
 }
 
+/**
+ * Retrieve the current Echo socket ID for originating socket exclusion (Section 10 & 11).
+ * Returns null if Echo is not initialized or not yet connected.
+ */
+export function getEchoSocketId(): string | null {
+  if (!echoInstance) {
+    return null;
+  }
+  try {
+    return echoInstance.socketId() || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Subscribe to realtime note update signals on private channel `notes.{noteId}` (Section 12 & 13).
+ *
+ * Returns a cleanup function that unsubscribes and leaves the channel.
+ */
+export function subscribeToNoteUpdates(
+  noteId: number,
+  onUpdate: () => void,
+  onReconnected?: () => void
+): () => void {
+  const echo = getEchoInstance();
+  if (!echo) {
+    return () => {};
+  }
+
+  const channelName = `notes.${noteId}`;
+  const channel = echo.private(channelName);
+
+  channel.listen('.note.updated', onUpdate);
+
+  // Reconnect reconciliation: when the underlying WebSocket reconnects, notify caller
+  let reconnectHandler: (() => void) | undefined;
+  const connector = echo.connector as unknown as {
+    pusher?: {
+      connection?: {
+        bind: (event: string, callback: () => void) => void;
+        unbind: (event: string, callback: () => void) => void;
+      };
+    };
+  };
+
+  if (connector?.pusher?.connection && onReconnected) {
+    reconnectHandler = () => {
+      onReconnected();
+    };
+    try {
+      connector.pusher.connection.bind('connected', reconnectHandler);
+    } catch {
+      // Ignore if binding not supported
+    }
+  }
+
+  return () => {
+    try {
+      channel.stopListening('.note.updated');
+      echo.leave(channelName);
+      if (connector?.pusher?.connection && reconnectHandler) {
+        connector.pusher.connection.unbind('connected', reconnectHandler);
+      }
+    } catch {
+      // Ignore cleanup error
+    }
+  };
+}
+
+/**
+ * Disconnect the active Echo singleton and reset references.
+ */
 export function disconnectEcho(): void {
   if (echoInstance) {
     try {

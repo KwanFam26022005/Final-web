@@ -1,5 +1,6 @@
 import { apiClient, ensureCsrfCookie } from './client';
 import type { Label } from './labels';
+import { getEchoSocketId } from '../echo';
 
 export interface Note {
   id: number;
@@ -105,8 +106,8 @@ export async function fetchNotes(
   return res.data;
 }
 
-export async function fetchNote(id: number): Promise<Note> {
-  const res = await apiClient<NoteResponse>(`/api/notes/${id}`);
+export async function fetchNote(id: number, signal?: AbortSignal): Promise<Note> {
+  const res = await apiClient<NoteResponse>(`/api/notes/${id}`, { signal });
   return res.data;
 }
 
@@ -121,8 +122,15 @@ export async function createNote(data: { title: string; content: string }): Prom
 
 export async function updateNote(id: number, data: { title?: string; content?: string }): Promise<Note> {
   await ensureCsrfCookie();
+  const socketId = getEchoSocketId();
+  const headers: Record<string, string> = {};
+  if (socketId) {
+    headers['X-Socket-ID'] = socketId;
+  }
+
   const res = await apiClient<NoteResponse>(`/api/notes/${id}`, {
     method: 'PATCH',
+    headers,
     body: JSON.stringify(data),
   });
   return res.data;
