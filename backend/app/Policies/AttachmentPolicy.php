@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\Attachment;
+use App\Models\Note;
+use App\Models\User;
+
+class AttachmentPolicy
+{
+    /**
+     * Determine whether the user can list attachments for the note.
+     */
+    public function viewAny(User $user, Note $note): bool
+    {
+        return $user->id === $note->user_id;
+    }
+
+    /**
+     * Determine whether the user can upload an attachment to the note.
+     */
+    public function create(User $user, Note $note): bool
+    {
+        return $user->id === $note->user_id;
+    }
+
+    /**
+     * Determine whether the user can view or stream the attachment.
+     */
+    public function view(User $user, Attachment $attachment): bool
+    {
+        return $user->id === $attachment->note->user_id;
+    }
+
+    /**
+     * Determine whether the user can download the attachment.
+     */
+    public function download(User $user, Attachment $attachment): bool
+    {
+        return $user->id === $attachment->note->user_id;
+    }
+
+    /**
+     * Determine whether the user can delete the attachment.
+     */
+    public function delete(User $user, Attachment $attachment): bool
+    {
+        return $user->id === $attachment->note->user_id;
+    }
+}

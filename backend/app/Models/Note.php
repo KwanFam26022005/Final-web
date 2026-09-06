@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Note extends Model
 {
@@ -23,6 +25,19 @@ class Note extends Model
         'content',
         'is_pinned',
     ];
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (Note $note) {
+            foreach ($note->attachments()->get() as $attachment) {
+                Storage::disk('local')->delete($attachment->path);
+            }
+            Storage::disk('local')->deleteDirectory("attachments/{$note->id}");
+        });
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -50,5 +65,13 @@ class Note extends Model
     public function labels(): BelongsToMany
     {
         return $this->belongsToMany(Label::class, 'note_label');
+    }
+
+    /**
+     * Get the attachments associated with the note.
+     */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(Attachment::class);
     }
 }

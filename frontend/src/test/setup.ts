@@ -17,3 +17,17 @@ vi.mock('../lib/api/labels', () => ({
   })),
   deleteLabel: vi.fn().mockResolvedValue(undefined),
 }));
+
+vi.mock('../lib/api/attachments', () => ({
+  fetchAttachments: vi.fn().mockResolvedValue([]),
+  uploadAttachment: vi.fn().mockImplementation(async (_noteId: number, file: File) => ({
+    id: Date.now(),
+    original_name: file.name,
+    mime_type: file.type || 'application/pdf',
+    size_bytes: file.size,
+    created_at: new Date().toISOString(),
+  })),
+  fetchAttachmentBlob: vi.fn().mockResolvedValue({ blob: new Blob(['test']), mimeType: 'application/pdf' }),
+  downloadAttachment: vi.fn().mockResolvedValue(undefined),
+  deleteAttachment: vi.fn().mockResolvedValue(undefined),
+}));

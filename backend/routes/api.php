@@ -4,6 +4,7 @@ use App\Http\Controllers\Account\AvatarController;
 use App\Http\Controllers\Account\PasswordChangeController;
 use App\Http\Controllers\Account\PreferenceController;
 use App\Http\Controllers\Account\ProfileController;
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\VerificationController;
@@ -79,4 +80,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/labels', [LabelController::class, 'store']);
     Route::patch('/labels/{label}', [LabelController::class, 'update']);
     Route::delete('/labels/{label}', [LabelController::class, 'destroy']);
+
+    Route::get('/notes/{note}/attachments', [AttachmentController::class, 'index']);
+    Route::post('/notes/{note}/attachments', [AttachmentController::class, 'store']);
+    Route::get('/attachments/{attachment}/content', [AttachmentController::class, 'content']);
+    Route::get('/attachments/{attachment}/download', [AttachmentController::class, 'download']);
+    Route::delete('/attachments/{attachment}', [AttachmentController::class, 'destroy']);
 });

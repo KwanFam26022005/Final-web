@@ -3,9 +3,26 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAutosave, type AutosaveStatus } from '../hooks/useAutosave';
 import { createNote, updateNote, fetchNote, deleteNote, pinNote, syncNoteLabels } from '../lib/api/notes';
 import { type Label, fetchLabels } from '../lib/api/labels';
+import {
+  type Attachment,
+  fetchAttachments,
+  uploadAttachment,
+  fetchAttachmentBlob,
+  downloadAttachment,
+  deleteAttachment,
+} from '../lib/api/attachments';
+import { ApiError } from '../lib/api/client';
 import { KnowledgeMark } from '../components/brand/KnowledgeMark';
 import { WiseCat } from '../components/mascot/WiseCat';
 import { ConfirmDeleteDialog } from '../components/ui/ConfirmDeleteDialog';
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+}
 
 function StatusIndicator({ status }: { status: AutosaveStatus }) {
   const labels: Record<AutosaveStatus, string> = {
@@ -64,6 +81,14 @@ export const NoteEditorPage: React.FC = () => {
   const [isSyncingLabels, setIsSyncingLabels] = useState(false);
   const [syncLabelError, setSyncLabelError] = useState<string | null>(null);
 
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [uploadAttachmentError, setUploadAttachmentError] = useState<string | null>(null);
+  const [deletingAttachmentId, setDeletingAttachmentId] = useState<number | null>(null);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<Attachment | null>(null);
+  const [deleteAttachmentError, setDeleteAttachmentError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const persistedNoteIdRef = useRef<number | null>(noteId ? Number(noteId) : createdNoteId);
   const isDeletedRef = useRef(false);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -83,6 +108,21 @@ export const NoteEditorPage: React.FC = () => {
       void fetchLabels().then(setAllLabels).catch(() => {});
     }
   }, [isLabelPickerOpen]);
+
+  useEffect(() => {
+    const id = noteId ? Number(noteId) : createdNoteId;
+    if (id) {
+      let isMounted = true;
+      void fetchAttachments(id)
+        .then((items) => {
+          if (isMounted) setAttachments(items);
+        })
+        .catch(() => {});
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [noteId, createdNoteId]);
 
   const validate = useCallback((data: { title: string; content: string }) => {
     return data.title.trim().length > 0 && data.content.trim().length > 0;
@@ -191,6 +231,81 @@ export const NoteEditorPage: React.FC = () => {
       setIsPinned(!nextPinned);
     } finally {
       setIsPinning(false);
+    }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    e.target.value = '';
+
+    const id = persistedNoteIdRef.current;
+    if (!id || isUploadingAttachment) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadAttachmentError('Attachment file size must not exceed 10 MB.');
+      return;
+    }
+
+    setIsUploadingAttachment(true);
+    setUploadAttachmentError(null);
+
+    try {
+      const newAttachment = await uploadAttachment(id, file);
+      setAttachments((prev) => [...prev, newAttachment]);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof ApiError && err.errors?.file?.[0]
+          ? err.errors.file[0]
+          : err instanceof Error
+            ? err.message
+            : 'Failed to upload attachment.';
+      setUploadAttachmentError(msg);
+    } finally {
+      setIsUploadingAttachment(false);
+    }
+  };
+
+  const handleOpenAttachment = async (attachment: Attachment) => {
+    try {
+      const { blob } = await fetchAttachmentBlob(attachment.id);
+      const objectUrl = window.URL.createObjectURL(blob);
+      window.open(objectUrl, '_blank', 'noopener,noreferrer');
+      setTimeout(() => {
+        window.URL.revokeObjectURL(objectUrl);
+      }, 60000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to open attachment.';
+      setUploadAttachmentError(msg);
+    }
+  };
+
+  const handleDownloadAttachment = async (attachment: Attachment) => {
+    try {
+      await downloadAttachment(attachment.id, attachment.original_name);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to download attachment.';
+      setUploadAttachmentError(msg);
+    }
+  };
+
+  const handleConfirmDeleteAttachment = async () => {
+    if (!attachmentToDelete || deletingAttachmentId !== null) return;
+
+    const targetId = attachmentToDelete.id;
+    setDeletingAttachmentId(targetId);
+    setDeleteAttachmentError(null);
+
+    try {
+      await deleteAttachment(targetId);
+      setAttachments((prev) => prev.filter((a) => a.id !== targetId));
+      setAttachmentToDelete(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to delete attachment. Please try again.';
+      setDeleteAttachmentError(msg);
+    } finally {
+      setDeletingAttachmentId(null);
     }
   };
 
@@ -432,6 +547,122 @@ export const NoteEditorPage: React.FC = () => {
             aria-label="Note content"
             data-testid="note-content-input"
           />
+
+          {/* Attachments Section */}
+          {isPersisted ? (
+            <div className="pt-6 border-t border-slate-200/80 dark:border-slate-800/80 space-y-3" data-testid="attachments-section">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Attachments
+                </h3>
+                <label
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors cursor-pointer ${
+                    isUploadingAttachment ? 'opacity-50 pointer-events-none' : ''
+                  }`}
+                  data-testid="add-attachment-button"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>{isUploadingAttachment ? 'Uploading\u2026' : 'Add file'}</span>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="sr-only"
+                    accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    aria-label="Upload attachment"
+                    disabled={isUploadingAttachment}
+                    onChange={handleFileSelect}
+                    data-testid="attachment-file-input"
+                  />
+                </label>
+              </div>
+
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                JPEG, PNG, WebP or PDF &middot; max 10 MB
+              </p>
+
+              {uploadAttachmentError && (
+                <div
+                  className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs text-red-700 dark:text-red-300 flex items-center justify-between"
+                  role="alert"
+                  data-testid="attachment-upload-error"
+                >
+                  <span>{uploadAttachmentError}</span>
+                  <button
+                    type="button"
+                    onClick={() => setUploadAttachmentError(null)}
+                    className="text-red-500 hover:text-red-700 ml-2"
+                    aria-label="Dismiss error"
+                  >
+                    &times;
+                  </button>
+                </div>
+              )}
+
+              {attachments.length > 0 && (
+                <ul className="space-y-2 pt-1" data-testid="attachments-list">
+                  {attachments.map((att) => (
+                    <li
+                      key={att.id}
+                      className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 text-xs"
+                      data-testid="attachment-item"
+                    >
+                      <div className="flex items-center gap-2 min-w-0 pr-3">
+                        {att.mime_type.startsWith('image/') ? (
+                          <svg className="w-4 h-4 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        )}
+                        <span className="font-medium text-slate-700 dark:text-slate-200 truncate max-w-xs" data-testid="attachment-filename">
+                          {att.original_name}
+                        </span>
+                        <span className="text-slate-400 dark:text-slate-500 shrink-0" data-testid="attachment-size">
+                          ({formatBytes(att.size_bytes)})
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => void handleOpenAttachment(att)}
+                          className="text-blue-600 dark:text-blue-400 hover:underline px-1 py-0.5"
+                          data-testid="open-attachment-button"
+                        >
+                          Open
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleDownloadAttachment(att)}
+                          className="text-slate-600 dark:text-slate-300 hover:underline px-1 py-0.5"
+                          data-testid="download-attachment-button"
+                        >
+                          Download
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteAttachmentError(null);
+                            setAttachmentToDelete(att);
+                          }}
+                          disabled={deletingAttachmentId === att.id}
+                          className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 px-1 py-0.5 transition-colors disabled:opacity-50"
+                          aria-label={`Delete attachment ${att.original_name}`}
+                          data-testid="delete-attachment-button"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ) : null}
         </div>
       </main>
 
@@ -448,6 +679,23 @@ export const NoteEditorPage: React.FC = () => {
           if (!isDeleting) {
             setIsConfirmOpen(false);
             setDeleteError(null);
+          }
+        }}
+      />
+
+      <ConfirmDeleteDialog
+        isOpen={Boolean(attachmentToDelete)}
+        title="Delete attachment?"
+        description="This removes the file from this note permanently."
+        confirmLabel="Delete attachment"
+        cancelLabel="Cancel"
+        isDeleting={deletingAttachmentId !== null}
+        error={deleteAttachmentError}
+        onConfirm={handleConfirmDeleteAttachment}
+        onCancel={() => {
+          if (deletingAttachmentId === null) {
+            setAttachmentToDelete(null);
+            setDeleteAttachmentError(null);
           }
         }}
       />
