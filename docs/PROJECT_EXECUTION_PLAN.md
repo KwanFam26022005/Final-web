@@ -2,12 +2,13 @@
 
 This document establishes the multi-phase engineering delivery plan for the Collaborative Intelligent Note Management Web Application. Each phase defines discrete objectives, assigned requirement IDs, technical deliverables, and strict exit criteria.
 
-> **Current Completed Phases:** Phase 1 — Repository and Runtime Foundation; Phase 2 — Authentication and Account Management; Phase 3 — Core Note CRUD, Views, and Autosave; Phase 4 — Labels, Attachments, Search, and Pinning<br>
+> **Current Completed Phases:** Phase 1 — Repository and Runtime Foundation; Phase 2 — Authentication and Account Management; Phase 3 — Core Note CRUD, Views, and Autosave; Phase 4 — Labels, Attachments, Search, and Pinning; Phase 5 — Protected Notes and Sharing Authorization<br>
 > **Phase 1 Status:** COMPLETED / FROZEN<br>
 > **Phase 2 Status:** COMPLETED / VERIFIED / FROZEN (Academic Light V2 visual direction accepted)<br>
 > **Phase 3 Status:** COMPLETED / VERIFIED / FROZEN<br>
 > **Phase 4 Status:** COMPLETED / VERIFIED / FROZEN<br>
-> **Current Authorized Phase:** Phase 5 — Protected Notes and Sharing Authorization (IMPLEMENTATION COMPLETE / PENDING MAIN INTEGRATION)<br>
+> **Phase 5 Status:** COMPLETED / VERIFIED / FROZEN<br>
+> **Current Authorized Phase:** Phase 6 — Realtime Collaboration (IN PROGRESS)<br>
 > **Rule:** No feature may be promoted or implemented ahead of its designated phase without explicit authorization.
 
 ---
@@ -95,7 +96,7 @@ flowchart LR
 ---
 
 ### Phase 5: Protected Notes and Sharing Authorization
-- **Status:** IMPLEMENTATION COMPLETE / PENDING MAIN INTEGRATION
+- **Status:** COMPLETED / VERIFIED / FROZEN
 - **Target Requirements:**
   - **Required:** `SHARE-01` through `SHARE-05` (VERIFIED)
   - **Optional implemented enhancement:** `SHARE-06` — Access Revocation (VERIFIED)
@@ -107,7 +108,10 @@ flowchart LR
 ---
 
 ### Phase 6: Realtime Collaboration
-- **Target Requirements:** `RT-01`, `RT-03` (`RT-02` Optional)
+- **Status:** IN PROGRESS (Milestone M1 Reverb / Echo Transport Foundation active)
+- **Target Requirements:**
+  - **Required:** `RT-01`, `RT-03` (PLANNED)
+  - **Optional:** `RT-02` (OPTIONAL)
 - **Objective:** Enable multi-user live editing through WebSockets and ensure concurrent data integrity.
 - **Deliverables:** Laravel Reverb WebSocket server integration; Laravel Echo client event listeners; real-time edit synchronization; backend data integrity during concurrent edits. (Presence indicators/cursors optional).
 - **Exit Criteria:** Concurrent edits across two browser sessions reflect instantly without manual refresh.
