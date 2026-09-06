@@ -7,7 +7,7 @@ This document establishes the multi-phase engineering delivery plan for the Coll
 > **Phase 2 Status:** COMPLETED / VERIFIED / FROZEN (Academic Light V2 visual direction accepted)<br>
 > **Phase 3 Status:** COMPLETED / VERIFIED / FROZEN<br>
 > **Phase 4 Status:** COMPLETED / VERIFIED / FROZEN<br>
-> **Current Authorized Phase:** Phase 5 — Protected Notes and Sharing Authorization (IN PROGRESS)<br>
+> **Current Authorized Phase:** Phase 5 — Protected Notes and Sharing Authorization (IMPLEMENTATION COMPLETE / PENDING MAIN INTEGRATION)<br>
 > **Rule:** No feature may be promoted or implemented ahead of its designated phase without explicit authorization.
 
 ---
@@ -95,8 +95,11 @@ flowchart LR
 ---
 
 ### Phase 5: Protected Notes and Sharing Authorization
-- **Status:** READY_FOR_INTEGRATION (Milestones M1, M2, M3 Completed & Verified)
-- **Target Requirements:** `SHARE-01` through `SHARE-05`, `SHARE-06`, `SEC-01`, `SEC-02` (ALL VERIFIED)
+- **Status:** IMPLEMENTATION COMPLETE / PENDING MAIN INTEGRATION
+- **Target Requirements:**
+  - **Required:** `SHARE-01` through `SHARE-05` (VERIFIED)
+  - **Optional implemented enhancement:** `SHARE-06` — Access Revocation (VERIFIED)
+  - **Supporting security evidence:** `SEC-01` / `SEC-02` tested in Phase 5, but global status remains PLANNED until final security hardening.
 - **Objective:** Implement per-note password locking and collaborative sharing with fine-grained access control.
 - **Deliverables:** Individual note password protection with backend verification; collaborator invitation by email; read-only (`read`) vs. read-write (`edit`) permissions; recipient-facing shared workspace (`/shared`) exposing permission level, sharing user identity, sharing timestamp, and visual locked/shared indicators; collaborator access revocation.
 - **Exit Criteria:** Locked notes obscured until validated server-side; read-only collaborators cannot mutate notes; IDOR tests pass; recipient shared workspace fully tested with Playwright E2E Test 19. All verification criteria met.
