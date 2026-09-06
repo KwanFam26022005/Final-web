@@ -17,6 +17,12 @@ const sharedUserB = {
   password: 'Password123!',
 };
 
+const sharedUserC = {
+  displayName: 'Nav Candidate',
+  email: `nav_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@example.com`,
+  password: 'Password123!',
+};
+
 test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
   test('1. anonymous visit to / redirects to /login', async ({ page }) => {
     await page.goto('/');
@@ -198,11 +204,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
   });
 
   test('9. G: settings navigation switches between profile, security, and preferences seamlessly', async ({ page }) => {
-    const user = {
-      displayName: 'Nav Candidate',
-      email: `nav_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@example.com`,
-      password: 'Password123!',
-    };
+    const user = sharedUserC;
 
     await page.goto('/register');
     await page.getByLabel(/display name/i).fill(user.displayName);
@@ -1007,17 +1009,17 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     const pageB = await contextB.newPage();
 
     try {
-      // 1. Log in User A (Owner - reuse fixture sharedUserA to avoid throttle:registration)
+      // 1. Log in User A (Owner - reuse fixture sharedUserB to avoid throttle:login and throttle:registration)
       await pageA.goto('/login');
-      await pageA.getByLabel(/email address/i).fill(sharedUserA.email);
-      await pageA.getByLabel(/^password/i).fill(sharedUserA.password);
+      await pageA.getByLabel(/email address/i).fill(sharedUserB.email);
+      await pageA.getByLabel(/^password/i).fill(sharedUserB.password);
       await pageA.getByRole('button', { name: /sign in/i }).click();
       await expect(pageA).toHaveURL('/');
 
-      // 2. Log in User B (Collaborator - reuse fixture sharedUserB to avoid throttle:registration)
+      // 2. Log in User B (Collaborator - reuse fixture sharedUserC to avoid throttle:login and throttle:registration)
       await pageB.goto('/login');
-      await pageB.getByLabel(/email address/i).fill(sharedUserB.email);
-      await pageB.getByLabel(/^password/i).fill(sharedUserB.password);
+      await pageB.getByLabel(/email address/i).fill(sharedUserC.email);
+      await pageB.getByLabel(/^password/i).fill(sharedUserC.password);
       await pageB.getByRole('button', { name: /sign in/i }).click();
       await expect(pageB).toHaveURL('/');
 
@@ -1046,7 +1048,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
       await pageA.getByTestId('share-note-button').click();
       await expect(pageA.getByTestId('share-modal')).toBeVisible();
 
-      await pageA.getByTestId('share-email-input').fill(sharedUserB.email);
+      await pageA.getByTestId('share-email-input').fill(sharedUserC.email);
       await pageA.getByTestId('share-perm-read').check();
 
       const shareResponse = pageA.waitForResponse(
@@ -1057,7 +1059,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
       expect(shareRes.status()).toBe(201);
 
       await expect(pageA.getByTestId('share-success')).toBeVisible();
-      await expect(pageA.getByTestId('shares-list')).toContainText(sharedUserB.email);
+      await expect(pageA.getByTestId('shares-list')).toContainText(sharedUserC.email);
 
       // Close share modal
       await pageA.getByTestId('close-share-modal').click();
@@ -1088,7 +1090,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
       const updateResponse = pageA.waitForResponse(
         (res) => res.url().includes('/note-shares/') && res.request().method() === 'PATCH'
       );
-      const bobSelect = pageA.getByLabel(`Change permission for ${sharedUserB.email}`);
+      const bobSelect = pageA.getByLabel(`Change permission for ${sharedUserC.email}`);
       await bobSelect.selectOption('edit');
       const updateRes = await updateResponse;
       expect(updateRes.status()).toBe(200);
@@ -1153,7 +1155,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
 
       await expect(pageA.getByTestId('confirm-revoke-dialog')).not.toBeVisible();
       await expect(pageA.getByTestId('no-shares-message')).toBeVisible();
-      await expect(pageA.getByText(sharedUserB.email)).not.toBeVisible();
+      await expect(pageA.getByText(sharedUserC.email)).not.toBeVisible();
 
       // 11. User B reloads note and is immediately denied access
       await pageB.reload();
