@@ -104,7 +104,7 @@ services:
       mysql:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "php -r \"\\$fp = @fsockopen('127.0.0.1', 8080, \\$errno, \\$errstr, 2); if (\\$fp) { fclose(\\$fp); exit(0); } exit(1);\""]
+      test: ["CMD", "php", "-r", "exit(@fsockopen('127.0.0.1', 8080) ? 0 : 1);"]
       interval: 5s
       timeout: 5s
       retries: 10

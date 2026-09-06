@@ -311,7 +311,7 @@ jobs:
 
       - name: Verify Reverb WebSocket TCP connectivity inside container
         run: |
-          docker compose --env-file .env.docker exec -T backend php -r '$fp = @fsockopen("reverb", 8080, $errno, $errstr, 5); if ($fp) { fclose($fp); echo "Reverb connected successfully\n"; exit(0); } else { echo "Failed to connect to Reverb: $errstr\n"; exit(1); }'
+          docker compose --env-file .env.docker exec -T backend php -r "if (@fsockopen('reverb', 8080)) { echo \"Reverb connected successfully\n\"; exit(0); } else { echo \"Failed to connect to Reverb\n\"; exit(1); }"
 
       - name: Verify MySQL database contract inside container
         run: |
