@@ -69,8 +69,8 @@ Initial status of all application features is **PLANNED**. Repository governance
 
 | ID | Requirement | Acceptance Intent | Target Phase | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **SHARE-01** | Per-Note Password Protection | Owner can lock specific sensitive notes with an individual password; note card visually indicates locked state and content is obscured until unlocked. | Phase 5 | PLANNED |
-| **SHARE-02** | Server-Side Unlock Verification | Unlocking a protected note validates password on backend before returning note body; client never holds unverified secrets. | Phase 5 | PLANNED |
+| **SHARE-01** | Per-Note Password Protection | Owner can lock specific sensitive notes with an individual password; note card visually indicates locked state and content is obscured until unlocked. | Phase 5 | **VERIFIED** |
+| **SHARE-02** | Server-Side Unlock Verification | Unlocking a protected note validates password on backend before returning note body; client never holds unverified secrets. | Phase 5 | **VERIFIED** |
 | **SHARE-03** | User-to-User Sharing | Note owner can grant explicit access to other registered users identified by their email address. | Phase 5 | PLANNED |
 | **SHARE-04** | Granular Permissions | Sharing supports read-only (`read`) and read-write (`edit`) permissions strictly enforced server-side. | Phase 5 | PLANNED |
 | **SHARE-05** | Shared-Note Metadata | Recipient-facing shared-note section exposes permission level, identity of the user who shared the note, sharing timestamp, and visual shared indicator. | Phase 5 | PLANNED |

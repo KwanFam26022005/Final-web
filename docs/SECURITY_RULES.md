@@ -22,7 +22,13 @@ This document establishes the binding security standards and vulnerability defen
 - **Client Hiding is NOT Security:** Hiding buttons, links, or navigation options in the React UI is strictly a UX affordance. The backend must independently reject unauthorized requests with HTTP `403 Forbidden`.
 - **IDOR (Insecure Direct Object Reference) Defense:** When accessing resources by ID (e.g., `GET /api/notes/{id}`), the backend must explicitly verify that the authenticated user is either the resource owner or an authorized collaborator.
 - **Sharing Permissions Enforcement:** The backend must differentiate and strictly enforce read (`read`) versus read-write (`edit`) permissions for shared notes. Read-only collaborators attempting `PUT`, `PATCH`, or `DELETE` mutations must be rejected.
-- **Protected Notes Enforcement:** For password-protected notes, the backend must verify the note-specific password before decrypting or returning the note content. The client must never receive locked note bodies until authenticated against that note.
+- **Protected Notes Enforcement (SHARE-01 & SHARE-02):** For password-protected notes, the backend must verify the note-specific password before returning or permitting mutation of the note content.
+  - Plaintext protection passwords are never stored; they are hashed with native `bcrypt` (`Hash::make()`) into `notes.protection_password_hash`.
+  - Protection state derives strictly from `protection_password_hash !== null` (no redundant `is_locked` column).
+  - Unlocked state is ephemeral and managed in server-side session, keyed by note ID and validated via SHA-256 fingerprint of the current password hash.
+  - Locked notes return `content: null` in both list (`/api/notes`) and detail (`/api/notes/{id}`) responses.
+  - Content oracle defense: search queries matching text within a locked note's body never return the note; only title queries match locked notes. Once unlocked in the user's session, the body becomes searchable.
+  - Password protection mutations (`PUT /api/notes/{id}/protection`, `DELETE /api/notes/{id}/protection`) require current note ownership and password verification.
 
 ---
 
@@ -51,12 +57,13 @@ This document establishes the binding security standards and vulnerability defen
 
 - **Explicit CORS Configuration:** `config/cors.php` must strictly restrict `allowed_origins` to known frontend application hosts (e.g., `http://localhost:5173`). Wildcard `*` origins with credentials enabled are forbidden.
 - **CSRF Token Verification:** All state-mutating requests (`POST`, `PUT`, `PATCH`, `DELETE`) routed through Sanctum session cookies must validate the `X-XSRF-TOKEN` header.
-- **Dedicated Named Rate Limiters:** Authentication and account-recovery endpoints enforce strict named throttling via Laravel rate limiters configured in `AppServiceProvider`:
+- **Dedicated Named Rate Limiters:** Authentication and security-sensitive endpoints enforce strict named throttling via Laravel rate limiters configured in `AppServiceProvider`:
   - `throttle:login`: 5 attempts per minute per normalized identity/IP (`email|ip`), returning HTTP 429 on exhaustion.
   - `throttle:registration`: 5 attempts per minute per IP address.
   - `throttle:forgot-password`: 5 attempts per minute per normalized identity/IP.
   - `throttle:reset-password`: 5 attempts per minute per IP address.
   - `throttle:verification-resend`: 5 attempts per minute per authenticated user ID / IP.
+  - `throttle:note-unlock`: 5 attempts per minute per authenticated user ID, note ID, and IP address.
 - **Session Semantics & Fixation Defense:**
   - Password change: Updates password hash and regenerates the current session ID via `$request->session()->regenerate()`, preventing session fixation attacks. For the file-based session driver, this cleanly rotates the active session without claiming multi-device session destruction.
   - Password reset: Rotates `remember_token`, invalidates the current request session, and logs out the web guard, enforcing explicit manual re-login with the updated credentials.

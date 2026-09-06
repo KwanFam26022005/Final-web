@@ -2,7 +2,7 @@
 
 This document defines the authoritative database runtime standards, environment isolation boundaries, physical migration baseline, and planned conceptual entity relationships for the Collaborative Intelligent Note Management Web Application.
 
-> **Status Notice:** This document records the **Phase 4 Organization, Discovery & Media Baseline** (in progress). The physical persistence foundation includes the framework migration repository, Phase 2 authentication and user account tables (`users`, `password_reset_tokens`, `user_preferences`), Phase 3 Core Notes persistence table (`notes`), and Phase 4 organizational extensions. Subsequent domain entities documented below represent conceptual architectural intent and will be frozen in their respective phases.
+> **Status Notice:** This document records the **Phase 5 Protection & Collaboration Baseline** (in progress). The physical persistence foundation includes the framework migration repository, Phase 2 authentication and user account tables (`users`, `password_reset_tokens`, `user_preferences`), Phase 3 Core Notes persistence table (`notes`), Phase 4 organizational extensions (`labels`, `note_label`, `attachments`), and Phase 5 per-note password protection. Subsequent domain entities documented below represent conceptual architectural intent and will be frozen in their respective phases.
 
 ---
 
@@ -40,9 +40,9 @@ To prevent accidental test mutation under the governed test hierarchy:
 
 ---
 
-## 3. Current Physical Schema Baseline (Phase 4 M3 Secure Attachments)
+## 3. Current Physical Schema Baseline (Phase 5 M1 Protected Notes)
 
-The physical database schema contains the framework migration repository and the domain tables established through Phase 2, Phase 3, and Phase 4 Milestones 1, 2 & 3:
+The physical database schema contains the framework migration repository and the domain tables established through Phase 2, Phase 3, Phase 4, and Phase 5 Milestone 1:
 
 ### Table: `migrations`
 Established via `php artisan migrate:install`.
@@ -90,7 +90,7 @@ Established via Phase 2 (`2026_09_03_000004_create_user_preferences_table.php`).
 | `updated_at` | `TIMESTAMP` | Nullable | Record update timestamp |
 
 ### Table: `notes`
-Established via Phase 3 (`2026_09_04_000001_create_notes_table.php`), extended via Phase 4 M1 (`2026_09_04_000002_add_is_pinned_to_notes_table.php`).
+Established via Phase 3 (`2026_09_04_000001_create_notes_table.php`), extended via Phase 4 M1 (`2026_09_04_000002_add_is_pinned_to_notes_table.php`), and extended via Phase 5 M1 (`2026_09_06_000001_add_protection_password_hash_to_notes_table.php`).
 
 | Column | Type | Attributes | Description |
 | :--- | :--- | :--- | :--- |
@@ -99,6 +99,7 @@ Established via Phase 3 (`2026_09_04_000001_create_notes_table.php`), extended v
 | `title` | `VARCHAR(255)` | Not Null | Note title (1-255 characters) |
 | `content` | `TEXT` | Not Null | Note plain-text content body |
 | `is_pinned` | `BOOLEAN` | Not Null, Default `FALSE` | Pin status for prioritizing note display |
+| `protection_password_hash` | `VARCHAR(255)` | Nullable | Bcrypt hash of note protection password (`NULL` = unprotected) |
 | `created_at` | `TIMESTAMP` | Nullable | Record creation timestamp |
 | `updated_at` | `TIMESTAMP` | Nullable | Record update timestamp |
 
