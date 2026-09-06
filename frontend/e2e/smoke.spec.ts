@@ -733,10 +733,10 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     const samplePngPath = path.resolve(__dirname, 'fixtures/sample.png');
     const unsupportedShPath = path.resolve(__dirname, 'fixtures/unsupported.sh');
 
-    // 1. Log in existing sharedUserA
+    // 1. Log in existing sharedUserB (avoids throttle:login rate limit on sharedUserA)
     await page.goto('/login');
-    await page.getByLabel(/email address/i).fill(sharedUserA.email);
-    await page.getByLabel(/^password/i).fill(sharedUserA.password);
+    await page.getByLabel(/email address/i).fill(sharedUserB.email);
+    await page.getByLabel(/^password/i).fill(sharedUserB.password);
     await page.getByRole('button', { name: /sign in/i }).click();
     await expect(page).toHaveURL('/');
     await expect(page.getByTestId('empty-notes-state')).toBeVisible();
