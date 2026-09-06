@@ -314,6 +314,21 @@ export const NotesWorkspacePage: React.FC = () => {
                 </svg>
               </span>
             )}
+            {note.is_protected && (
+              <span
+                className={`shrink-0 mt-0.5 ${note.is_unlocked ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}
+                data-testid={note.is_unlocked ? 'unlocked-indicator' : 'locked-indicator'}
+                title={note.is_unlocked ? 'Protected note (Unlocked)' : 'Protected note (Locked)'}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                  {note.is_unlocked ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  )}
+                </svg>
+              </span>
+            )}
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white line-clamp-2">{note.title}</h3>
           </div>
           <div className="flex items-center gap-0.5 shrink-0">
@@ -352,7 +367,16 @@ export const NotesWorkspacePage: React.FC = () => {
             </button>
           </div>
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-3 mb-3">{note.content}</p>
+        {note.is_protected && !note.is_unlocked ? (
+          <p className="text-xs italic text-amber-700/90 dark:text-amber-400/90 line-clamp-3 mb-3 flex items-center gap-1.5" data-testid="locked-note-excerpt">
+            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <span>Locked note · Unlock to view content</span>
+          </p>
+        ) : (
+          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-3 mb-3">{note.content ?? ''}</p>
+        )}
         {note.labels && note.labels.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3" data-testid="note-card-labels">
             {note.labels.slice(0, 3).map((l) => (
@@ -405,6 +429,21 @@ export const NotesWorkspacePage: React.FC = () => {
             </svg>
           </span>
         )}
+        {note.is_protected && (
+          <span
+            className={`shrink-0 ${note.is_unlocked ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}
+            data-testid={note.is_unlocked ? 'unlocked-indicator' : 'locked-indicator'}
+            title={note.is_unlocked ? 'Protected note (Unlocked)' : 'Protected note (Locked)'}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+              {note.is_unlocked ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              )}
+            </svg>
+          </span>
+        )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-medium text-slate-900 dark:text-white truncate">{note.title}</h3>
@@ -427,7 +466,16 @@ export const NotesWorkspacePage: React.FC = () => {
               </div>
             )}
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{note.content}</p>
+          {note.is_protected && !note.is_unlocked ? (
+            <p className="text-xs italic text-amber-700/90 dark:text-amber-400/90 truncate flex items-center gap-1.5" data-testid="locked-note-excerpt">
+              <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span>Locked note · Unlock to view content</span>
+            </p>
+          ) : (
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{note.content ?? ''}</p>
+          )}
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0">

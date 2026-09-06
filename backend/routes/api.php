@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\NoteProtectionController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -75,6 +76,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/notes/{note}', [NoteController::class, 'destroy']);
     Route::patch('/notes/{note}/pin', [NoteController::class, 'pin']);
     Route::put('/notes/{note}/labels', [NoteController::class, 'syncLabels']);
+
+    Route::put('/notes/{note}/protection', [NoteProtectionController::class, 'protect']);
+    Route::post('/notes/{note}/unlock', [NoteProtectionController::class, 'unlock'])->middleware('throttle:note-unlock');
+    Route::post('/notes/{note}/lock', [NoteProtectionController::class, 'lock']);
+    Route::delete('/notes/{note}/protection', [NoteProtectionController::class, 'remove']);
 
     Route::get('/labels', [LabelController::class, 'index']);
     Route::post('/labels', [LabelController::class, 'store']);

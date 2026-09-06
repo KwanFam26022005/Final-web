@@ -8,6 +8,7 @@ use App\Http\Requests\Note\SyncNoteLabelsRequest;
 use App\Http\Requests\Note\UpdateNoteRequest;
 use App\Http\Resources\NoteResource;
 use App\Models\Note;
+use App\Services\NoteProtectionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,7 +21,7 @@ class NoteController extends Controller
     /**
      * Display a listing of the authenticated user's notes.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request, NoteProtectionService $protectionService): AnonymousResourceCollection
     {
         $request->validate([
             'q' => ['nullable', 'string', 'max:200'],
@@ -31,15 +32,37 @@ class NoteController extends Controller
         $user = $request->user();
         $notesQuery = $user->notes()->with('labels');
 
-        // Optional text search
+        // Optional text search with content oracle protection for locked notes
         $q = $request->query('q');
         if (is_string($q) && trim($q) !== '') {
             $escaped = addcslashes(trim($q), '%_\\');
             $pattern = '%'.$escaped.'%';
 
-            $notesQuery->where(function ($sub) use ($pattern) {
+            $sessionUnlocks = (array) ($request->hasSession() ? $request->session()->get('note_unlocks', []) : []);
+            $validUnlockedIds = [];
+            if (! empty($sessionUnlocks)) {
+                $candidateIds = array_filter(array_map('intval', array_keys($sessionUnlocks)));
+                if (! empty($candidateIds)) {
+                    $notesToCheck = $user->notes()->whereIn('id', $candidateIds)->get();
+                    foreach ($notesToCheck as $n) {
+                        if ($protectionService->isUnlocked($request->session(), $n)) {
+                            $validUnlockedIds[] = $n->id;
+                        }
+                    }
+                }
+            }
+
+            $notesQuery->where(function ($sub) use ($pattern, $validUnlockedIds) {
                 $sub->where('title', 'LIKE', $pattern)
-                    ->orWhere('content', 'LIKE', $pattern);
+                    ->orWhere(function ($contentSub) use ($pattern, $validUnlockedIds) {
+                        $contentSub->where('content', 'LIKE', $pattern)
+                            ->where(function ($accessSub) use ($validUnlockedIds) {
+                                $accessSub->whereNull('protection_password_hash');
+                                if (! empty($validUnlockedIds)) {
+                                    $accessSub->orWhereIn('id', $validUnlockedIds);
+                                }
+                            });
+                    });
             });
         }
 
@@ -95,12 +118,18 @@ class NoteController extends Controller
         return new NoteResource($note->load('labels'));
     }
 
-    /**
-     * Update the specified note.
-     */
-    public function update(UpdateNoteRequest $request, Note $note): NoteResource
-    {
+    public function update(
+        UpdateNoteRequest $request,
+        Note $note,
+        NoteProtectionService $protectionService
+    ): NoteResource|JsonResponse {
         Gate::authorize('update', $note);
+
+        if ($protectionService->isProtected($note) && ! $protectionService->isUnlocked($request->session(), $note)) {
+            return response()->json([
+                'message' => 'Unlock this note before editing.',
+            ], 423);
+        }
 
         $note->update($request->validated());
 

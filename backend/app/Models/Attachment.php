@@ -16,7 +16,6 @@ class Attachment extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'note_id',
         'original_name',
         'path',
         'mime_type',

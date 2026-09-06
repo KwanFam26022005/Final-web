@@ -4,8 +4,10 @@ import type { Label } from './labels';
 export interface Note {
   id: number;
   title: string;
-  content: string;
+  content: string | null;
   is_pinned: boolean;
+  is_protected?: boolean;
+  is_unlocked?: boolean;
   labels?: Label[];
   created_at: string;
   updated_at: string;
@@ -94,3 +96,48 @@ export async function syncNoteLabels(noteId: number, labelIds: number[]): Promis
   });
   return res.data;
 }
+
+export async function protectNote(
+  id: number,
+  data: { password: string; password_confirmation: string }
+): Promise<Note> {
+  await ensureCsrfCookie();
+  const res = await apiClient<NoteResponse>(`/api/notes/${id}/protection`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+  return res.data;
+}
+
+export async function unlockNote(
+  id: number,
+  data: { password: string }
+): Promise<Note> {
+  await ensureCsrfCookie();
+  const res = await apiClient<NoteResponse>(`/api/notes/${id}/unlock`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  return res.data;
+}
+
+export async function lockNote(id: number): Promise<Note> {
+  await ensureCsrfCookie();
+  const res = await apiClient<NoteResponse>(`/api/notes/${id}/lock`, {
+    method: 'POST',
+  });
+  return res.data;
+}
+
+export async function removeNoteProtection(
+  id: number,
+  data: { password: string }
+): Promise<Note> {
+  await ensureCsrfCookie();
+  const res = await apiClient<NoteResponse>(`/api/notes/${id}/protection`, {
+    method: 'DELETE',
+    body: JSON.stringify(data),
+  });
+  return res.data;
+}
+

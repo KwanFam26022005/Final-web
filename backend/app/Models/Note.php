@@ -27,6 +27,15 @@ class Note extends Model
     ];
 
     /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'protection_password_hash',
+    ];
+
+    /**
      * The "booted" method of the model.
      */
     protected static function booted(): void
@@ -73,5 +82,13 @@ class Note extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(Attachment::class);
+    }
+
+    /**
+     * Determine if the note is password protected.
+     */
+    public function isProtected(): bool
+    {
+        return ! empty($this->protection_password_hash);
     }
 }

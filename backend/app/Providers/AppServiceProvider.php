@@ -57,5 +57,14 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute(5)->by($userKey);
         });
+
+        RateLimiter::for('note-unlock', function (Request $request) {
+            $userKey = $request->user() ? (string) $request->user()->id : 'guest';
+            $noteParam = $request->route('note');
+            $noteId = is_object($noteParam) ? (string) $noteParam->id : (string) $noteParam;
+            $key = $userKey.'|'.$noteId.'|'.$request->ip();
+
+            return Limit::perMinute(5)->by($key);
+        });
     }
 }
