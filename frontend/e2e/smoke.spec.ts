@@ -1000,16 +1000,6 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
   test('18. User-to-user sharing and granular permissions lifecycle (SHARE-03, SHARE-04)', async ({ browser }) => {
     test.setTimeout(90000);
     const timestamp = Date.now();
-    const userA = {
-      displayName: 'Owner Alice',
-      email: `owner_alice_${timestamp}@example.com`,
-      password: 'Password123!',
-    };
-    const userB = {
-      displayName: 'Collaborator Bob',
-      email: `collab_bob_${timestamp}@example.com`,
-      password: 'Password123!',
-    };
 
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
@@ -1017,22 +1007,18 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     const pageB = await contextB.newPage();
 
     try {
-      // 1. Register User A (Owner)
-      await pageA.goto('/register');
-      await pageA.getByLabel(/display name/i).fill(userA.displayName);
-      await pageA.getByLabel(/email address/i).fill(userA.email);
-      await pageA.getByLabel(/^password/i).fill(userA.password);
-      await pageA.getByLabel(/confirm password/i).fill(userA.password);
-      await pageA.getByRole('button', { name: /create account/i }).click();
+      // 1. Log in User A (Owner - reuse fixture sharedUserA to avoid throttle:registration)
+      await pageA.goto('/login');
+      await pageA.getByLabel(/email address/i).fill(sharedUserA.email);
+      await pageA.getByLabel(/^password/i).fill(sharedUserA.password);
+      await pageA.getByRole('button', { name: /sign in/i }).click();
       await expect(pageA).toHaveURL('/');
 
-      // 2. Register User B (Collaborator)
-      await pageB.goto('/register');
-      await pageB.getByLabel(/display name/i).fill(userB.displayName);
-      await pageB.getByLabel(/email address/i).fill(userB.email);
-      await pageB.getByLabel(/^password/i).fill(userB.password);
-      await pageB.getByLabel(/confirm password/i).fill(userB.password);
-      await pageB.getByRole('button', { name: /create account/i }).click();
+      // 2. Log in User B (Collaborator - reuse fixture sharedUserB to avoid throttle:registration)
+      await pageB.goto('/login');
+      await pageB.getByLabel(/email address/i).fill(sharedUserB.email);
+      await pageB.getByLabel(/^password/i).fill(sharedUserB.password);
+      await pageB.getByRole('button', { name: /sign in/i }).click();
       await expect(pageB).toHaveURL('/');
 
       // 3. User A creates a note
@@ -1060,7 +1046,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
       await pageA.getByTestId('share-note-button').click();
       await expect(pageA.getByTestId('share-modal')).toBeVisible();
 
-      await pageA.getByTestId('share-email-input').fill(userB.email);
+      await pageA.getByTestId('share-email-input').fill(sharedUserB.email);
       await pageA.getByTestId('share-perm-read').check();
 
       const shareResponse = pageA.waitForResponse(
@@ -1071,7 +1057,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
       expect(shareRes.status()).toBe(201);
 
       await expect(pageA.getByTestId('share-success')).toBeVisible();
-      await expect(pageA.getByTestId('shares-list')).toContainText(userB.email);
+      await expect(pageA.getByTestId('shares-list')).toContainText(sharedUserB.email);
 
       // Close share modal
       await pageA.getByTestId('close-share-modal').click();
@@ -1102,7 +1088,7 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
       const updateResponse = pageA.waitForResponse(
         (res) => res.url().includes('/note-shares/') && res.request().method() === 'PATCH'
       );
-      const bobSelect = pageA.getByLabel(`Change permission for ${userB.email}`);
+      const bobSelect = pageA.getByLabel(`Change permission for ${sharedUserB.email}`);
       await bobSelect.selectOption('edit');
       const updateRes = await updateResponse;
       expect(updateRes.status()).toBe(200);
@@ -1167,11 +1153,17 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
 
       await expect(pageA.getByTestId('confirm-revoke-dialog')).not.toBeVisible();
       await expect(pageA.getByTestId('no-shares-message')).toBeVisible();
-      await expect(pageA.getByText(userB.email)).not.toBeVisible();
+      await expect(pageA.getByText(sharedUserB.email)).not.toBeVisible();
 
       // 11. User B reloads note and is immediately denied access
       await pageB.reload();
       await expect(pageB.getByTestId('note-not-found-state')).toBeVisible();
+
+      // 12. Clean up created note by Owner
+      await pageA.getByTestId('close-share-modal').click();
+      await pageA.getByTestId('editor-delete-button').click();
+      await pageA.getByTestId('confirm-dialog-confirm').click();
+      await expect(pageA).toHaveURL('/');
     } finally {
       await contextA.close();
       await contextB.close();
