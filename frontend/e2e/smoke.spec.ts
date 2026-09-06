@@ -844,4 +844,159 @@ test.describe('Phase 2 Account Lifecycle & Infrastructure E2E Tests', () => {
     await page.getByTestId('confirm-dialog-confirm').click();
     await expect(page).toHaveURL('/');
   });
+
+  test('17: Per-Note Password Protection & Server-Side Unlock Lifecycle (SHARE-01, SHARE-02)', async ({
+    page,
+  }) => {
+    const timestamp = Date.now();
+    const email = `p5_user_${timestamp}@example.com`;
+    const password = 'UserPassword123!';
+
+    // 1. Register fresh user
+    await page.goto('/register');
+    await expect(page.getByRole('heading', { name: /create your account/i })).toBeVisible();
+    await page.getByLabel(/display name/i).fill('Agent Cooper');
+    await page.getByLabel(/email address/i).fill(email);
+    await page.getByLabel(/^password/i).fill(password);
+    await page.getByLabel(/confirm password/i).fill(password);
+    await page.getByRole('button', { name: /create account/i }).click();
+
+    await expect(page).toHaveURL('/');
+    await expect(page.getByTestId('empty-notes-state')).toBeVisible();
+
+    // 2. Create note with secret phrase
+    await page.getByTestId('empty-new-note').click();
+    await expect(page).toHaveURL('/notes/new');
+
+    const secretTitle = `Top Secret Formula ${timestamp}`;
+    const secretContent = `Super secret catalyst omega formula ${timestamp}`;
+
+    await page.getByTestId('note-title-input').fill(secretTitle);
+    await page.getByTestId('note-content-input').fill(secretContent);
+
+    // Wait for autosave
+    await expect(page.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/notes\/\d+/);
+
+    // 3. Protect note
+    const protectBtn = page.getByTestId('protect-note-button');
+    await expect(protectBtn).toBeVisible();
+    await protectBtn.click();
+
+    const protectModal = page.getByTestId('protect-modal');
+    await expect(protectModal).toBeVisible();
+
+    const notePassword = 'FormulaPass2026!';
+    await page.getByTestId('protect-password-input').fill(notePassword);
+    await page.getByTestId('protect-password-confirm-input').fill(notePassword);
+
+    const protectResponse = page.waitForResponse(
+      (res) => res.url().includes('/protection') && res.request().method() === 'PUT'
+    );
+    await page.getByTestId('confirm-protect-button').click();
+    const protectRes = await protectResponse;
+    expect(protectRes.status()).toBe(200);
+
+    await expect(protectModal).not.toBeVisible();
+    await expect(page.getByTestId('lock-now-button')).toBeVisible();
+    await expect(page.getByTestId('remove-protection-button')).toBeVisible();
+
+    // 4. Manually lock note
+    const lockResponse = page.waitForResponse(
+      (res) => res.url().includes('/lock') && res.request().method() === 'POST'
+    );
+    await page.getByTestId('lock-now-button').click();
+    const lockRes = await lockResponse;
+    expect(lockRes.status()).toBe(200);
+
+    // Textarea hidden, locked view visible
+    await expect(page.getByTestId('locked-note-view')).toBeVisible();
+    await expect(page.getByTestId('note-content-input')).not.toBeVisible();
+    await expect(page.getByTestId('note-title-input')).toBeDisabled();
+    await expect(page.getByTestId('locked-status')).toBeVisible();
+
+    // 5. Navigate to workspace
+    await page.getByTestId('back-to-notes').click();
+    await expect(page).toHaveURL('/');
+
+    // Card shows locked indicator and excerpt
+    await expect(page.getByTestId('locked-indicator')).toBeVisible();
+    await expect(page.getByTestId('locked-note-excerpt')).toHaveText(
+      /Locked note · Unlock to view content/i
+    );
+    await expect(page.locator(`text=${secretContent}`)).not.toBeVisible();
+
+    // 6. Test content oracle defense: search by secret body text -> 0 results
+    await page.getByTestId('search-input').fill(`omega formula ${timestamp}`);
+    await expect(page.getByText(secretTitle)).not.toBeVisible();
+
+    // Search by title -> note is found
+    await page.getByTestId('search-input').fill(secretTitle);
+    await expect(page.getByText(secretTitle)).toBeVisible();
+
+    // Clear search
+    await page.getByTestId('clear-search-button').click();
+
+    // 7. Click card to open locked note
+    await page.getByTestId('note-card').click();
+    await expect(page).toHaveURL(/\/notes\/\d+/);
+    await expect(page.getByTestId('locked-note-view')).toBeVisible();
+
+    // 8. Attempt unlock with incorrect password
+    await page.getByTestId('unlock-password-input').fill('WrongPassword!');
+    const unlockFailResponse = page.waitForResponse(
+      (res) => res.url().includes('/unlock') && res.request().method() === 'POST'
+    );
+    await page.getByTestId('unlock-note-button').click();
+    const failRes = await unlockFailResponse;
+    expect(failRes.status()).toBe(422);
+
+    await expect(page.getByTestId('unlock-error')).toBeVisible();
+    await expect(page.getByTestId('note-content-input')).not.toBeVisible();
+
+    // 9. Unlock with correct password
+    await page.getByTestId('unlock-password-input').fill(notePassword);
+    const unlockSuccessResponse = page.waitForResponse(
+      (res) => res.url().includes('/unlock') && res.request().method() === 'POST'
+    );
+    await page.getByTestId('unlock-note-button').click();
+    const successRes = await unlockSuccessResponse;
+    expect(successRes.status()).toBe(200);
+
+    // Note is unlocked!
+    await expect(page.getByTestId('locked-note-view')).not.toBeVisible();
+    const contentInput = page.getByTestId('note-content-input');
+    await expect(contentInput).toBeVisible();
+    await expect(contentInput).toHaveValue(secretContent);
+
+    // 10. Edit and verify autosave
+    await contentInput.fill(`${secretContent} updated`);
+    await expect(page.getByTestId('autosave-status')).toHaveText(/saved/i, { timeout: 10000 });
+
+    // 11. Reload page -> unlock persists in session
+    await page.reload();
+    await expect(page.getByTestId('note-content-input')).toBeVisible();
+    await expect(page.getByTestId('note-content-input')).toHaveValue(`${secretContent} updated`);
+
+    // 12. Remove protection
+    await page.getByTestId('remove-protection-button').click();
+    const removeModal = page.getByTestId('remove-protection-modal');
+    await expect(removeModal).toBeVisible();
+
+    await page.getByTestId('remove-protection-password-input').fill(notePassword);
+    const removeResponse = page.waitForResponse(
+      (res) => res.url().includes('/protection') && res.request().method() === 'DELETE'
+    );
+    await page.getByTestId('confirm-remove-protection-button').click();
+    const removeRes = await removeResponse;
+    expect(removeRes.status()).toBe(200);
+
+    await expect(removeModal).not.toBeVisible();
+    await expect(page.getByTestId('protect-note-button')).toBeVisible();
+
+    // 13. Clean up note
+    await page.getByTestId('editor-delete-button').click();
+    await page.getByTestId('confirm-dialog-confirm').click();
+    await expect(page).toHaveURL('/');
+  });
 });
