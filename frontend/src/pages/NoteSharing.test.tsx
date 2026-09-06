@@ -79,6 +79,11 @@ describe('SHARE-03 & SHARE-04 Sharing and Permissions Tests', () => {
           id: 1,
           note_id: 101,
           permission: 'read',
+          recipient: {
+            id: 2,
+            display_name: 'Bob Collaborator',
+            email: 'bob@example.com',
+          },
           user: {
             id: 2,
             display_name: 'Bob Collaborator',
@@ -116,6 +121,11 @@ describe('SHARE-03 & SHARE-04 Sharing and Permissions Tests', () => {
         id: 2,
         note_id: 101,
         permission: 'edit',
+        recipient: {
+          id: 3,
+          display_name: 'Carol Engineer',
+          email: 'carol@example.com',
+        },
         user: {
           id: 3,
           display_name: 'Carol Engineer',
@@ -147,6 +157,11 @@ describe('SHARE-03 & SHARE-04 Sharing and Permissions Tests', () => {
         id: 1,
         note_id: 101,
         permission: 'edit',
+        recipient: {
+          id: 2,
+          display_name: 'Bob Collaborator',
+          email: 'bob@example.com',
+        },
         user: {
           id: 2,
           display_name: 'Bob Collaborator',
@@ -235,6 +250,11 @@ describe('SHARE-03 & SHARE-04 Sharing and Permissions Tests', () => {
           id: 5,
           note_id: 101,
           permission: 'read',
+          recipient: {
+            id: 2,
+            display_name: 'Bob Collaborator',
+            email: 'bob@example.com',
+          },
           user: {
             id: 2,
             display_name: 'Bob Collaborator',
@@ -245,7 +265,7 @@ describe('SHARE-03 & SHARE-04 Sharing and Permissions Tests', () => {
         },
       ]);
 
-      vi.mocked(notesApi.deleteNoteShare).mockResolvedValue({ message: 'Share revoked successfully.' });
+      vi.mocked(notesApi.deleteNoteShare).mockResolvedValue(undefined);
 
       render(
         <MemoryRouter initialEntries={['/notes/101']}>
@@ -327,7 +347,6 @@ describe('SHARE-03 & SHARE-04 Sharing and Permissions Tests', () => {
       vi.mocked(attachmentsApi.fetchAttachments).mockResolvedValue([
         {
           id: 11,
-          note_id: 202,
           original_name: 'diagram.png',
           mime_type: 'image/png',
           size_bytes: 4096,
@@ -403,7 +422,6 @@ describe('SHARE-03 & SHARE-04 Sharing and Permissions Tests', () => {
       vi.mocked(attachmentsApi.fetchAttachments).mockResolvedValue([
         {
           id: 12,
-          note_id: 203,
           original_name: 'backlog.pdf',
           mime_type: 'application/pdf',
           size_bytes: 8192,
